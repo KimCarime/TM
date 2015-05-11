@@ -201,6 +201,63 @@ public class DecoderTest {
 
         out.write(0x42); // unknown byte
         actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+
+    /**
+     *  Data state
+     */
+    @Test
+    public void data_state_should_accept_bytes_until_the_expected_nb_bytes_is_reach_and_return_crc_state() throws IOException {
+        final int randomSize = new Random().nextInt(15) + 1;
+        Decoder.DataState state = new Decoder.DataState(randomSize, new Decoder.State.Message());
+
+        Decoder.State actual = null;
+        for (int i = 0; i < randomSize; i++) {
+            actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+            if (i < randomSize - 1) {
+                assertThat(actual, is((Decoder.State) state));
+            }
+        }
+        assertThat(actual, instanceOf(Decoder.CrcState.class));
+    }
+
+    /**
+     *  CRC State
+     */
+    @Test
+    public void crc_state_should_accept_crc_and_return_null() throws IOException {
+        Decoder.State.Message message = new Decoder.State.Message();
+        message.header = (byte)Protocol.HEADER;
+        message.version = (byte)Protocol.VERSION;
+        message.typeMsb = 0x10;
+        message.typeLsb = 0x01;
+        message.sizeMsb = 0x00;
+        message.sizeLsb = 0x02;
+        message.data = new byte[]{ 0x00, (byte)0xEE };
+
+        Decoder.CrcState state = new Decoder.CrcState(message);
+        Decoder.State actual;
+
+        // Send a valid CRC
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)0x42, (byte)0x47 }));
+        assertThat(actual, instanceOf(Decoder.EndState.class));
+    }
+
+    @Test
+    public void crc_state_should_refuse_crc_and_return_header_state() throws IOException {
+        Decoder.State.Message message = new Decoder.State.Message();
+        message.header = (byte)Protocol.HEADER;
+        message.version = (byte)Protocol.VERSION;
+        message.typeMsb = 0x10;
+        message.typeLsb = 0x01;
+        message.sizeMsb = 0x00;
+        message.sizeLsb = 0x02;
+        message.data = new byte[]{ 0x00, (byte)0xEE };
+
+        Decoder.CrcState state = new Decoder.CrcState(message);
+        Decoder.State actual;
+
+        // Send a wrong CRC
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)0x42, (byte)0x42 }));
         assertThat(actual, instanceOf(Decoder.HeaderState.class));
     }
 }
