@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -94,7 +95,7 @@ public class DecoderTest {
         Decoder decoder = new Decoder(null);
 
         decoder.decode(new byte[]{(byte) Protocol.HEADER});
-        decoder.decode(new byte[]{(byte) Protocol.VERSION});
+        decoder.decode(new byte[]{ (byte)Protocol.VERSION });
 
         Field stateField = Decoder.class.getDeclaredField("state");
         stateField.setAccessible(true);
@@ -107,27 +108,25 @@ public class DecoderTest {
     @Test
     public void header_state_accepts_correct_header_and_returns_version_state() throws IOException {
         Decoder.HeaderState state = new Decoder.HeaderState();
+        Decoder.State actual;
 
-        Decoder.State actual = state.decode(new ByteArrayInputStream(new byte[]{(byte) Protocol.HEADER}));
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)Protocol.HEADER }));
         assertThat(actual, instanceOf(Decoder.VersionState.class));
     }
 
     @Test
     public void header_state_returns_itself_if_buffer_empty() throws IOException {
         Decoder.HeaderState state = new Decoder.HeaderState();
-        Decoder.State actual = state.decode(new ByteArrayInputStream(new byte[0]));
+        Decoder.State actual;
+
+        actual = state.decode(new ByteArrayInputStream(new byte[0]));
         assertThat(actual, is((Decoder.State) state));
     }
 
     @Test
     public void header_state_reject_all_invalid_header_bytes_and_stays_current() throws IOException {
         Decoder.HeaderState state = new Decoder.HeaderState();
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x42); // Unknown bytes
-        out.write(0x42);
-
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+        ByteArrayInputStream in = new ByteArrayInputStream(new byte[]{ 0x42, 0x42, 0x42, 0x42 });
         Decoder.State actual = state.decode(in);
         assertThat(actual, is((Decoder.State)state));
         assertThat(in.read(), is(-1));
@@ -138,8 +137,10 @@ public class DecoderTest {
      */
     @Test
     public void version_state_accepts_correct_version_and_returns_type_state() throws IOException {
-        Decoder.VersionState state = new Decoder.VersionState(null);
-        Decoder.State actual = state.decode(new ByteArrayInputStream(new byte[]{(byte)Protocol.VERSION}));
+        Decoder.VersionState state = new Decoder.VersionState(new Decoder.State.Message());
+        Decoder.State actual;
+
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)Protocol.VERSION }));
         assertThat(actual, instanceOf(Decoder.TypeState.class));
     }
 
@@ -148,53 +149,61 @@ public class DecoderTest {
      */
     @Test
     public void type_state_should_accept_a_correct_message_and_return_size_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(null);
+        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.State actual;
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x10); // TRAME_SLUMP_COURANT
-        out.write(0x01);
-
-        Decoder.State actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+        // TRAME_SLUMP_COURANT
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10, 0x01 }));
         assertThat(actual, instanceOf(Decoder.SizeState.class));
     }
 
     @Test
     public void type_state_should_accept_first_byte_but_not_second_and_return_header_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(null);
+        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.State actual;
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x10); // first byte of TRAME_SLUMP_COURANT
-        out.write(0x42); // Unknown byte
-
-        Decoder.State actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+        // First byte of TRAME_SLUMP_COURANT and an unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10, 0x42 }));
         assertThat(actual, instanceOf(Decoder.HeaderState.class));
     }
 
     @Test
     public void type_state_should_accept_first_then_second_byte_and_return_size_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(null);
+        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.State actual;
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x10); // first byte of TRAME_SLUMP_COURANT
+        // First byte of TRAME_SLUMP_COURANT
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10 }));
+        assertThat(actual, is((Decoder.State) state));
 
-        Decoder.State actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
-        assertThat(actual, is((Decoder.State)state));
-
-        out.reset();
-
-        out.write(0x01); // second byte of TRAME_SLUMP_COURANT
-        actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+        // Second byte of TRAME_SLUMP_COURANT
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x01 }));
         assertThat(actual, instanceOf(Decoder.SizeState.class));
     }
 
     @Test
     public void type_state_should_accept_first_then_refuse_second_byte_and_return_header_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(null);
+        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.State actual;
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0x10); // first byte of TRAME_SLUMP_COURANT
+        // First byte of TRAME_SLUMP_COURANT
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10 }));
+        assertThat(actual, is((Decoder.State) state));
 
-        Decoder.State actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+        // Unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+    }
+
+    @Test
+    public void type_state_should_refuse_first_byte_and_return_header_state() throws IOException {
+        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.State actual;
+
+        // Unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+    }
 
     /**
      *  Size state
