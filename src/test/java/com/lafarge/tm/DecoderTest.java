@@ -195,12 +195,80 @@ public class DecoderTest {
         out.write(0x10); // first byte of TRAME_SLUMP_COURANT
 
         Decoder.State actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+
+    /**
+     *  Size state
+     */
+    @Test
+    public void size_state_should_accept_a_size_that_match_with_current_type_state_and_return_data_state() throws IOException {
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.State actual;
+
+        // Bytes of TRAME_DONNEES_BRUTES's size
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x00, 0x0D }));
+        assertThat(actual, instanceOf(Decoder.DataState.class));
+    }
+
+    @Test
+    public void size_state_should_refuse_a_size_that_doesnt_match_with_current_type_state_and_return_header_state() throws IOException {
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.State actual;
+
+        // First byte of TRAME_DONNEES_BRUTES's size and an unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x00, 0x42 }));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+    }
+
+    @Test
+    public void size_state_should_accept_a_size_that_match_with_current_type_state_and_return_data_state_in_two_decode() throws IOException {
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.State actual;
+
+        // First byte of TRAME_DONNEES_BRUTES's size
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x00 }));
+        assertThat(actual, is((Decoder.State) state));
+
+        // Second byte of TRAME_DONNEES_BRUTES's size
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x0D }));
+        assertThat(actual, instanceOf(Decoder.DataState.class));
+    }
+
+    @Test
+    public void size_state_should_refuse_a_size_that_doesnt_match_with_current_type_state_and_return_header_state_in_two_decode() throws IOException {
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.State actual;
+
+        // First byte of TRAME_DONNEES_BRUTES 's size
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x00 }));
         assertThat(actual, is((Decoder.State)state));
 
-        out.reset();
+        // Unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+    }
 
-        out.write(0x42); // unknown byte
-        actual = state.decode(new ByteArrayInputStream(out.toByteArray()));
+    @Test
+    public void size_state_should_refuse_first_byte_and_return_header_state() throws IOException {
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.State actual;
+
+        // Unknown byte
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+    }
+
+    @Test
+    public void size_state_should_return_crc_state_if_size_found_is_equal_to_zero_and_match_with_type_size() throws IOException {
+        Decoder.State.Message message = new Decoder.State.Message();
+        message.data = new byte[] { 0x00 };
+
+        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, message);
+        Decoder.State actual;
+
+        // Bytes of TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE's size
+        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x00, 0x00 }));
+        assertThat(actual, instanceOf(Decoder.CrcState.class));
+    }
 
     /**
      *  Data state
