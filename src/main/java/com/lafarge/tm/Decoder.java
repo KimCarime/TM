@@ -1,5 +1,8 @@
 package com.lafarge.tm;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,34 +18,42 @@ public class Decoder {
     private State state;
     private Date lastDecodeDate;
 
+    private static final Logger logger = LoggerFactory.getLogger(Decoder.class);
+
     public Decoder(MessageReceivedListener listener) {
         this.listener = listener;
         this.state = new HeaderState();
     }
 
     public void decode(byte[] in) throws IOException {
-        this.resetStateIfLastWasExpired();
+        logger.info("will decode: {}", bytesToHex(in));
+
+        if (stateHasExpired()) {
+            logger.info("previous state has expired -> reset to HeaderState");
+            this.state = new HeaderState();
+        }
         this.state = this.state.decode(new ByteArrayInputStream(in));
     }
 
-    private void resetStateIfLastWasExpired() {
+    private boolean stateHasExpired() {
+        boolean previousStateHasExpired = false;
         Date now = new Date();
 
         if (this.lastDecodeDate != null) {
             long diffInSec = (now.getTime() - this.lastDecodeDate.getTime()) / 1000;
 
-            if (diffInSec > STATE_EXPIRATION_DELAY_IN_SEC) {
-                this.state = new HeaderState();
-            }
+            logger.debug("diff between now and last decode: {}s", diffInSec);
+            previousStateHasExpired = (diffInSec > STATE_EXPIRATION_DELAY_IN_SEC);
         }
         this.lastDecodeDate = now;
+        logger.debug("did set lastDecodeDate to {}s", now.getTime());
+        return previousStateHasExpired;
     }
 
     public static abstract class State {
         protected Message message;
 
         public State() {
-
         }
 
         public State(Message message) {
@@ -103,12 +114,15 @@ public class Decoder {
 
             switch (read) {
                 case -1:
+                    logger.info("[HeaderState] end of buffer -> waiting...");
                     return this;
                 case Protocol.HEADER:
+                    logger.info("[HeaderState] did received header byte -> continue to VersionState");
                     saveBuffer();
                     return new VersionState(this.message)
                             .decode(in);
                 default:
+                    logger.warn("[HeaderState] did received incorrect byte -> trying next byte");
                     return this.decode(in);
             }
         }
@@ -133,12 +147,15 @@ public class Decoder {
 
             switch (read) {
                 case -1:
+                    logger.info("[VersionState] end of buffer -> waiting...");
                     return this;
                 case Protocol.VERSION:
+                    logger.info("[VersionState] did received version byte -> continue to SizeState");
                     saveBuffer();
                     return new TypeState(this.message)
                             .decode(in);
                 default:
+                    logger.warn("[VersionState] did received incorrect byte");
                     return new HeaderState();
             }
         }
@@ -155,7 +172,7 @@ public class Decoder {
     public static final class TypeState extends State {
         public static final int TYPE_NB_BYTES = 2;
 
-        private byte[] buffer = new byte[TYPE_NB_BYTES];
+        private final byte[] buffer = new byte[TYPE_NB_BYTES];
         private int totalRead = 0;
 
         public TypeState(Message message) {
@@ -168,6 +185,7 @@ public class Decoder {
 
             switch (read) {
                 case -1:
+                    logger.info("[TypeState] end of buffer -> waiting...");
                     return this;
                 default:
                     this.totalRead += read;
@@ -187,16 +205,22 @@ public class Decoder {
             switch (this.totalRead) {
                 case 1:
                     if (checkIfFirstByteOfTypeMessageExist(this.buffer[0])) {
+                        logger.info("[TypeState] first byte match with a known type -> waiting for next byte");
                         next = this;
+                    } else {
+                        logger.warn("[TypeState] did received incorrect byte -> reset to HeaderState");
                     }
                     break;
                 case TYPE_NB_BYTES:
                     int messageTypeFound = buffToInt(this.buffer);
 
                     if (checkIfTypeMessageExist(messageTypeFound)) {
+                        logger.info("[TypeState] received message type exist -> continue to SizeState");
                         saveBuffer();
                         next = new SizeState(messageTypeFound, this.message)
                                 .decode(in);
+                    } else {
+                        logger.warn("[TypeState] received type doesn't exit -> reset to HeaderState");
                     }
                     break;
                 default:
@@ -211,6 +235,7 @@ public class Decoder {
                 int message = entry.getKey();
                 byte firstByteToMatch = this.intToBuff(message)[0];
 
+                logger.debug("[TypeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
                 if (firstByteToTest == firstByteToMatch) {
                     return true;
                 }
@@ -222,6 +247,7 @@ public class Decoder {
             for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
                 int typeMessageToMatch = entry.getKey();
 
+                logger.debug("[TypeState] received type: {}, expected type: {}", bytesToHex((intToBuff(messageTypeToTest))), bytesToHex((intToBuff(typeMessageToMatch))));
                 if (messageTypeToTest == typeMessageToMatch) {
                     return true;
                 }
@@ -236,9 +262,9 @@ public class Decoder {
     public static final class SizeState extends State {
         public static final int SIZE_NB_BYTES = 2;
 
-        private int messageType;
+        private final int messageType;
 
-        private byte[] buffer = new byte[SIZE_NB_BYTES];
+        private final byte[] buffer = new byte[SIZE_NB_BYTES];
         private int totalRead = 0;
 
         public SizeState(int messageType, Message message) {
@@ -252,6 +278,7 @@ public class Decoder {
 
             switch (read) {
                 case -1:
+                    logger.info("[SizeState] end of buffer -> waiting...");
                     return this;
                 default:
                     this.totalRead += read;
@@ -270,22 +297,29 @@ public class Decoder {
 
             switch (this.totalRead) {
                 case 1:
-                    if (checkIfFirstByteMatchForGivenState(this.buffer[0], this.messageType)) {
+                    if (checkIfSizeMatchForGivenMessageType(this.buffer[0], this.messageType)) {
+                        logger.info("[SizeState] first byte match with current type's size -> waiting for next byte");
                         next = this;
+                    } else {
+                        logger.warn("[SizeState] the first byte doesn't match with the current type's size");
                     }
                     break;
                 case SIZE_NB_BYTES:
                     int sizeFound = buffToInt(this.buffer);
 
-                    if (checkIfSizeMatchForGivenState(sizeFound, this.messageType)) {
+                    if (checkIfSizeMatchForGivenMessageType(sizeFound, this.messageType)) {
                         saveBuffer();
                         if (sizeFound > 0) {
+                            logger.info("[SizeState] received size match with current type's size -> continue to DataState");
                             next = new DataState(sizeFound, null)
                                     .decode(in);
                         } else {
+                            logger.info("[SizeState] received size match with current type's size -> continue to CrcState (no need for Data)");
                             next = new CrcState(this.message)
                                     .decode(in);
                         }
+                    } else {
+                        logger.warn("[SizeState] the received size doesn't match with current type");
                     }
                     break;
                 default:
@@ -294,11 +328,12 @@ public class Decoder {
             return (next != null) ? next : new HeaderState();
         }
 
-        private boolean checkIfFirstByteMatchForGivenState(byte firstByteToTest, int stateToMatch) {
+        private boolean checkIfSizeMatchForGivenMessageType(byte firstByteToTest, int stateToMatch) {
             Protocol.Pair pair = Protocol.constants.get(stateToMatch);
 
             if (pair != null) {
                 byte firstByteToMatch = intToBuff(pair.size)[0];
+                logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
                 return firstByteToTest == firstByteToMatch;
             } else {
                 assert true : "The impossible happened: The state wasn't recognize";
@@ -306,11 +341,12 @@ public class Decoder {
             }
         }
 
-        private boolean checkIfSizeMatchForGivenState(int sizeToTest, int stateToMatch) {
+        private boolean checkIfSizeMatchForGivenMessageType(int sizeToTest, int stateToMatch) {
             Protocol.Pair pair = Protocol.constants.get(stateToMatch);
 
             if (pair != null) {
                 int sizeToMatch = pair.size;
+                logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, sizeToMatch);
                 return sizeToTest == sizeToMatch;
             } else {
                 assert false : "The impossible happened: The state wasn't recognize";
@@ -323,7 +359,7 @@ public class Decoder {
      *  Data
      */
     public static final class DataState extends State {
-        private byte[] buffer;
+        private final byte[] buffer;
         private int expectedSize = 0;
         private int totalRead = 0;
 
@@ -338,14 +374,17 @@ public class Decoder {
             int read = in.read(this.buffer, this.totalRead, this.expectedSize - this.totalRead);
 
             if (read == -1) {
+                logger.info("[DataState] end of buffer -> waiting...");
                 return this;
             } else {
                 this.totalRead += read;
                 if (this.totalRead == this.expectedSize) {
+                    logger.info("[DataState] did received all bytes -> continue to CrcState", this.totalRead, this.expectedSize);
                     saveBuffer();
                     return new CrcState(this.message)
                             .decode(in);
                 } else {
+                    logger.info("[DataState] -> did received {}/{} data bytes -> waiting...", this.totalRead, this.expectedSize);
                     return this;
                 }
             }
@@ -365,12 +404,15 @@ public class Decoder {
 
         private byte[] crcToMatch;
 
-        private byte[] buffer = new byte[CRC_NB_BYTES];
+        private final byte[] buffer = new byte[CRC_NB_BYTES];
         private int totalRead = 0;
 
         public CrcState(Message message) throws IOException {
             super(message);
             this.crcToMatch = computeCrc(message);
+
+            String hex = bytesToHex(message.getMessageBytes());
+            System.out.println(hex); // prints "7F0F00"
         }
 
         @Override
@@ -398,11 +440,15 @@ public class Decoder {
                 case 1:
                     if (checkIfFirstByteMatchWithCrc(this.buffer[0])) {
                         next = this;
+                    } else {
+                        logger.warn("[CrcState] first byte received of crc doesn't match");
                     }
                     break;
                 case CRC_NB_BYTES:
                     if (checkIfCrcMatch(this.buffer)) {
                         next = new EndState();
+                    } else {
+                        logger.warn("[CrcState] crc received doesn't match");
                     }
                     break;
                 default:
@@ -421,12 +467,13 @@ public class Decoder {
         }
 
         private boolean checkIfFirstByteMatchWithCrc(byte byteToTest) {
+            logger.debug("[CrcState] received byte: {}, expected byte: {}", String.format("0x%02X", byteToTest), String.format("0x%02X", this.crcToMatch[0]));
             return byteToTest == this.crcToMatch[0];
         }
 
         private boolean checkIfCrcMatch(byte[] crcToTest) {
-            return (crcToTest[0] == this.crcToMatch[0] &&
-                    crcToTest[1] == this.crcToMatch[1]);
+            logger.debug("[CrcState] received crc: {}, expected crc: {}", bytesToHex(crcToTest), bytesToHex(this.crcToMatch));
+            return (crcToTest[0] == this.crcToMatch[0] && crcToTest[1] == this.crcToMatch[1]);
         }
     }
 
@@ -443,5 +490,21 @@ public class Decoder {
         protected void saveBuffer() {
 
         }
+    }
+
+    final protected static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+        public static String bytesToHex(byte[] bytes) {
+        StringBuffer buf = new StringBuffer();
+
+        for (int i = 0; i < bytes.length; i++) {
+            int v = bytes[i] & 0xff;
+
+            buf.append(HEX_DIGITS[v >> 4]);
+            buf.append(HEX_DIGITS[v & 0xf]);
+            if (i < bytes.length - 1) {
+                buf.append(" ");
+            }
+        }
+        return buf.toString();
     }
 }
