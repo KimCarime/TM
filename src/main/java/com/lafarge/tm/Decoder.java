@@ -1,5 +1,6 @@
 package com.lafarge.tm;
 
+import com.lafarge.tm.utils.CRC16Modbus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

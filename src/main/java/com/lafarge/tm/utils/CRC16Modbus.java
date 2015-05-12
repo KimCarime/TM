@@ -1,4 +1,4 @@
-package com.lafarge.tm;
+package com.lafarge.tm.utils;
 
 import java.util.zip.Checksum;
 
