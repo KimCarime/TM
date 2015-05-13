@@ -222,8 +222,7 @@ public class Decoder {
                     }
                     break;
                 default:
-                    assert false : "The impossible happened: the nb bytes read is not conform to the protocol";
-                    break;
+                    throw new RuntimeException("The impossible happened: the nb bytes read is not conform to the protocol");
             }
             return (next != null) ? next : new HeaderState();
         }
@@ -321,7 +320,7 @@ public class Decoder {
                     }
                     break;
                 default:
-                    assert false : "The impossible happened: the nb bytes read is not conform to the protocol";
+                    throw new RuntimeException("The impossible happened: the nb bytes read is not conform to the protocol");
             }
             return (next != null) ? next : new HeaderState();
         }
@@ -329,27 +328,25 @@ public class Decoder {
         private boolean checkIfSizeMatchForGivenMessageType(byte firstByteToTest, int stateToMatch) {
             Protocol.Pair pair = Protocol.constants.get(stateToMatch);
 
-            if (pair != null) {
-                byte firstByteToMatch = intToBuff(pair.size)[0];
-                logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
-                return firstByteToTest == firstByteToMatch;
-            } else {
-                assert true : "The impossible happened: The state wasn't recognize";
-                return false;
+            if (pair == null) {
+                throw new RuntimeException("The impossible happened: The state wasn't recognize");
             }
+
+            byte firstByteToMatch = intToBuff(pair.size)[0];
+            logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
+            return firstByteToTest == firstByteToMatch;
         }
 
         private boolean checkIfSizeMatchForGivenMessageType(int sizeToTest, int stateToMatch) {
             Protocol.Pair pair = Protocol.constants.get(stateToMatch);
 
-            if (pair != null) {
-                int sizeToMatch = pair.size;
-                logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, sizeToMatch);
-                return sizeToTest == sizeToMatch;
-            } else {
-                assert false : "The impossible happened: The state wasn't recognize";
-                return false;
+            if (pair == null) {
+                throw new RuntimeException("The impossible happened: The state wasn't recognize");
             }
+
+            int sizeToMatch = pair.size;
+            logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, sizeToMatch);
+            return sizeToTest == sizeToMatch;
         }
     }
 
@@ -452,7 +449,7 @@ public class Decoder {
                     }
                     break;
                 default:
-                    assert false : "The impossible happened: the nb bytes read is not conform to the protocol";
+                    throw new RuntimeException("The impossible happened: the nb bytes read is not conform to the protocol");
             }
             return (next != null) ? next : new HeaderState();
         }
