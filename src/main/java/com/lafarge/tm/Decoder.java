@@ -8,9 +8,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+
+import static com.lafarge.tm.utils.Convert.*;
 
 public class Decoder {
     public static final int STATE_EXPIRATION_DELAY_IN_SEC = 1;
@@ -18,12 +20,15 @@ public class Decoder {
     private final MessageReceivedListener listener;
     private State state;
     private Date lastDecodeDate;
+    private final Map<Integer, MessageType> messageTypes;
 
     private static final Logger logger = LoggerFactory.getLogger(Decoder.class);
 
     public Decoder(MessageReceivedListener listener) {
         this.listener = listener;
         this.state = new HeaderState();
+        this.messageTypes = new HashMap<>();
+        this.messageTypes.put(Protocol.TRAME_SLUMP_COURANT, new SlumpUpdated(listener));
     }
 
     public void decode(byte[] in) throws IOException {
@@ -87,24 +92,16 @@ public class Decoder {
             }
         }
 
-        protected int buffToInt(byte[] buffer) {
-            return (int)ByteBuffer
-                    .wrap(buffer)
-                    .getShort();
+        public int getType() {
+            return buffToInt(new byte[]{this.message.typeMsb, this.message.typeLsb});
         }
 
-        protected byte[] intToBuff(int i) {
-            return ByteBuffer
-                    .allocate(4)
-                    .putShort((short)i) // Hack: message are only with two bytes
-                    .array();
-        }
     }
 
     /**
      * Header
      */
-    public static final class HeaderState extends State {
+    public final class HeaderState extends State {
         public HeaderState() {
             this.message = new Message();
         }
@@ -137,7 +134,7 @@ public class Decoder {
     /**
      *  Version
      */
-    public static final class VersionState extends State {
+    public final class VersionState extends State {
         public VersionState(Message message) {
             super(message);
         }
@@ -170,7 +167,7 @@ public class Decoder {
     /**
      *  Type
      */
-    public static final class TypeState extends State {
+    public final class TypeState extends State {
         public static final int TYPE_NB_BYTES = 2;
 
         private final byte[] buffer = new byte[TYPE_NB_BYTES];
@@ -234,7 +231,7 @@ public class Decoder {
         private boolean checkIfFirstByteOfTypeMessageExist(byte firstByteToTest) {
             for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
                 int message = entry.getKey();
-                byte firstByteToMatch = this.intToBuff(message)[0];
+                byte firstByteToMatch = intToBuff(message)[0];
 
                 logger.debug("[TypeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
                 if (firstByteToTest == firstByteToMatch) {
@@ -260,7 +257,7 @@ public class Decoder {
     /**
      *  Size
      */
-    public static final class SizeState extends State {
+    public final class SizeState extends State {
         public static final int SIZE_NB_BYTES = 2;
 
         private final int messageType;
@@ -359,7 +356,7 @@ public class Decoder {
     /**
      *  Data
      */
-    public static final class DataState extends State {
+    public final class DataState extends State {
         private final byte[] buffer;
         private int expectedSize = 0;
         private int totalRead = 0;
@@ -400,7 +397,7 @@ public class Decoder {
     /**
      *  CRC
      */
-    public static final class CrcState extends State {
+    public final class CrcState extends State {
         public static final int CRC_NB_BYTES = 2;
 
         private byte[] crcToMatch;
@@ -447,7 +444,9 @@ public class Decoder {
                     break;
                 case CRC_NB_BYTES:
                     if (checkIfCrcMatch(this.buffer)) {
-                        next = new EndState();
+                        MessageType type = messageTypes.get(getType());
+                        type.decode(message.data);
+                        next = new HeaderState();
                     } else {
                         logger.warn("[CrcState] crc received doesn't match");
                     }
@@ -478,34 +477,4 @@ public class Decoder {
         }
     }
 
-    /**
-     *  End
-     */
-    public static final class EndState extends State {
-        @Override
-        public State decode(InputStream in) throws IOException {
-            return null;
-        }
-
-        @Override
-        protected void saveBuffer() {
-
-        }
-    }
-
-    final protected static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
-        public static String bytesToHex(byte[] bytes) {
-        StringBuffer buf = new StringBuffer();
-
-        for (int i = 0; i < bytes.length; i++) {
-            int v = bytes[i] & 0xff;
-
-            buf.append(HEX_DIGITS[v >> 4]);
-            buf.append(HEX_DIGITS[v & 0xf]);
-            if (i < bytes.length - 1) {
-                buf.append(" ");
-            }
-        }
-        return buf.toString();
-    }
 }

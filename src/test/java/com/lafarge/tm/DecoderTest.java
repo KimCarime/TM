@@ -14,6 +14,7 @@ import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 public class DecoderTest {
 
@@ -24,12 +25,7 @@ public class DecoderTest {
         byte[] msg3 = "BBCCCCCCCCC".getBytes("UTF-8");
 
         final List<String> received = new LinkedList<>();
-        MessageReceivedListener callback = new MessageReceivedListener() {
-            @Override
-            public void messagesReceived(String message) {
-                received.add(message);
-            }
-        };
+        MessageReceivedListener callback = mock(MessageReceivedListener.class);
 
         Decoder decoder = new Decoder(callback);
         decoder.decode(msg1);
@@ -46,12 +42,7 @@ public class DecoderTest {
 
     @Test @Ignore
     public void should_decode_message() throws IOException {
-        final MessageReceivedListener callback = new MessageReceivedListener() {
-            @Override
-            public void messagesReceived(String message) {
-
-            }
-        };
+        final MessageReceivedListener callback = mock(MessageReceivedListener.class);
 
         Decoder decoder = new Decoder(callback);
 
@@ -68,6 +59,7 @@ public class DecoderTest {
         out.write(0x47);
 
         decoder.decode(out.toByteArray());
+        verify(callback, only()).slumpUpdated(12);
     }
 
     /**
@@ -107,7 +99,7 @@ public class DecoderTest {
      */
     @Test
     public void header_state_accepts_correct_header_and_returns_version_state() throws IOException {
-        Decoder.HeaderState state = new Decoder.HeaderState();
+        Decoder.HeaderState state = new Decoder(null).new HeaderState();
         Decoder.State actual;
 
         actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)Protocol.HEADER }));
@@ -116,7 +108,7 @@ public class DecoderTest {
 
     @Test
     public void header_state_returns_itself_if_buffer_empty() throws IOException {
-        Decoder.HeaderState state = new Decoder.HeaderState();
+        Decoder.HeaderState state = new Decoder(null).new HeaderState();
         Decoder.State actual;
 
         actual = state.decode(new ByteArrayInputStream(new byte[0]));
@@ -125,7 +117,7 @@ public class DecoderTest {
 
     @Test
     public void header_state_reject_all_invalid_header_bytes_and_stays_current() throws IOException {
-        Decoder.HeaderState state = new Decoder.HeaderState();
+        Decoder.HeaderState state = new Decoder(null).new HeaderState();
         ByteArrayInputStream in = new ByteArrayInputStream(new byte[]{ 0x42, 0x42, 0x42, 0x42 });
         Decoder.State actual = state.decode(in);
         assertThat(actual, is((Decoder.State)state));
@@ -137,7 +129,7 @@ public class DecoderTest {
      */
     @Test
     public void version_state_accepts_correct_version_and_returns_type_state() throws IOException {
-        Decoder.VersionState state = new Decoder.VersionState(new Decoder.State.Message());
+        Decoder.VersionState state = new Decoder(null).new VersionState(new Decoder.State.Message());
         Decoder.State actual;
 
         actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)Protocol.VERSION }));
@@ -149,7 +141,7 @@ public class DecoderTest {
      */
     @Test
     public void type_state_should_accept_a_correct_message_and_return_size_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.TypeState state = new Decoder(null).new TypeState(new Decoder.State.Message());
         Decoder.State actual;
 
         // TRAME_SLUMP_COURANT
@@ -159,7 +151,7 @@ public class DecoderTest {
 
     @Test
     public void type_state_should_accept_first_byte_but_not_second_and_return_header_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.TypeState state = new Decoder(null).new TypeState(new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_SLUMP_COURANT and an unknown byte
@@ -169,7 +161,7 @@ public class DecoderTest {
 
     @Test
     public void type_state_should_accept_first_then_second_byte_and_return_size_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.TypeState state = new Decoder(null).new TypeState(new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_SLUMP_COURANT
@@ -183,7 +175,7 @@ public class DecoderTest {
 
     @Test
     public void type_state_should_accept_first_then_refuse_second_byte_and_return_header_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.TypeState state = new Decoder(null).new TypeState(new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_SLUMP_COURANT
@@ -197,7 +189,7 @@ public class DecoderTest {
 
     @Test
     public void type_state_should_refuse_first_byte_and_return_header_state() throws IOException {
-        Decoder.TypeState state = new Decoder.TypeState(new Decoder.State.Message());
+        Decoder.TypeState state = new Decoder(null).new TypeState(new Decoder.State.Message());
         Decoder.State actual;
 
         // Unknown byte
@@ -210,7 +202,7 @@ public class DecoderTest {
      */
     @Test
     public void size_state_should_accept_a_size_that_match_with_current_type_state_and_return_data_state() throws IOException {
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
         Decoder.State actual;
 
         // Bytes of TRAME_DONNEES_BRUTES's size
@@ -220,7 +212,7 @@ public class DecoderTest {
 
     @Test
     public void size_state_should_refuse_a_size_that_doesnt_match_with_current_type_state_and_return_header_state() throws IOException {
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_DONNEES_BRUTES's size and an unknown byte
@@ -230,7 +222,7 @@ public class DecoderTest {
 
     @Test
     public void size_state_should_accept_a_size_that_match_with_current_type_state_and_return_data_state_in_two_decode() throws IOException {
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_DONNEES_BRUTES's size
@@ -244,7 +236,7 @@ public class DecoderTest {
 
     @Test
     public void size_state_should_refuse_a_size_that_doesnt_match_with_current_type_state_and_return_header_state_in_two_decode() throws IOException {
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
         Decoder.State actual;
 
         // First byte of TRAME_DONNEES_BRUTES 's size
@@ -258,7 +250,7 @@ public class DecoderTest {
 
     @Test
     public void size_state_should_refuse_first_byte_and_return_header_state() throws IOException {
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_TRACE_DONNEES_BRUTE, new Decoder.State.Message());
         Decoder.State actual;
 
         // Unknown byte
@@ -271,7 +263,7 @@ public class DecoderTest {
         Decoder.State.Message message = new Decoder.State.Message();
         message.data = new byte[] { 0x00 };
 
-        Decoder.SizeState state = new Decoder.SizeState(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, message);
+        Decoder.SizeState state = new Decoder(null).new SizeState(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, message);
         Decoder.State actual;
 
         // Bytes of TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE's size
@@ -285,7 +277,7 @@ public class DecoderTest {
     @Test
     public void data_state_should_accept_bytes_until_the_expected_nb_bytes_is_reach_and_return_crc_state() throws IOException {
         final int randomSize = new Random().nextInt(15) + 1;
-        Decoder.DataState state = new Decoder.DataState(randomSize, new Decoder.State.Message());
+        Decoder.DataState state = new Decoder(null).new DataState(randomSize, new Decoder.State.Message());
 
         Decoder.State actual = null;
         for (int i = 0; i < randomSize; i++) {
@@ -311,12 +303,15 @@ public class DecoderTest {
         message.sizeLsb = 0x02;
         message.data = new byte[]{ 0x00, (byte)0xEE };
 
-        Decoder.CrcState state = new Decoder.CrcState(message);
+        MessageReceivedListener listener = mock(MessageReceivedListener.class);
+        Decoder.CrcState state = new Decoder(listener).new CrcState(message);
         Decoder.State actual;
 
         // Send a valid CRC
         actual = state.decode(new ByteArrayInputStream(new byte[]{ (byte)0x42, (byte)0x47 }));
-        assertThat(actual, instanceOf(Decoder.EndState.class));
+        assertThat(actual, instanceOf(Decoder.HeaderState.class));
+        verify(listener)
+        ;
     }
 
     @Test
@@ -330,7 +325,7 @@ public class DecoderTest {
         message.sizeLsb = 0x02;
         message.data = new byte[]{ 0x00, (byte)0xEE };
 
-        Decoder.CrcState state = new Decoder.CrcState(message);
+        Decoder.CrcState state = new Decoder(null).new CrcState(message);
         Decoder.State actual;
 
         // Send a wrong CRC
