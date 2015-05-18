@@ -67,9 +67,9 @@ public class Protocol {
     public static final int TRAME_DEMANDE_ACCEPTATION_LIVRAISON = 0x5004;
 
     public static final int TRAME_TRACE_DEBUG = 0xD001;
-    public static final int TRAME_TRACE_DONNEES_BRUTE = 0xD002;
-    public static final int TRAME_TRACE_DONNEES_DERIVEES = 0xD003;
-    public static final int TRAME_TRACE_DONNEES_INTERNES = 0xD004;
+    public static final int TRAME_DONNEES_BRUTES = 0xD002;
+    public static final int TRAME_DONNEES_DERIVEES = 0xD003;
+    public static final int TRAME_DONNEES_INTERNES = 0xD004;
     public static final int TRAME_DONNEES_CALIBRATION = 0xD005;
 
     public static final int TRAME_NOTIFICATION_ERREUR_EAU_MAX = 0xF001;
@@ -163,9 +163,9 @@ public class Protocol {
         constants.put(TRAME_DEMANDE_PARAMETRES_DYNAMIQUES, new Pair(0, null));
         constants.put(TRAME_DEMANDE_ACCEPTATION_LIVRAISON, new Pair(0, null));
         constants.put(TRAME_TRACE_DEBUG, new Pair(0/*?*/, null));
-        constants.put(TRAME_TRACE_DONNEES_BRUTE, new Pair(13, null));
-        constants.put(TRAME_TRACE_DONNEES_DERIVEES, new Pair(6, null));
-        constants.put(TRAME_TRACE_DONNEES_INTERNES, new Pair(6, null));
+        constants.put(TRAME_DONNEES_BRUTES, new Pair(13, null));
+        constants.put(TRAME_DONNEES_DERIVEES, new Pair(6, null));
+        constants.put(TRAME_DONNEES_INTERNES, new Pair(6, null));
         constants.put(TRAME_DONNEES_CALIBRATION, new Pair(12, null));
         constants.put(TRAME_NOTIFICATION_ERREUR_EAU_MAX, new Pair(0, null));
         constants.put(TRAME_NOTIFICATION_ERREUR_ECOULEMENT, new Pair(0, null));
