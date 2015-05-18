@@ -61,6 +61,7 @@ public final class SizeState extends State {
                         next = new DataState(sizeFound, message, messageListener, progressListener).decode(in);
                     } else {
                         logger.info("[SizeState] received size match with current type's size -> continue to CrcState (no need for Data)");
+                        this.message.data = new byte[0];
                         next = new CrcState(message, messageListener, progressListener).decode(in);
                     }
                 } else {

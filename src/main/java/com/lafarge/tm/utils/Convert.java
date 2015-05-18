@@ -8,9 +8,9 @@ public class Convert {
     }
 
     public static int buffToInt(byte[] buffer) {
-        return (int) ByteBuffer
+        return ByteBuffer
                 .wrap(buffer)
-                .getShort();
+                .getChar();
     }
 
     public static byte[] intToBuff(int i) {

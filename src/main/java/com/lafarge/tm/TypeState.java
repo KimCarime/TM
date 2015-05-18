@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import static com.lafarge.tm.utils.Convert.buffToInt;
-import static com.lafarge.tm.utils.Convert.bytesToHex;
 import static com.lafarge.tm.utils.Convert.intToBuff;
 
 public final class TypeState extends State {
@@ -54,7 +53,7 @@ public final class TypeState extends State {
             case TYPE_NB_BYTES:
                 int messageTypeFound = buffToInt(this.buffer);
 
-                if (checkIfTypeMessageExist(messageTypeFound)) {
+                if (Protocol.constants.containsKey((messageTypeFound))) {
                     logger.info("[TypeState] received message type exist -> continue to SizeState");
                     saveBuffer();
                     next = new SizeState(messageTypeFound, message, messageListener, progressListener).decode(in);
@@ -72,7 +71,6 @@ public final class TypeState extends State {
         for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
             int message = entry.getKey();
             byte firstByteToMatch = intToBuff(message)[0];
-
             logger.debug("[TypeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
             if (firstByteToTest == firstByteToMatch) {
                 return true;
@@ -81,15 +79,4 @@ public final class TypeState extends State {
         return false;
     }
 
-    private boolean checkIfTypeMessageExist(int messageTypeToTest) {
-        for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
-            int typeMessageToMatch = entry.getKey();
-
-            logger.debug("[TypeState] received type: {}, expected type: {}", bytesToHex((intToBuff(messageTypeToTest))), bytesToHex((intToBuff(typeMessageToMatch))));
-            if (messageTypeToTest == typeMessageToMatch) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
