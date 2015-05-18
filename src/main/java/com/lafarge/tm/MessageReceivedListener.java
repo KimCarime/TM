@@ -2,9 +2,41 @@ package com.lafarge.tm;
 
 public interface MessageReceivedListener {
 
-    public enum WaterAddition {manual, auto}
+    enum WaterAdditionMode {
+        MANUAL,
+        AUTO
+    }
+
+    enum RotationDirection {
+        MIXING,
+        EMPTYING
+    }
 
     void slumpUpdated(int slump);
-    void waterAdded(int volume, WaterAddition waterAddition);
-
+    void mixingModeActivated();
+    void unloadingModeActivated();
+    void waterAdded(int volume, WaterAdditionMode additionMode);
+    void waterAdditionRequest(int volume);
+    void waterAdditionBegan();
+    void waterAdditionEnd();
+    void waterAdditionLocked();
+    void truckParametersRequest();
+    void truckParametersReceived();
+    void deliveryParametersRequest();
+    void deliveryParametersReceived();
+    void deliveryValidationRequest();
+    void deliveryValidationReceived();
+    void stateChanged(int step, int subStep);
+    void traceDebug(String trace);
+    void rawData(int inPressure, int outPressure, int interval, boolean buttonHold);
+    void derivedData(RotationDirection rotationDirection, boolean slumpFrameStable, int currentFrameSize, int expectedFrameSize);
+    void internData(boolean inSensorConnected, boolean outSensorConnected, boolean speedTooLow, boolean speedTooHigh, boolean commandEP1Activated, boolean commandVA1Activated);
+    void calibrationData(float inPressure, float outPressure, float rotationSpeed);
+    void waterMaxError();
+    void flowageError();
+    void countingError();
+    void inputSensorStateChanged(boolean connected);
+    void outputSensorStateChanged(boolean connected);
+    void speedSensorHasExceedMinThreshold(boolean thresholdExceed);
+    void speedSensorHasExceedMaxThreshold(boolean thresholdExceed);
 }
