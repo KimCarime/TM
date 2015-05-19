@@ -53,7 +53,7 @@ public class CrcStateTest {
         assertThat(actual, instanceOf(HeaderState.class));
     }
 
-    @Test @Ignore
+    @Test
     public void crc_state_should_accept_crc_and_return_null() throws IOException {
         State.Message message = new State.Message();
         message.header = (byte)Protocol.HEADER;

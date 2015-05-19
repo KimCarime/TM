@@ -55,7 +55,6 @@ public class DecoderTest {
     public void should_decode_message() throws IOException {
         final MessageReceivedListener callback = mock(MessageReceivedListener.class);
 
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(0xC0); // Header
         out.write(0x01); // Version

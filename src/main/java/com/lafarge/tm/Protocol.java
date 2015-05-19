@@ -86,6 +86,8 @@ public class Protocol {
      * Spec
      */
     public static class Spec {
+        public static final int SIZE_UNDEFINED = -1;
+
         public final int address;
         public final int size;
 
@@ -141,7 +143,7 @@ public class Protocol {
         constants.put(TRAME_DEMANDE_PARAMETRES_STATIQUES, new Spec(0x5002, 0));
         constants.put(TRAME_DEMANDE_PARAMETRES_DYNAMIQUES, new Spec(0x5003, 0));
         constants.put(TRAME_DEMANDE_ACCEPTATION_LIVRAISON, new Spec(0x5004, 0));
-        constants.put(TRAME_TRACE_DEBUG, new Spec(0xD001, 0/*?*/));
+        constants.put(TRAME_TRACE_DEBUG, new Spec(0xD001, Spec.SIZE_UNDEFINED));
         constants.put(TRAME_DONNEES_BRUTES, new Spec(0xD002, 13));
         constants.put(TRAME_DONNEES_DERIVEES, new Spec(0xD003, 6));
         constants.put(TRAME_DONNEES_INTERNES, new Spec(0xD004, 6));
@@ -155,5 +157,4 @@ public class Protocol {
         constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MIN, new Spec(0xF007, 1));
         constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX, new Spec(0xF008, 1));
     }
-
 }

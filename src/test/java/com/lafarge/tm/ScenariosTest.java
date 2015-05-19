@@ -23,11 +23,11 @@ public class ScenariosTest {
 
     private static class Result {
         String message;
-        List<Object> datas;
+        List<Object> data;
 
-        public Result(String message, List<Object> datas) {
+        public Result(String message, List<Object> data) {
             this.message = message;
-            this.datas = datas;
+            this.data = data;
         }
     }
 
@@ -66,7 +66,7 @@ public class ScenariosTest {
             List<Map<String, Object>> results_def = (List<Map<String, Object>>)test.get("results");
             List<Result> results = new ArrayList<>(results_def.size());
             for (Map<String, Object> result_def : results_def) {
-                results.add(new Result((String)result_def.get("message"), (List<Object>)result_def.get("datas")));
+                results.add(new Result((String)result_def.get("message"), (List<Object>)result_def.get("data")));
             }
             values[2] = results;
             scenarios.add(values);
@@ -74,72 +74,119 @@ public class ScenariosTest {
         return scenarios;
     }
 
-    @Test @Ignore
+    @Test
     public void scenario() throws IOException {
         MessageReceivedListener messageListener = mock(MessageReceivedListener.class);
         ProgressListener progressListener = mock(ProgressListener.class);
         Decoder decoder = new Decoder(messageListener, progressListener);
-        System.out.println("running " + scenario);
+        System.out.println("running: " + scenario);
         for (byte[] frame : frames) {
             decoder.decode(frame);
         }
 
         for (Result result : results) {
             switch (result.message) {
-                case "TRAME_NOTIFICATION_ERREUR_COMPTAGE":
+                case Protocol.TRAME_NOTIFICATION_ERREUR_COMPTAGE:
+                    verify(messageListener).countingError();
                     break;
-                case "TRAME_NOTIFICATION_ERREUR_ECOULEMENT":
+                case Protocol.TRAME_NOTIFICATION_ERREUR_ECOULEMENT:
+                    verify(messageListener).flowageError();
                     break;
-                case "TRAME_NOTIFICATION_ERREUR_EAU_MAX":
+                case Protocol.TRAME_NOTIFICATION_ERREUR_EAU_MAX:
+                    verify(messageListener).waterMaxError();
                     break;
-                case "TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE":
+                case Protocol.TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE:
+                    verify(messageListener).waterAdditionLocked();
                     break;
-                case "TRAME_NOTIFICATION_DEBUT_AJOUT_EAU":
+                case Protocol.TRAME_NOTIFICATION_DEBUT_AJOUT_EAU:
+                    verify(messageListener).waterAdditionBegan();
                     break;
-                case "TRAME_DONNEES_CALIBRATION":
+                case Protocol.TRAME_DONNEES_CALIBRATION:
+                    verify(messageListener).calibrationData(
+                            ((Double)result.data.get(0)).floatValue(),
+                            ((Double)result.data.get(1)).floatValue(),
+                            ((Double)result.data.get(2)).floatValue());
                     break;
-                case "TRAME_TRACE_DEBUG":
+                case Protocol.TRAME_TRACE_DEBUG:
+                    verify(messageListener).traceDebug((String)result.data.get(0));
                     break;
-                case "TRAME_NOTIFICATION_ACCEPTATION_LIVRAISON_RECUE":
+                case Protocol.TRAME_NOTIFICATION_ACCEPTATION_LIVRAISON_RECUE:
+                    verify(messageListener).deliveryValidationReceived();
                     break;
-                case "TRAME_ATTENTE_ACCEPTATION_LIVRAISON":
+                case Protocol.TRAME_DEMANDE_ACCEPTATION_LIVRAISON:
+                    verify(messageListener).deliveryValidationRequest();
                     break;
-                case "TRAME_DONNEES_DERIVEES":
+                case Protocol.TRAME_DONNEES_DERIVEES:
+                    verify(messageListener).derivedData(
+                            MessageReceivedListener.RotationDirection.valueOf((String)result.data.get(0)),
+                            (Boolean)result.data.get(1),
+                            ((Double)result.data.get(2)).intValue(),
+                            ((Double)result.data.get(3)).intValue());
                     break;
-                case "TRAME_NOTIFICATION_PARAMETRES_DYNAMIQUES_RECUS":
+                case Protocol.TRAME_NOTIFICATION_PARAMETRES_DYNAMIQUES_RECUS:
+                    verify(messageListener).deliveryParametersReceived();
                     break;
-                case "TRAME_DEMANDE_PARAMETRES_DYNAMIQUES":
+                case Protocol.TRAME_DEMANDE_PARAMETRES_DYNAMIQUES:
+                    verify(messageListener).deliveryParametersRequest();
                     break;
-                case "TRAME_NOTIFICATION_FIN_AJOUT_EAU":
+                case Protocol.TRAME_NOTIFICATION_FIN_AJOUT_EAU:
+                    verify(messageListener).waterAdditionEnd();
                     break;
-                case "TRAME_NOTIFICATION_CAPTEUR_PRESSION_ENTREE_DECONNECTE":
+                case Protocol.TRAME_NOTIFICATION_CAPTEUR_PRESSION_ENTREE_DECONNECTE:
+                    verify(messageListener).inputSensorStateChanged((Boolean)result.data.get(0));
                     break;
-                case "TRAME_DONNES_INTERNES":
+                case Protocol.TRAME_DONNEES_INTERNES:
+                    verify(messageListener).internData(
+                            (Boolean)result.data.get(0),
+                            (Boolean)result.data.get(1),
+                            (Boolean)result.data.get(2),
+                            (Boolean)result.data.get(3),
+                            (Boolean)result.data.get(4),
+                            (Boolean)result.data.get(5));
                     break;
-                case "TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE":
+                case Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE:
+                    verify(messageListener).mixingModeActivated();
                     break;
-                case "TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE":
+                case Protocol.TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE:
+                    verify(messageListener).unloadingModeActivated();
                     break;
-                case "TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE":
+                case Protocol.TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE:
+                    verify(messageListener).outputSensorStateChanged((Boolean)result.data.get(0));
                     break;
-                case "TRAME_DONNEES_BRUTES":
+                case Protocol.TRAME_DONNEES_BRUTES:
+                    verify(messageListener).rawData(
+                            ((Double)result.data.get(0)).intValue(),
+                            ((Double)result.data.get(1)).intValue(),
+                            ((Double)result.data.get(2)).intValue(),
+                            (Boolean)result.data.get(3));
                     break;
-                case "TRAME_SLUMP_COURANT":
-                    verify(messageListener).slumpUpdated(((Double)result.datas.get(0)).intValue());
+                case Protocol.TRAME_SLUMP_COURANT:
+                    verify(messageListener).slumpUpdated(((Double)result.data.get(0)).intValue());
                     break;
-                case "TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX":
+                case Protocol.TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX:
+                    verify(messageListener).speedSensorHasExceedMaxThreshold((Boolean)result.data.get(0));
                     break;
-                case "TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MIN":
+                case Protocol.TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MIN:
+                    verify(messageListener).speedSensorHasExceedMinThreshold((Boolean)result.data.get(0));
                     break;
-                case "TRAME_NOTIFICATION_FRANCHISSEMENT_TRANSITION":
+                case Protocol.TRAME_NOTIFICATION_FRANCHISSEMENT_TRANSITION:
+                    verify(messageListener).stateChanged(
+                            ((Double)result.data.get(0)).intValue(),
+                            ((Double)result.data.get(1)).intValue());
                     break;
-                case "TRAME_NOTIFICATION_PARAMETRES_STATIQUES_RECUS":
+                case Protocol.TRAME_NOTIFICATION_PARAMETRES_STATIQUES_RECUS:
+                    verify(messageListener).truckParametersReceived();
                     break;
-                case "TRAME_DEMANDE_PARAMETRES_STATIQUES":
+                case Protocol.TRAME_DEMANDE_PARAMETRES_STATIQUES:
+                    verify(messageListener).truckParametersRequest();
                     break;
-                case "TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE":
+                case Protocol.TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE:
+                    verify(messageListener).waterAdded(
+                            ((Double)result.data.get(0)).intValue(),
+                            MessageReceivedListener.WaterAdditionMode.valueOf((String)result.data.get(1)));
                     break;
-                case "TRAME_DEMANDE_AUTORISATION_AJOUT_EAU":
+                case Protocol.TRAME_DEMANDE_AUTORISATION_AJOUT_EAU:
+                    verify(messageListener).waterAdditionRequest(((Double)result.data.get(0)).intValue());
                     break;
                 default:
                     throw new IllegalArgumentException("unknown result message " + result.message);

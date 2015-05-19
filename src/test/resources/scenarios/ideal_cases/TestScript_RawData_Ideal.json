@@ -6,7 +6,7 @@
   "results": [
     {
       "message": "TRAME_DONNEES_BRUTES",
-      "datas": [58,716,498,"OFF"]
+      "data": [58,716,498, false]
     }
   ]
 }

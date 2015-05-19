@@ -83,9 +83,13 @@ public final class SizeState extends State {
         for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
             Protocol.Spec spec = entry.getValue();
             if (spec.address == messageTypeToMatch) {
-                byte firstByteToMatch = intToBuff(spec.size)[0];
-                logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
-                return (firstByteToTest == firstByteToMatch);
+                if (spec.size == Protocol.Spec.SIZE_UNDEFINED) {
+                    return true;
+                } else {
+                    byte firstByteToMatch = intToBuff(spec.size)[0];
+                    logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
+                    return (firstByteToTest == firstByteToMatch);
+                }
             }
         }
         throw new RuntimeException("The impossible happened: The state wasn't recognize");
@@ -96,7 +100,7 @@ public final class SizeState extends State {
             Protocol.Spec spec = entry.getValue();
             if (spec.address == messageTypeToMatch) {
                 logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, spec.size);
-                return (sizeToTest == spec.size);
+                return (spec.size == Protocol.Spec.SIZE_UNDEFINED || sizeToTest == spec.size);
             }
         }
         throw new RuntimeException("The impossible happened: The state wasn't recognize");

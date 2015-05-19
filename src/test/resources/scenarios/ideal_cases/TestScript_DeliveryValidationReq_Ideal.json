@@ -5,8 +5,8 @@
   ],
   "results": [
     {
-      "message": "TRAME_ATTENTE_ACCEPTATION_LIVRAISON",
-      "datas": []
+      "message": "TRAME_DEMANDE_ACCEPTATION_LIVRAISON",
+      "data": []
     }
   ]
 }

@@ -45,5 +45,4 @@ public class DataStateTest {
         }
         assertThat(actual, instanceOf(CrcState.class));
     }
-
 }

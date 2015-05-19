@@ -6,7 +6,7 @@
   "results": [
     {
       "message": "TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE",
-      "datas": [ 10, "manual" ]
+      "data": [ 10, "MANUAL" ]
     }
   ]
 }

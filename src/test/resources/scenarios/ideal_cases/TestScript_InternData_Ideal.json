@@ -5,8 +5,8 @@
   ],
   "results": [
     {
-      "message": "TRAME_DONNES_INTERNES",
-      "datas": ["connected","connected","No","No","OFF","OFF"]
+      "message": "TRAME_DONNEES_INTERNES",
+      "data": [true, true, false, false, false, false]
     }
   ]
 }

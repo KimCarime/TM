@@ -6,7 +6,7 @@
   "results": [
     {
       "message": "TRAME_DONNEES_DERIVEES",
-      "datas": ["mixing","stable",82,582]
+      "data": ["MIXING", true, 82, 582]
     }
   ]
 }

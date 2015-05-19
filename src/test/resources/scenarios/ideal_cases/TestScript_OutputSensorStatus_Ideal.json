@@ -6,7 +6,7 @@
   "results": [
     {
       "message": "TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE",
-      "datas": ["connected"]
+      "data": [true]
     }
   ]
 }

@@ -6,7 +6,7 @@
   "results": [
     {
       "message": "TRAME_NOTIFICATION_FRANCHISSEMENT_TRANSITION",
-      "datas": [6,0]
+      "data": [6,0]
     }
   ]
 }

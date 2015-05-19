@@ -10,8 +10,8 @@ public class Convert {
     public static int buffToInt(byte[] buffer) {
         int value = 0;
         
-        for (int i = 0; i < buffer.length; i++) {
-            value = (value << 8) + (buffer[i] & 0xff);
+        for (byte b : buffer) {
+            value = (value << 8) + (b & 0xff);
         }
         return value;
     }
@@ -27,7 +27,7 @@ public class Convert {
         return ByteBuffer.wrap(buffer).getFloat();
     }
 
-    final protected static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+    private final static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
 
     public static String byteToHex(byte b) {
         int v = b & 0xff;

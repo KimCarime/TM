@@ -12,7 +12,7 @@ public class WaterAdditionLocked extends MessageType {
     public void decode(byte[] data) {
         // Check data length
         if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_AUTORISATION_REFUS_AJOUT_EAU);
+            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE);
         }
 
         // Inform listener
