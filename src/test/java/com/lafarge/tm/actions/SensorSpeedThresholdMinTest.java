@@ -13,7 +13,7 @@ public class SensorSpeedThresholdMinTest extends MessageTypeTest {
         MessageType message = new SensorSpeedThresholdMin(callback);
 
         message.decode(new byte[]{(byte)0xFF});
-        verify(callback, only()).speedSensorHasExceedMinThreshold(false);
+        verify(callback, only()).speedSensorHasExceedMinThreshold(true);
     }
 
     @Override

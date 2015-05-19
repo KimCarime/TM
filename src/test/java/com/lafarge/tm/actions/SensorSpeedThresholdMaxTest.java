@@ -13,7 +13,7 @@ public class SensorSpeedThresholdMaxTest extends MessageTypeTest {
         MessageType message = new SensorSpeedThresholdMax(callback);
 
         message.decode(new byte[]{0x00});
-        verify(callback, only()).speedSensorHasExceedMaxThreshold(true);
+        verify(callback, only()).speedSensorHasExceedMaxThreshold(false);
     }
 
     @Override
