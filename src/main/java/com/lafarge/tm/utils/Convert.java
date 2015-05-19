@@ -23,7 +23,17 @@ public class Convert {
                 .array();
     }
 
+    public static float buffToFloat(byte[] buffer) {
+        return ByteBuffer.wrap(buffer).getFloat();
+    }
+
     final protected static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+
+    public static String byteToHex(byte b) {
+        int v = b & 0xff;
+
+        return new String(new char[]{ HEX_DIGITS[v >> 4], HEX_DIGITS[v & 0xf] });
+    }
 
     public static String bytesToHex(byte[] bytes) {
         StringBuilder buf = new StringBuilder();
