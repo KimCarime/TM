@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import static com.lafarge.tm.utils.Convert.buffToInt;
-import static com.lafarge.tm.utils.Convert.bytesToHex;
-import static com.lafarge.tm.utils.Convert.intToBuff;
+import static com.lafarge.tm.utils.Convert.*;
 
 public final class TypeState extends State {
     public static final int TYPE_NB_BYTES = 2;
@@ -69,9 +67,9 @@ public final class TypeState extends State {
     }
 
     private boolean checkIfFirstByteOfTypeMessageExist(byte firstByteToTest) {
-        for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
-            int message = entry.getKey();
-            byte firstByteToMatch = intToBuff(message)[0];
+        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
+            int messageToMatch = entry.getValue().address;
+            byte firstByteToMatch = intToBuff(messageToMatch)[0];
 
             logger.debug("[TypeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
             if (firstByteToTest == firstByteToMatch) {
@@ -82,8 +80,8 @@ public final class TypeState extends State {
     }
 
     private boolean checkIfTypeMessageExist(int messageTypeToTest) {
-        for (Map.Entry<Integer, Protocol.Pair> entry : Protocol.constants.entrySet()) {
-            int typeMessageToMatch = entry.getKey();
+        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
+            int typeMessageToMatch = entry.getValue().address;
 
             logger.debug("[TypeState] received type: {}, expected type: {}", bytesToHex((intToBuff(messageTypeToTest))), bytesToHex((intToBuff(typeMessageToMatch))));
             if (messageTypeToTest == typeMessageToMatch) {

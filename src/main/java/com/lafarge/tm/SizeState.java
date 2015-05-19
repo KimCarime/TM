@@ -2,6 +2,7 @@ package com.lafarge.tm;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import static com.lafarge.tm.utils.Convert.buffToInt;
 import static com.lafarge.tm.utils.Convert.intToBuff;
@@ -73,27 +74,26 @@ public final class SizeState extends State {
         return (next != null) ? next : new HeaderState(messageListener, progressListener);
     }
 
-    private boolean checkIfSizeMatchForGivenMessageType(byte firstByteToTest, int stateToMatch) {
-        Protocol.Pair pair = Protocol.constants.get(stateToMatch);
-
-        if (pair == null) {
-            throw new RuntimeException("The impossible happened: The state wasn't recognize");
+    private boolean checkIfSizeMatchForGivenMessageType(byte firstByteToTest, int messageTypeToMatch) {
+        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
+            Protocol.Spec spec = entry.getValue();
+            if (spec.address == messageTypeToMatch) {
+                byte firstByteToMatch = intToBuff(spec.size)[0];
+                logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
+                return (firstByteToTest == firstByteToMatch);
+            }
         }
-
-        byte firstByteToMatch = intToBuff(pair.size)[0];
-        logger.debug("[SizeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
-        return firstByteToTest == firstByteToMatch;
+        throw new RuntimeException("The impossible happened: The state wasn't recognize");
     }
 
-    private boolean checkIfSizeMatchForGivenMessageType(int sizeToTest, int stateToMatch) {
-        Protocol.Pair pair = Protocol.constants.get(stateToMatch);
-
-        if (pair == null) {
-            throw new RuntimeException("The impossible happened: The state wasn't recognize");
+    private boolean checkIfSizeMatchForGivenMessageType(int sizeToTest, int messageTypeToMatch) {
+        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
+            Protocol.Spec spec = entry.getValue();
+            if (spec.address == messageTypeToMatch) {
+                logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, spec.size);
+                return (sizeToTest == spec.size);
+            }
         }
-
-        int sizeToMatch = pair.size;
-        logger.debug("[SizeState] received size: {}, expected size: {}", sizeToTest, sizeToMatch);
-        return sizeToTest == sizeToMatch;
+        throw new RuntimeException("The impossible happened: The state wasn't recognize");
     }
 }
