@@ -18,9 +18,6 @@ public final class CrcState extends State {
     public CrcState(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) throws IOException {
         super(message, messageListener, progressListener);
         this.crcToMatch = computeCrc(message);
-
-        String hex = bytesToHex(message.getMessageBytes());
-        System.out.println(hex); // prints "7F0F00"
     }
 
     @Override

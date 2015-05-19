@@ -18,7 +18,7 @@ public final class VersionState extends State {
                 logger.info("[VersionState] end of buffer -> waiting...");
                 return this;
             case Protocol.VERSION:
-                logger.info("[VersionState] did received version byte -> continue to SizeState");
+                logger.info("[VersionState] did received version byte -> continue to TypeState");
                 saveBuffer();
                 return new TypeState(message, messageListener, progressListener).decode(in);
             default:
