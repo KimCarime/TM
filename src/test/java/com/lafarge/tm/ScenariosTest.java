@@ -74,7 +74,7 @@ public class ScenariosTest {
         return scenarios;
     }
 
-    @Test
+    @Test @Ignore
     public void scenario() throws IOException {
         MessageReceivedListener messageListener = mock(MessageReceivedListener.class);
         ProgressListener progressListener = mock(ProgressListener.class);

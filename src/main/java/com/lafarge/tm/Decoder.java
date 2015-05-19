@@ -1,5 +1,7 @@
 package com.lafarge.tm;
 
+import com.lafarge.tm.states.HeaderState;
+import com.lafarge.tm.states.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

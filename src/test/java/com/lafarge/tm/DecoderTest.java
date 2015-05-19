@@ -1,5 +1,7 @@
 package com.lafarge.tm;
 
+import com.lafarge.tm.states.HeaderState;
+import com.lafarge.tm.states.TypeState;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
