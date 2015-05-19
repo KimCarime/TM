@@ -54,13 +54,13 @@ public final class CrcState extends State {
                 break;
             case CRC_NB_BYTES:
                 if (checkIfCrcMatch(this.buffer)) {
-                    switch (getType()) {
-                        case Protocol.TRAME_SLUMP_COURANT:
-                            new SlumpUpdated(messageListener).decode(message.data);
-                            break;
-                        default:
-                            throw new RuntimeException("Unknow buffer type " + getType());
-                    }
+//                    switch (getType()) {
+//                        case Protocol.TRAME_SLUMP_COURANT:
+//                            new SlumpUpdated(messageListener).decode(message.data);
+//                            break;
+//                        default:
+//                            throw new RuntimeException("Unknow buffer type " + getType());
+//                    }
                     next = new HeaderState(messageListener, progressListener);
                 } else {
                     logger.warn("[CrcState] crc received doesn't match");
