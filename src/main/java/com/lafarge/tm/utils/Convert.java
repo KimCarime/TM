@@ -8,9 +8,12 @@ public class Convert {
     }
 
     public static int buffToInt(byte[] buffer) {
-        return (int) ByteBuffer
-                .wrap(buffer)
-                .getShort();
+        int value = 0;
+        
+        for (int i = 0; i < buffer.length; i++) {
+            value = (value << 8) + (buffer[i] & 0xff);
+        }
+        return value;
     }
 
     public static byte[] intToBuff(int i) {
