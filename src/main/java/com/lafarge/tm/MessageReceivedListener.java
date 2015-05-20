@@ -9,7 +9,7 @@ public interface MessageReceivedListener {
 
     enum RotationDirection {
         MIXING,
-        EMPTYING
+        UNLOADING
     }
 
     void slumpUpdated(int slump);
@@ -19,7 +19,7 @@ public interface MessageReceivedListener {
     void waterAdditionRequest(int volume);
     void waterAdditionBegan();
     void waterAdditionEnd();
-    void waterAdditionLocked();
+    void alarmWaterAdditionBlocked();
     void truckParametersRequest();
     void truckParametersReceived();
     void deliveryParametersRequest();
@@ -32,11 +32,11 @@ public interface MessageReceivedListener {
     void derivedData(RotationDirection rotationDirection, boolean slumpFrameStable, int currentFrameSize, int expectedFrameSize);
     void internData(boolean inSensorConnected, boolean outSensorConnected, boolean speedTooLow, boolean speedTooHigh, boolean commandEP1Activated, boolean commandVA1Activated);
     void calibrationData(float inPressure, float outPressure, float rotationSpeed);
-    void waterMaxError();
-    void flowageError();
-    void countingError();
-    void inputSensorStateChanged(boolean connected);
-    void outputSensorStateChanged(boolean connected);
-    void speedSensorHasExceedMinThreshold(boolean thresholdExceed);
-    void speedSensorHasExceedMaxThreshold(boolean thresholdExceed);
+    void alarmWaterMax();
+    void alarmFlowageError();
+    void alarmCountingError();
+    void inputSensorConnectionChanged(boolean connected);
+    void outputSensorConnectionChanged(boolean connected);
+    void speedSensorHasExceedMinThreshold(boolean isOutOfRange);
+    void speedSensorHasExceedMaxThreshold(boolean isOutOfRange);
 }
