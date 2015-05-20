@@ -1,0 +1,21 @@
+{
+  "description": "2 packets 2 crossed frames(2nd) Size missing",
+  "packets" : [
+    ["0xC0", "0x01", "0xF0" ,"0x06" ,"0x00", "0x01","0x00", "0x9B", "0xD0" ,"0xC0" ,"0x01", "0xF0", "0x07"],
+	["0x01", "0x00", "0x9A" ,"0x2C"]
+  ],
+  "results": [
+  {
+      "message": "TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE",
+      "data": [true]
+    },
+	{
+      "error": "ERROR_PARSING_SIZE",
+      "count": 1
+    },
+	{
+      "error": "ERROR_PARSING_HEADER",
+      "count": 3
+	}
+  ]
+}

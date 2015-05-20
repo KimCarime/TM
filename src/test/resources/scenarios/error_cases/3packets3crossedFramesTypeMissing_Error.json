@@ -1,0 +1,26 @@
+{ 
+  "description": "3 packets 3 crossed frames type missing",
+  "packets" : [
+    ["0xC0", "0x01", "0x30" ,"0x05" ,"0x00", "0x00", "0x33", "0xDA","0xC0", "0x01"],
+    ["0x30"],
+	["0xC3", "0xDA", "0xDA", "0xC0", "0x01", "0x30" ,"0x07" ,"0x00", "0x00", "0x92", "0x1A"]
+  ],
+  "results": [
+    {
+      "message": "TRAME_NOTIFICATION_PARAMETRES_STATIQUES_RECUS",
+      "data": []
+    },
+	{
+      "error": "ERROR_PARSING_TYPE",
+      "count": 1
+    },
+	{
+      "error": "ERROR_PARSING_HEADER",
+      "count": 2
+	},
+    {
+      "message": "TRAME_NOTIFICATION_ACCEPTATION_LIVRAISON_RECUE",
+      "data": []
+    }
+  ]
+}

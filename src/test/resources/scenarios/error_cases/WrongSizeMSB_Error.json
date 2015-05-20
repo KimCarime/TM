@@ -1,0 +1,12 @@
+{ 
+  "description": "wrong Size MSB",
+  "packets" : [
+    ["0xC0", "0x01", "0xF0" ,"0x05" ,"0x30", "0x01", "0xFF", "0xDB", "0xD4"]
+  ],
+  "results": [
+	{
+      "error": "ERROR_PARSING_SIZE",
+      "count": 1
+	}
+  ]
+}
