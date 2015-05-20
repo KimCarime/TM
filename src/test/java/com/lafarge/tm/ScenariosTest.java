@@ -107,11 +107,7 @@ public class ScenariosTest {
     }
 
     private void verifyError(Error error, ProgressListener progressListener) {
-        if (error.error.contains("PARSING")) {
-            verify(progressListener, times(error.count)).parsingFailed(eq(ProgressListener.ParsingError.valueOf(error.error)), anyByte());
-        } else if (error.error.contains("PROCESSING")) {
-            verify(progressListener, times(error.count)).processingFailed(eq(ProgressListener.ProcessError.valueOf(error.error)));
-        }
+        verify(progressListener, times(error.count)).parsingFailed(eq(ProgressListener.ParsingError.valueOf(error.error)), anyByte());
     }
 
     private void verifyResult(Result result, MessageReceivedListener messageListener) {

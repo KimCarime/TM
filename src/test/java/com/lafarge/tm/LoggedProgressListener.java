@@ -18,11 +18,6 @@ public class LoggedProgressListener implements ProgressListener {
     }
 
     @Override
-    public void processingFailed(ProcessError errorType) {
-        System.out.println("      processing failed: " + errorType.toString());
-    }
-
-    @Override
     public void timeout() {
         System.out.println("      previous state has expired -> reset states to Header");
     }
