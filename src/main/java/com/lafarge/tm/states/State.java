@@ -2,27 +2,22 @@ package com.lafarge.tm.states;
 
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.ProgressListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.lafarge.tm.Protocol;
+import com.lafarge.tm.utils.Convert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
-import static com.lafarge.tm.utils.Convert.buffToInt;
+import java.util.Map;
 
 public abstract class State {
 
-    protected Logger logger;
+    final MessageReceivedListener messageListener;
+    final ProgressListener progressListener;
 
-    protected final MessageReceivedListener messageListener;
-    protected final ProgressListener progressListener;
+    final Message message;
 
-    protected Message message;
-    private long lastDecode;
-
-    public State(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
-        this.logger = LoggerFactory.getLogger(this.getClass());
+    State(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         this.message = message;
         this.messageListener = messageListener;
         this.progressListener = progressListener;
@@ -55,8 +50,17 @@ public abstract class State {
         }
     }
 
-    public int getType() {
-        return buffToInt(new byte[]{this.message.typeMsb, this.message.typeLsb});
+    int getType() {
+        return Convert.bytesToInt(new byte[]{this.message.typeMsb, this.message.typeLsb});
     }
 
+    Map.Entry<String, Protocol.Spec> getSpec(int type) {
+        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
+            Protocol.Spec spec = entry.getValue();
+            if (spec.address == type) {
+                return entry;
+            }
+        }
+        throw new RuntimeException("Can't find a spec in the protocol for the given type");
+    }
 }

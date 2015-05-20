@@ -17,17 +17,21 @@ public final class VersionState extends State {
     public State decode(InputStream in) throws IOException {
         int read = in.read();
 
-        switch (read) {
-            case -1:
-                logger.info("[VersionState] end of buffer -> waiting...");
-                return this;
-            case Protocol.VERSION:
-                logger.info("[VersionState] did received version byte -> continue to TypeState");
+        if (read == -1) {
+            return this;
+        } else {
+            if (progressListener != null) {
+                progressListener.willProcessByte(ProgressListener.State.STATE_VERSION, (byte) read);
+            }
+            if (read == Protocol.VERSION) {
                 saveBuffer();
                 return new TypeState(message, messageListener, progressListener).decode(in);
-            default:
-                logger.warn("[VersionState] did received incorrect byte");
-                return new HeaderState(messageListener, progressListener);
+            } else {
+                if (progressListener != null) {
+                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_VERSION, (byte) read);
+                }
+                return new HeaderState(messageListener, progressListener).decode(in);
+            }
         }
     }
 

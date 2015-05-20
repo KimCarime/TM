@@ -3,92 +3,68 @@ package com.lafarge.tm.states;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.ProgressListener;
 import com.lafarge.tm.Protocol;
+import com.lafarge.tm.utils.Convert;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
-import static com.lafarge.tm.utils.Convert.*;
-
 public final class TypeState extends State {
-    public static final int TYPE_NB_BYTES = 2;
 
-    private final byte[] buffer = new byte[TYPE_NB_BYTES];
-    private int totalRead;
+    private static final int TYPE_NB_BYTES = 2;
+
+    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
     public TypeState(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         super(message, messageListener, progressListener);
-        this.totalRead = 0;
     }
 
     @Override
     public State decode(InputStream in) throws IOException {
-        int read = in.read(this.buffer, this.totalRead, TYPE_NB_BYTES - this.totalRead);
+        int read = in.read();
 
-        switch (read) {
-            case -1:
-                logger.info("[TypeState] end of buffer -> waiting...");
-                return this;
-            default:
-                this.totalRead += read;
-                return nextState(in);
+        if (read == -1) {
+            return this;
+        } else {
+            if (progressListener != null) {
+                progressListener.willProcessByte(ProgressListener.State.STATE_TYPE, (byte) read);
+            }
+            out.write(read);
+            if (!isTypeFoundExist(out.toByteArray())) {
+                if (progressListener != null) {
+                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_TYPE, (byte) read);
+                }
+                return new HeaderState(messageListener, progressListener).decode(in);
+            }
+            if (out.size() < TYPE_NB_BYTES) {
+                return decode(in);
+            } else {
+                saveBuffer();
+                int typeFound = Convert.bytesToInt(out.toByteArray());
+                return new SizeState(typeFound, message, messageListener, progressListener).decode(in);
+            }
         }
     }
 
     @Override
     protected void saveBuffer() {
-        this.message.typeMsb = this.buffer[0];
-        this.message.typeLsb = this.buffer[1];
+        byte[] buffer = out.toByteArray();
+        this.message.typeMsb = buffer[0];
+        this.message.typeLsb = buffer[1];
     }
 
-    private State nextState(InputStream in) throws IOException {
-        State next = null;
-
-        switch (this.totalRead) {
-            case 1:
-                if (checkIfFirstByteOfTypeMessageExist(this.buffer[0])) {
-                    logger.info("[TypeState] first byte match with a known type -> waiting for next byte");
-                    next = this;
-                } else {
-                    logger.warn("[TypeState] did received incorrect byte -> reset to HeaderState");
-                }
-                break;
-            case TYPE_NB_BYTES:
-                int messageTypeFound = buffToInt(this.buffer);
-
-                if (checkIfTypeMessageExist(messageTypeFound)) {
-                    logger.info("[TypeState] received message type exist -> continue to SizeState");
-                    saveBuffer();
-                    next = new SizeState(messageTypeFound, message, messageListener, progressListener).decode(in);
-                } else {
-                    logger.warn("[TypeState] received type doesn't exit -> reset to HeaderState");
-                }
-                break;
-            default:
-                throw new RuntimeException("The impossible happened: the nb bytes read is not conform to the protocol");
-        }
-        return (next != null) ? next : new HeaderState(messageListener, progressListener);
-    }
-
-    private boolean checkIfFirstByteOfTypeMessageExist(byte firstByteToTest) {
+    private boolean isTypeFoundExist(byte[] typeToTest) {
         for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
-            int messageToMatch = entry.getValue().address;
-            byte firstByteToMatch = intToBuff(messageToMatch)[0];
-
-            logger.debug("[TypeState] received byte: {}, expected byte: {}", String.format("0x%02X", firstByteToTest), String.format("0x%02X", firstByteToMatch));
-            if (firstByteToTest == firstByteToMatch) {
-                return true;
+            byte[] typeToMatch = Convert.intToBytes(entry.getValue().address);
+            boolean isTypeMatching = true;
+            for (int i = 0; i < typeToTest.length; i++) {
+                if (typeToTest[i] != typeToMatch[i]) {
+                    isTypeMatching = false;
+                    break;
+                }
             }
-        }
-        return false;
-    }
-
-    private boolean checkIfTypeMessageExist(int messageTypeToTest) {
-        for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
-            int typeMessageToMatch = entry.getValue().address;
-
-            logger.debug("[TypeState] received type: {}, expected type: {}", bytesToHex((intToBuff(messageTypeToTest))), bytesToHex((intToBuff(typeMessageToMatch))));
-            if (messageTypeToTest == typeMessageToMatch) {
+            if (isTypeMatching) {
                 return true;
             }
         }
