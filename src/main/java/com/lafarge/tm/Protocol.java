@@ -18,7 +18,6 @@ public class Protocol {
     public static final String TRAME_NOTIFICATION_FIN_DECHARGEMENT = "TRAME_NOTIFICATION_FIN_DECHARGEMENT";
     public static final String TRAME_NOTIFICATION_ACCEPTATION_COMMANDE = "TRAME_NOTIFICATION_ACCEPTATION_COMMANDE";
     public static final String TRAME_VOLUME_CHARGE = "TRAME_VOLUME_CHARGE";
-
     public static final String TRAME_PARAMETRE_T1 = "TRAME_PARAMETRE_T1";
     public static final String TRAME_PARAMETRE_A11 = "TRAME_PARAMETRE_A11";
     public static final String TRAME_PARAMETRE_A12 = "TRAME_PARAMETRE_A12";
@@ -46,7 +45,6 @@ public class Protocol {
      */
     public static final String TRAME_SLUMP_COURANT = "TRAME_SLUMP_COURANT";
     public static final String TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE = "TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE";
-
     public static final String TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE = "TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE";
     public static final String TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE = "TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE";
     public static final String TRAME_NOTIFICATION_DEBUT_AJOUT_EAU = "TRAME_NOTIFICATION_DEBUT_AJOUT_EAU";
@@ -55,18 +53,15 @@ public class Protocol {
     public static final String TRAME_NOTIFICATION_PARAMETRES_DYNAMIQUES_RECUS = "TRAME_NOTIFICATION_PARAMETRES_DYNAMIQUES_RECUS";
     public static final String TRAME_NOTIFICATION_ACCEPTATION_LIVRAISON_RECUE = "TRAME_NOTIFICATION_ACCEPTATION_LIVRAISON_RECUE";
     public static final String TRAME_NOTIFICATION_FRANCHISSEMENT_TRANSITION = "TRAME_NOTIFICATION_FRANCHISSEMENT_TRANSITION";
-
     public static final String TRAME_DEMANDE_AUTORISATION_AJOUT_EAU = "TRAME_DEMANDE_AUTORISATION_AJOUT_EAU";
     public static final String TRAME_DEMANDE_PARAMETRES_STATIQUES = "TRAME_DEMANDE_PARAMETRES_STATIQUES";
     public static final String TRAME_DEMANDE_PARAMETRES_DYNAMIQUES = "TRAME_DEMANDE_PARAMETRES_DYNAMIQUES";
     public static final String TRAME_DEMANDE_ACCEPTATION_LIVRAISON = "TRAME_DEMANDE_ACCEPTATION_LIVRAISON";
-
     public static final String TRAME_TRACE_DEBUG = "TRAME_TRACE_DEBUG";
     public static final String TRAME_DONNEES_BRUTES = "TRAME_DONNEES_BRUTES";
     public static final String TRAME_DONNEES_DERIVEES = "TRAME_DONNEES_DERIVEES";
     public static final String TRAME_DONNEES_INTERNES = "TRAME_DONNEES_INTERNES";
     public static final String TRAME_DONNEES_CALIBRATION = "TRAME_DONNEES_CALIBRATION";
-
     public static final String TRAME_NOTIFICATION_ERREUR_EAU_MAX = "TRAME_NOTIFICATION_ERREUR_EAU_MAX";
     public static final String TRAME_NOTIFICATION_ERREUR_ECOULEMENT = "TRAME_NOTIFICATION_ERREUR_ECOULEMENT";
     public static final String TRAME_NOTIFICATION_ERREUR_COMPTAGE = "TRAME_NOTIFICATION_ERREUR_COMPTAGE";
@@ -90,10 +85,15 @@ public class Protocol {
 
         public final int address;
         public final int size;
+        public final int[] booleansToCheck;
 
         public Spec(int address, int size) {
+            this(address, size, null);
+        }
+        public Spec(int address, int size, int[] booleansToCheck) {
             this.address = address;
             this.size = size;
+            this.booleansToCheck = booleansToCheck;
         }
     }
 
@@ -130,7 +130,7 @@ public class Protocol {
         constants.put(TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, new Spec(0xA015, 1));
 
         constants.put(TRAME_SLUMP_COURANT, new Spec(0x1001, 2));
-        constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2));
+        constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2, new int[]{1}));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, new Spec(0x3001, 0));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE, new Spec(0x3002, 0));
         constants.put(TRAME_NOTIFICATION_DEBUT_AJOUT_EAU, new Spec(0x3003, 0));
@@ -144,17 +144,17 @@ public class Protocol {
         constants.put(TRAME_DEMANDE_PARAMETRES_DYNAMIQUES, new Spec(0x5003, 0));
         constants.put(TRAME_DEMANDE_ACCEPTATION_LIVRAISON, new Spec(0x5004, 0));
         constants.put(TRAME_TRACE_DEBUG, new Spec(0xD001, Spec.SIZE_UNDEFINED));
-        constants.put(TRAME_DONNEES_BRUTES, new Spec(0xD002, 13));
-        constants.put(TRAME_DONNEES_DERIVEES, new Spec(0xD003, 6));
-        constants.put(TRAME_DONNEES_INTERNES, new Spec(0xD004, 6));
+        constants.put(TRAME_DONNEES_BRUTES, new Spec(0xD002, 13, new int[]{12}));
+        constants.put(TRAME_DONNEES_DERIVEES, new Spec(0xD003, 6, new int[]{0, 1}));
+        constants.put(TRAME_DONNEES_INTERNES, new Spec(0xD004, 6, new int[]{0, 1, 2, 3, 4, 5}));
         constants.put(TRAME_DONNEES_CALIBRATION, new Spec(0xD005, 12));
         constants.put(TRAME_NOTIFICATION_ERREUR_EAU_MAX, new Spec(0xF001, 0));
         constants.put(TRAME_NOTIFICATION_ERREUR_ECOULEMENT, new Spec(0xF002, 0));
         constants.put(TRAME_NOTIFICATION_ERREUR_COMPTAGE, new Spec(0xF003, 0));
         constants.put(TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE, new Spec(0xF004, 0));
-        constants.put(TRAME_NOTIFICATION_CAPTEUR_PRESSION_ENTREE_DECONNECTE, new Spec(0xF005, 1));
-        constants.put(TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE, new Spec(0xF006, 1));
-        constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MIN, new Spec(0xF007, 1));
-        constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX, new Spec(0xF008, 1));
+        constants.put(TRAME_NOTIFICATION_CAPTEUR_PRESSION_ENTREE_DECONNECTE, new Spec(0xF005, 1, new int[]{0}));
+        constants.put(TRAME_NOTIFICATION_CAPTEUR_PRESSION_SORTIE_DECONNECTE, new Spec(0xF006, 1, new int[]{0}));
+        constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MIN, new Spec(0xF007, 1, new int[]{0}));
+        constants.put(TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX, new Spec(0xF008, 1, new int[]{0}));
     }
 }
