@@ -1,12 +1,7 @@
 package com.lafarge.tm.states;
 
-import com.lafarge.tm.Decoder;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.ProgressListener;
-import com.lafarge.tm.states.HeaderState;
-import com.lafarge.tm.states.SizeState;
-import com.lafarge.tm.states.State;
-import com.lafarge.tm.states.TypeState;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,13 +17,11 @@ public class TypeStateTest {
 
     private MessageReceivedListener messageListener;
     private ProgressListener progressListener;
-    private Decoder decoder;
 
     @Before
     public void setup() {
         messageListener = mock(MessageReceivedListener.class);
         progressListener = mock(ProgressListener.class);
-        this.decoder = new Decoder(messageListener, progressListener);
     }
 
     @Test
@@ -37,7 +30,7 @@ public class TypeStateTest {
         State actual;
 
         // TRAME_SLUMP_COURANT
-        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10, 0x01 }));
+        actual = state.decode(new ByteArrayInputStream(new byte[]{0x10, 0x01}));
         assertThat(actual, instanceOf(SizeState.class));
     }
 
@@ -45,7 +38,7 @@ public class TypeStateTest {
     public void type_state_should_accept_first_byte_but_not_second_and_return_header_state() throws IOException {
         TypeState state = new TypeState(new State.Message(), messageListener, progressListener);
         // First byte of TRAME_SLUMP_COURANT and an unknown byte
-        State actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10, 0x42 }));
+        State actual = state.decode(new ByteArrayInputStream(new byte[]{0x10, 0x42}));
         assertThat(actual, instanceOf(HeaderState.class));
     }
 
@@ -53,11 +46,11 @@ public class TypeStateTest {
     public void type_state_should_accept_first_then_second_byte_and_return_size_state() throws IOException {
         TypeState state = new TypeState(new State.Message(), messageListener, progressListener);
         // First byte of TRAME_SLUMP_COURANT
-        State actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10 }));
+        State actual = state.decode(new ByteArrayInputStream(new byte[]{0x10}));
         assertThat(actual, is((State) state));
 
         // Second byte of TRAME_SLUMP_COURANT
-        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x01 }));
+        actual = state.decode(new ByteArrayInputStream(new byte[]{0x01}));
         assertThat(actual, instanceOf(SizeState.class));
     }
 
@@ -67,11 +60,11 @@ public class TypeStateTest {
         State actual;
 
         // First byte of TRAME_SLUMP_COURANT
-        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x10 }));
+        actual = state.decode(new ByteArrayInputStream(new byte[]{0x10}));
         assertThat(actual, is((State) state));
 
         // Unknown byte
-        actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        actual = state.decode(new ByteArrayInputStream(new byte[]{0x42}));
         assertThat(actual, instanceOf(HeaderState.class));
     }
 
@@ -79,7 +72,7 @@ public class TypeStateTest {
     public void type_state_should_refuse_first_byte_and_return_header_state() throws IOException {
         TypeState state = new TypeState(new State.Message(), messageListener, progressListener);
         // Unknown byte
-        State actual = state.decode(new ByteArrayInputStream(new byte[]{ 0x42 }));
+        State actual = state.decode(new ByteArrayInputStream(new byte[]{0x42}));
         assertThat(actual, instanceOf(HeaderState.class));
     }
 }

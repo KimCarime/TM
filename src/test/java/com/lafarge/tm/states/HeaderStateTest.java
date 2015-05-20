@@ -1,12 +1,8 @@
 package com.lafarge.tm.states;
 
-import com.lafarge.tm.Decoder;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.ProgressListener;
 import com.lafarge.tm.Protocol;
-import com.lafarge.tm.states.HeaderState;
-import com.lafarge.tm.states.State;
-import com.lafarge.tm.states.VersionState;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,19 +18,17 @@ public class HeaderStateTest {
 
     private MessageReceivedListener messageListener;
     private ProgressListener progressListener;
-    private Decoder decoder;
 
     @Before
     public void setup() {
         messageListener = mock(MessageReceivedListener.class);
         progressListener = mock(ProgressListener.class);
-        this.decoder = new Decoder(messageListener, progressListener);
     }
 
     @Test
     public void header_state_accepts_correct_header_and_returns_version_state() throws IOException {
         HeaderState state = new HeaderState(messageListener, progressListener);
-        State actual= state.decode(new ByteArrayInputStream(new byte[]{ (byte) Protocol.HEADER }));
+        State actual = state.decode(new ByteArrayInputStream(new byte[]{(byte) Protocol.HEADER}));
         assertThat(actual, instanceOf(VersionState.class));
     }
 
@@ -48,9 +42,9 @@ public class HeaderStateTest {
     @Test
     public void header_state_reject_all_invalid_header_bytes_and_stays_current() throws IOException {
         HeaderState state = new HeaderState(messageListener, progressListener);
-        ByteArrayInputStream in = new ByteArrayInputStream(new byte[]{ 0x42, 0x42, 0x42, 0x42 });
+        ByteArrayInputStream in = new ByteArrayInputStream(new byte[]{0x42, 0x42, 0x42, 0x42});
         State actual = state.decode(in);
-        assertThat(actual, is((State)state));
+        assertThat(actual, is((State) state));
         assertThat(in.read(), is(-1));
     }
 }

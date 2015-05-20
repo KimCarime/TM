@@ -1,16 +1,13 @@
 package com.lafarge.tm.states;
 
-import com.lafarge.tm.Decoder;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.ProgressListener;
 import com.lafarge.tm.Protocol;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;

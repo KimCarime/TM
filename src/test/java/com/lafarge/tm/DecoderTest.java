@@ -30,31 +30,7 @@ public class DecoderTest {
     }
 
     @Test
-    @Ignore
-    public void decode_parts() throws IOException {
-        byte[] msg1 = "AAAAAAAAAAA".getBytes("UTF-8");
-        byte[] msg2 = "AAAAABBBBBB".getBytes("UTF-8");
-        byte[] msg3 = "BBCCCCCCCCC".getBytes("UTF-8");
-
-        final List<String> received = new LinkedList<>();
-
-        decoder.decode(msg1);
-        assertThat(received, hasSize(0));
-        decoder.decode(msg2);
-        assertThat(received, hasSize(1));
-        assertThat(received.get(0), equalTo("AAAAAAAAAAAAAAAA"));
-        decoder.decode(msg3);
-        assertThat(received, hasSize(3));
-        assertThat(received.get(0), equalTo("AAAAAAAAAAAAAAAA"));
-        assertThat(received.get(1), equalTo("BBBBBBBB"));
-        assertThat(received.get(2), equalTo("CCCCCCCCC"));
-    }
-
-    @Test
-    @Ignore
     public void should_decode_message() throws IOException {
-        final MessageReceivedListener callback = mock(MessageReceivedListener.class);
-
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(0xC0); // Header
         out.write(0x01); // Version
@@ -68,7 +44,7 @@ public class DecoderTest {
         out.write(0x47);
 
         decoder.decode(out.toByteArray());
-        verify(callback, only()).slumpUpdated(12);
+        verify(messageListener).slumpUpdated(238);
     }
 
     /**
