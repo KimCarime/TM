@@ -4,10 +4,11 @@ import java.nio.ByteBuffer;
 
 public class Convert {
 
-    private Convert() {
-    }
+    private final static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
 
-    public static int buffToInt(byte[] buffer) {
+    private Convert() {}
+
+    public static int bytesToInt(byte[] buffer) {
         int value = 0;
         
         for (byte b : buffer) {
@@ -16,18 +17,13 @@ public class Convert {
         return value;
     }
 
-    public static byte[] intToBuff(int i) {
-        return ByteBuffer
-                .allocate(4)
-                .putShort((short) i) // Hack: message are only with two bytes
-                .array();
-    }
-
-    public static float buffToFloat(byte[] buffer) {
+    public static float bytesToFloat(byte[] buffer) {
         return ByteBuffer.wrap(buffer).getFloat();
     }
 
-    private final static char[] HEX_DIGITS = "0123456789ABCDEF".toCharArray();
+    public static byte[] intToBytes(int i) {
+        return ByteBuffer.allocate(4).putShort((short) i).array();
+    }
 
     public static String byteToHex(byte b) {
         int v = b & 0xff;
