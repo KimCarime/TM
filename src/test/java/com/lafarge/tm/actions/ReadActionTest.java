@@ -2,7 +2,7 @@ package com.lafarge.tm.actions;
 
 import org.junit.Test;
 
-public abstract class MessageTypeTest {
+public abstract class ReadActionTest {
     @Test
     public abstract void should_trigger_callback_with_correct_values();
 

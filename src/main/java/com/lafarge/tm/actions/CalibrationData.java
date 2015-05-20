@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class CalibrationData extends MessageType {
+public class CalibrationData extends ReadAction {
     public CalibrationData(MessageReceivedListener listener) {
         super(listener);
     }
@@ -20,9 +20,9 @@ public class CalibrationData extends MessageType {
         byte[] rotationSpeedBytes = getBytes(data, 8, 11);
 
         // Decode parameters
-        float inPressure = Convert.buffToFloat(inPressureBytes);
-        float outPressure = Convert.buffToFloat(outPressureBytes);
-        float rotationSpeed = Convert.buffToFloat(rotationSpeedBytes);
+        float inPressure = Convert.bytesToFloat(inPressureBytes);
+        float outPressure = Convert.bytesToFloat(outPressureBytes);
+        float rotationSpeed = Convert.bytesToFloat(rotationSpeedBytes);
 
         // Inform listener
         if (listener != null) {

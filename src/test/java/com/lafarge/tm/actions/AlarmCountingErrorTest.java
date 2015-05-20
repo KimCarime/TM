@@ -4,20 +4,20 @@ import com.lafarge.tm.MessageReceivedListener;
 
 import static org.mockito.Mockito.*;
 
-public class ErrorFlowageTest extends MessageTypeTest {
+public class AlarmCountingErrorTest extends ReadActionTest {
 
     @Override
     public void should_trigger_callback_with_correct_values() {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
-        MessageType message = new ErrorFlowage(callback);
+        ReadAction message = new AlarmCountingError(callback);
 
         message.decode(null);
-        verify(callback, only()).flowageError();
+        verify(callback, only()).alarmCountingError();
     }
 
     @Override
     public void should_throw_an_exception_if_data_length_is_not_conform_to_protocol() {
-        MessageType message = new ErrorFlowage(null);
+        ReadAction message = new AlarmCountingError(null);
 
         message.decode(new byte[42]);
     }

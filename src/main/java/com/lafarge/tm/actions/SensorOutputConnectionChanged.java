@@ -4,8 +4,8 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class OutputSensorStateChanged extends MessageType {
-    public OutputSensorStateChanged (MessageReceivedListener listener) {
+public class SensorOutputConnectionChanged extends ReadAction {
+    public SensorOutputConnectionChanged(MessageReceivedListener listener) {
         super(listener);
     }
 
@@ -25,7 +25,7 @@ public class OutputSensorStateChanged extends MessageType {
 
         // Inform listener
         if (listener != null) {
-            listener.outputSensorStateChanged(isConnected);
+            listener.outputSensorConnectionChanged(isConnected);
         }
     }
 }

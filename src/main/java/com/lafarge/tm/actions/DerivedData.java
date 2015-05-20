@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class DerivedData extends MessageType {
+public class DerivedData extends ReadAction {
     public DerivedData(MessageReceivedListener listener) {
         super(listener);
     }
@@ -25,10 +25,10 @@ public class DerivedData extends MessageType {
         checkIfBooleanByteIsValid(isSlumpFrameStableByte, "L'octet correspondant à la stabilité de la trame dans la trame donnees derivees est d'une valeur invalide : " + Convert.byteToHex(isSlumpFrameStableByte));
 
         // Decode parameters
-        MessageReceivedListener.RotationDirection rotationDirection = (rotationDirectionByte == 0x00) ? MessageReceivedListener.RotationDirection.MIXING : MessageReceivedListener.RotationDirection.EMPTYING;
+        MessageReceivedListener.RotationDirection rotationDirection = (rotationDirectionByte == 0x00) ? MessageReceivedListener.RotationDirection.MIXING : MessageReceivedListener.RotationDirection.UNLOADING;
         boolean isSlumpFrameStable = (isSlumpFrameStableByte == 0x00);
-        int currentFrameSize = Convert.buffToInt(currentFrameSizeBytes);
-        int expectedFrameSize = Convert.buffToInt(expectedFrameSizeBytes);
+        int currentFrameSize = Convert.bytesToInt(currentFrameSizeBytes);
+        int expectedFrameSize = Convert.bytesToInt(expectedFrameSizeBytes);
 
         // Inform listener
         if (listener != null) {

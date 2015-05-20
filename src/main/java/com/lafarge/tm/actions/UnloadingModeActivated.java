@@ -3,7 +3,7 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class UnloadingModeActivated extends MessageType {
+public class UnloadingModeActivated extends ReadAction {
     public UnloadingModeActivated(MessageReceivedListener listener) {
         super(listener);
     }

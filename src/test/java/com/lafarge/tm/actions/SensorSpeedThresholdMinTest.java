@@ -5,27 +5,27 @@ import org.junit.Test;
 
 import static org.mockito.Mockito.*;
 
-public class SensorSpeedThresholdMinTest extends MessageTypeTest {
+public class SensorSpeedThresholdMinTest extends ReadActionTest {
 
     @Override
     public void should_trigger_callback_with_correct_values() {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
-        MessageType message = new SensorSpeedThresholdMin(callback);
+        ReadAction message = new SensorSpeedThresholdMin(callback);
 
-        message.decode(new byte[]{(byte)0xFF});
+        message.decode(new byte[]{(byte) 0xFF});
         verify(callback, only()).speedSensorHasExceedMinThreshold(true);
     }
 
     @Override
     public void should_throw_an_exception_if_data_length_is_not_conform_to_protocol() {
-        MessageType message = new SensorSpeedThresholdMin(null);
+        ReadAction message = new SensorSpeedThresholdMin(null);
 
         message.decode(new byte[42]);
     }
 
     @Test(expected = RuntimeException.class)
     public void should_throw_an_exception_for_a_bad_boolean_byte() {
-        MessageType message = new SensorSpeedThresholdMin(null);
+        ReadAction message = new SensorSpeedThresholdMin(null);
 
         message.decode(new byte[]{0x42});
     }

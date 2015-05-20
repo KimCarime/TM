@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class SlumpUpdated extends MessageType {
+public class SlumpUpdated extends ReadAction {
     public SlumpUpdated(MessageReceivedListener listener) {
         super(listener);
     }
@@ -15,7 +15,7 @@ public class SlumpUpdated extends MessageType {
         checkIfDataLengthIsValid(data.length, Protocol.TRAME_SLUMP_COURANT);
 
         // Decode parameters
-        int slump = Convert.buffToInt(data);
+        int slump = Convert.bytesToInt(data);
 
         // Inform listener
         if (listener != null) {

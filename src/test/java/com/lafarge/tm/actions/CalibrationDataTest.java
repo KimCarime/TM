@@ -6,12 +6,12 @@ import java.io.ByteArrayOutputStream;
 
 import static org.mockito.Mockito.*;
 
-public class CalibrationDataTest extends MessageTypeTest {
+public class CalibrationDataTest extends ReadActionTest {
 
     @Override
     public void should_trigger_callback_with_correct_values() {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
-        MessageType message = new CalibrationData(callback);
+        ReadAction message = new CalibrationData(callback);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(0x41);
@@ -33,7 +33,7 @@ public class CalibrationDataTest extends MessageTypeTest {
 
     @Override
     public void should_throw_an_exception_if_data_length_is_not_conform_to_protocol() {
-        MessageType message = new CalibrationData(null);
+        ReadAction message = new CalibrationData(null);
 
         message.decode(new byte[42]);
     }

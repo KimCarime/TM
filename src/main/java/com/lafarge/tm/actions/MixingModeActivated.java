@@ -3,7 +3,7 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class MixingModeActivated extends MessageType {
+public class MixingModeActivated extends ReadAction {
     public MixingModeActivated(MessageReceivedListener listener) {
         super(listener);
     }

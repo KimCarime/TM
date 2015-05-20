@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class WaterAdded extends MessageType {
+public class WaterAdded extends ReadAction {
     public WaterAdded(MessageReceivedListener listener) {
         super(listener);
     }

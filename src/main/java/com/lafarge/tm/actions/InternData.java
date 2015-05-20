@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class InternData extends MessageType {
+public class InternData extends ReadAction {
     public InternData(MessageReceivedListener listener) {
         super(listener);
     }

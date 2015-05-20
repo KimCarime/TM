@@ -3,7 +3,7 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class StateChanged extends MessageType {
+public class StateChanged extends ReadAction {
     public StateChanged(MessageReceivedListener listener) {
         super(listener);
     }

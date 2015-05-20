@@ -3,7 +3,7 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class DeliveryParametersRequest extends MessageType {
+public class DeliveryParametersRequest extends ReadAction {
     public DeliveryParametersRequest(MessageReceivedListener listener) {
         super(listener);
     }

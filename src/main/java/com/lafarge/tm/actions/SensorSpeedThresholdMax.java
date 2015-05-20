@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class SensorSpeedThresholdMax extends MessageType {
+public class SensorSpeedThresholdMax extends ReadAction {
     public SensorSpeedThresholdMax(MessageReceivedListener listener) {
         super(listener);
     }
@@ -15,17 +15,17 @@ public class SensorSpeedThresholdMax extends MessageType {
         checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX);
 
         // Extract parameters
-        byte isOutOfRangeByte = data[0];
+        byte thresholdExceedByte = data[0];
 
         // Check types
-        checkIfBooleanByteIsValid(isOutOfRangeByte, "La valeur du boolean vitesse élevée obtenu depuis kerlink n'est pas conforme avec les specifications du protocole : " + Convert.byteToHex(isOutOfRangeByte));
+        checkIfBooleanByteIsValid(thresholdExceedByte, "La valeur du boolean vitesse élevée obtenu depuis kerlink n'est pas conforme avec les specifications du protocole : " + Convert.byteToHex(thresholdExceedByte));
 
         // Decode parameters
-        boolean isOutOfRange = (isOutOfRangeByte != 0x00);
+        boolean thresholdExceed = (thresholdExceedByte != 0x00);
 
         // Inform listener
         if (listener != null) {
-            listener.speedSensorHasExceedMaxThreshold(isOutOfRange);
+            listener.speedSensorHasExceedMaxThreshold(thresholdExceed);
         }
     }
 }

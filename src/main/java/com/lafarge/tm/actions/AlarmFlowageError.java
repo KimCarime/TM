@@ -3,8 +3,8 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class ErrorCounting extends MessageType {
-    public ErrorCounting(MessageReceivedListener listener) {
+public class AlarmFlowageError extends ReadAction {
+    public AlarmFlowageError(MessageReceivedListener listener) {
         super(listener);
     }
 
@@ -12,12 +12,12 @@ public class ErrorCounting extends MessageType {
     public void decode(byte[] data) {
         // Check data length
         if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_ERREUR_COMPTAGE);
+            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_ERREUR_ECOULEMENT);
         }
 
         // Inform listener
         if (listener != null) {
-            listener.countingError();
+            listener.alarmFlowageError();
         }
     }
 }

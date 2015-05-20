@@ -2,7 +2,7 @@ package com.lafarge.tm.actions;
 
 import com.lafarge.tm.MessageReceivedListener;
 
-public class TraceDebug extends MessageType {
+public class TraceDebug extends ReadAction {
     public TraceDebug(MessageReceivedListener listener) {
         super(listener);
     }

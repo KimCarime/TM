@@ -4,7 +4,7 @@ import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 import com.lafarge.tm.utils.Convert;
 
-public class RawData extends MessageType {
+public class RawData extends ReadAction {
     public RawData(MessageReceivedListener listener) {
         super(listener);
     }
@@ -24,9 +24,9 @@ public class RawData extends MessageType {
         checkIfBooleanByteIsValid(buttonHoldByte, "L'octet correspondant à la donnée bouton d'eau dans la trame données brutes est d'une valeur invalide : " + Convert.byteToHex(buttonHoldByte));
 
         // Decode parameters
-        int inPressure = Convert.buffToInt(inPressureBytes);
-        int outPressure = Convert.buffToInt(outPressureBytes);
-        int interval = Convert.buffToInt(intervalBytes);
+        int inPressure = Convert.bytesToInt(inPressureBytes);
+        int outPressure = Convert.bytesToInt(outPressureBytes);
+        int interval = Convert.bytesToInt(intervalBytes);
         boolean buttonHold = (buttonHoldByte == 0x00);
 
         // Inform listener

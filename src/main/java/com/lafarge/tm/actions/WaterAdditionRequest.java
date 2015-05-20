@@ -3,7 +3,7 @@ package com.lafarge.tm.actions;
 import com.lafarge.tm.MessageReceivedListener;
 import com.lafarge.tm.Protocol;
 
-public class WaterAdditionRequest extends MessageType {
+public class WaterAdditionRequest extends ReadAction {
     public WaterAdditionRequest(MessageReceivedListener listener) {
         super(listener);
     }
