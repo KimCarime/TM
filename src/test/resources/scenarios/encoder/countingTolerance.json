@@ -1,0 +1,8 @@
+{
+  "description": "counting tolerance",
+  "message": {
+    "type": "TRAME_TOLERANCE_DE_COMPTAGE",
+    "value": 10
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x11", "0x00", "0x01", "0x0A", "0xDE", "0x6F"]
+}

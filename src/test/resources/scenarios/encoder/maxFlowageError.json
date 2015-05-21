@@ -1,0 +1,8 @@
+{
+  "description": "max flowage error",
+  "message": {
+    "type": "TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT",
+    "value": 5
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x14", "0x00", "0x01", "0x05", "0x9E", "0xA7"]
+}

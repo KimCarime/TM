@@ -1,0 +1,8 @@
+{
+  "description": "debimeter frequency",
+  "message": {
+    "type": "TRAME_FREQUENCE_DEBITMETRE",
+    "value": 60
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x09", "0x00", "0x01", "0x3C", "0x58", "0xD9"]
+}

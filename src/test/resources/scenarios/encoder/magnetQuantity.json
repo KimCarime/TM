@@ -1,0 +1,8 @@
+{
+  "description": "magnets quantity",
+  "message": {
+    "type": "TRAME_PARAMETRE_NOMBRE_D_AIMANTS",
+    "value": 24
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x05", "0x00", "0x01", "0x18", "0x5B", "0x92"]
+}

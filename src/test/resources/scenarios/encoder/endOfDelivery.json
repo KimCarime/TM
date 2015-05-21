@@ -1,0 +1,8 @@
+{
+  "description": "end of delivery",
+  "message": {
+    "type": "TRAME_NOTIFICATION_FIN_DECHARGEMENT",
+    "value": ""
+  },
+  "result": ["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"]
+}

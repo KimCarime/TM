@@ -1,0 +1,8 @@
+{
+  "description": "beginning of delivery",
+  "message": {
+    "type": "TRAME_NOTIFICATION_ACCEPTATION_COMMANDE",
+    "value": ""
+  },
+  "result": ["0xC0", "0x01", "0x80", "0x06", "0x00", "0x00", "0xE5", "0x1A"]
+}

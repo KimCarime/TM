@@ -1,0 +1,8 @@
+{
+  "description": "opening time EV1",
+  "message": {
+    "type": "TRAME_DUREE_ATTENTE_OUVERTURE_EV1_VA1",
+    "value": 3
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x0F", "0x00", "0x02", "0x00", "0x03", "0xF1", "0xFB"]
+}

@@ -1,0 +1,8 @@
+{
+  "description": "waiting duration after water addition",
+  "message": {
+    "type": "TRAME_DUREE_ATTENTE_APRES_AJOUT_EAU",
+    "value": 90
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x12", "0x00", "0x02", "0x00", "0x5A", "0xDD", "0xC3"]
+}

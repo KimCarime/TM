@@ -1,0 +1,8 @@
+{
+  "description": "command pump mode",
+  "message": {
+    "type": "TRAME_MODE_DE_COMMANDE_POMPE",
+    "value": "SEMI_AUTO"
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x0A", "0x00", "0x01", "0x00", "0x58", "0x8C"]
+}

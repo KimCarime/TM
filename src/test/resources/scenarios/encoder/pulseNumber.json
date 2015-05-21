@@ -1,0 +1,8 @@
+{
+  "description": "pulse number",
+  "message": {
+    "type": "TRAME_NOMBRE_D_IMPULSIONS_PAR_LITRE",
+    "value": 45
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x08", "0x00", "0x02", "0x00", "0x2D", "0xC4", "0x27"]
+}
