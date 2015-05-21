@@ -115,7 +115,7 @@ public class Protocol {
         constants.put(TRAME_PARAMETRE_TEMPS_AVANT_COULANT, new Spec(0xA006, 2));
         constants.put(TRAME_PARAMETRE_TEMPO_ATTENTE_REPONSE_CONDUCTEUR, new Spec(0xA007, 2));
         constants.put(TRAME_NOMBRE_D_IMPULSIONS_PAR_LITRE, new Spec(0xA008, 2));
-        constants.put(TRAME_FREQUENCE_DEBITMETRE, new Spec(0xA009, 2));
+        constants.put(TRAME_FREQUENCE_DEBITMETRE, new Spec(0xA009, 1));
         constants.put(TRAME_MODE_DE_COMMANDE_POMPE, new Spec(0xA00A, 1));
         constants.put(TRAME_FACTEUR_A_CAPTEUR_PRESSION_ENTREE, new Spec(0xA00B, 8));
         constants.put(TRAME_FACTEUR_B_CAPTEUR_PRESSION_ENTREE, new Spec(0xA00C, 8));
