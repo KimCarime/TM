@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 import static org.mockito.Mockito.*;
 
 @RunWith(value = Parameterized.class)
-public class ScenariosTest {
+public class DecoderScenariosTest {
 
     private static class Result {
         final String message;
@@ -44,7 +44,7 @@ public class ScenariosTest {
     private final List<byte[]> frames;
     private final List<Result> results;
 
-    public ScenariosTest(String scenario, List<byte[]> frames, List<Result> results) {
+    public DecoderScenariosTest(String scenario, List<byte[]> frames, List<Result> results) {
         this.scenario = scenario;
         this.frames = frames;
         this.results = results;
@@ -55,12 +55,12 @@ public class ScenariosTest {
     public static Collection<Object[]> scenarios() {
         Gson gson = new Gson();
         Type token = new TypeToken<Map<String, Object>>(){}.getType();
-        Reflections reflections = new Reflections("scenarios", new ResourcesScanner());
+        Reflections reflections = new Reflections("scenarios.decoder", new ResourcesScanner());
         Set<String> files = reflections.getResources(Pattern.compile(".*\\.json"));
         List<Object[]> scenarios = new LinkedList<>();
         for (String file : files) {
             Object[] values = new Object[3];
-            Map<String, Object> test = gson.fromJson(new InputStreamReader(ScenariosTest.class.getResourceAsStream("/" + file)), token);
+            Map<String, Object> test = gson.fromJson(new InputStreamReader(DecoderScenariosTest.class.getResourceAsStream("/" + file)), token);
             values[0] = test.get("description");
             List<List<String>> frames_def = (List<List<String>>) test.get("packets");
             List<byte[]> frames = new LinkedList<>();
