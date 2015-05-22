@@ -72,8 +72,8 @@ public class EncoderScenariosTest {
 
     @Test
     public void scenario() throws IOException {
-        Encoder encoder = new Encoder();
-        byte[] found = null;
+        final Encoder encoder = new Encoder();
+        final byte[] found;
         System.out.println("running: " + scenario);
         System.out.println("  testing: " + message.type + "\nExpected result: " + Convert.bytesToHex(result));
         switch (message.type) {
@@ -164,7 +164,6 @@ public class EncoderScenariosTest {
             default:
                 throw new IllegalArgumentException("unknown protocol type: " + message.type);
         }
-
         assertArrayEquals(found, result);
     }
 }

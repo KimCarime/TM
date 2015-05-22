@@ -142,8 +142,6 @@ public class Encoder {
     private byte[] encode(String type, byte[] dataBytes) {
         Protocol.Spec spec = Protocol.constants.get(type);
 
-        System.out.println("Will encode: " + type + ((dataBytes != null) ? " with bytes: " + Convert.bytesToHex(dataBytes) : ""));
-
         ByteArrayOutputStream result = new ByteArrayOutputStream();
         result.write(Protocol.HEADER);
         result.write(Protocol.VERSION);
@@ -157,7 +155,6 @@ public class Encoder {
         result.write(sizeBytes[1]);
 
         if (spec.size > 0) {
-            // TODO: The test should be `dataBytes.length != spec.size` and not `<`
             if (dataBytes.length != spec.size) {
                 throw new RuntimeException("The size of dataBytes doesn't match with the spec of " + type + ", given: " + dataBytes.length + ", expected: " + spec.size);
             }
