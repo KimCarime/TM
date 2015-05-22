@@ -3,18 +3,16 @@ package com.lafarge.tm;
 import com.lafarge.tm.states.HeaderState;
 import com.lafarge.tm.states.TypeState;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.LinkedList;
-import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class DecoderTest {
 
