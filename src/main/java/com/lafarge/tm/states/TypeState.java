@@ -56,7 +56,7 @@ public final class TypeState extends State {
 
     private boolean isTypeFoundExist(byte[] typeToTest) {
         for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
-            byte[] typeToMatch = Convert.intToBytes(entry.getValue().address);
+            byte[] typeToMatch = Convert.intToBytes(entry.getValue().address, 2);
             boolean isTypeMatching = true;
             for (int i = 0; i < typeToTest.length; i++) {
                 if (typeToTest[i] != typeToMatch[i]) {

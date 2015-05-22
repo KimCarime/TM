@@ -1,6 +1,7 @@
 package com.lafarge.tm.utils;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Convert {
 
@@ -8,9 +9,21 @@ public class Convert {
 
     private Convert() {}
 
+    // Int
+    public static byte[] intToBytes(int value) {
+        return intToBytes(value, Integer.SIZE/8);
+    }
+
+    public static byte[] intToBytes(int value, int byteCount) {
+        byte[] result = new byte[byteCount];
+        for (int i = 0; i < byteCount; i++) {
+            result[byteCount - 1 - i] = (byte) (value >> i * 8);
+        }
+        return result;
+    }
+
     public static int bytesToInt(byte[] buffer) {
         int value = 0;
-        
         for (byte b : buffer) {
             value = (value << 8) + (b & 0xff);
         }

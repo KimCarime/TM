@@ -65,7 +65,7 @@ public final class SizeState extends State {
         if (spec.size == Protocol.Spec.SIZE_UNDEFINED) {
             return true;
         }
-        byte[] sizeToMatch = Convert.intToBytes(spec.size);
+        byte[] sizeToMatch = Convert.intToBytes(spec.size, 2);
         for (int i = 0; i < sizeToTest.length; i++) {
             if (sizeToTest[i] != sizeToMatch[i]) {
                 return false;
