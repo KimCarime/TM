@@ -30,14 +30,25 @@ public class Convert {
         return value;
     }
 
-    public static float bytesToFloat(byte[] buffer) {
-        return ByteBuffer.wrap(buffer).getFloat();
+    // Float
+    public static byte[] floatToBytes(float value) {
+        return ByteBuffer.allocate(Float.SIZE/8).order(ByteOrder.LITTLE_ENDIAN).putFloat(value).array();
     }
 
-    public static byte[] intToBytes(int i) {
-        return ByteBuffer.allocate(4).putShort((short) i).array();
+    public static float bytesToFloat(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getFloat();
     }
 
+    // Double
+    public static byte[] doubleToBytes(double value) {
+        return ByteBuffer.allocate(Double.SIZE/8).order(ByteOrder.LITTLE_ENDIAN).putDouble(value).array();
+    }
+
+    public static double bytesToDouble(byte[] bytes) {
+        return ByteBuffer.wrap(bytes).getDouble();
+    }
+
+    // Hexa string
     public static String byteToHex(byte b) {
         int v = b & 0xff;
 
