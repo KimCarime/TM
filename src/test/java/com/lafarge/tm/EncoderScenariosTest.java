@@ -87,7 +87,7 @@ public class EncoderScenariosTest {
                 found = encoder.waterAdditionPermission((Boolean) message.value);
                 break;
             case Protocol.TRAME_ACTIVATION_INHIBITION_AFFICHEUR:
-                found = encoder.displayActivated((Boolean) message.value);
+                found = encoder.changeExternalDisplayState((Boolean) message.value);
                 break;
             case Protocol.TRAME_NOTIFICATION_FIN_DECHARGEMENT:
                 found = encoder.endOfDelivery();

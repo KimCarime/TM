@@ -23,7 +23,7 @@ public class Encoder {
         return encode(Protocol.TRAME_AUTORISATION_REFUS_AJOUT_EAU, (byte) (!isAllowed ? 0x00 : 0xFF));
     }
 
-    public byte[] displayActivated(boolean isActivated) {
+    public byte[] changeExternalDisplayState(boolean isActivated) {
         return encode(Protocol.TRAME_ACTIVATION_INHIBITION_AFFICHEUR, (byte) (!isActivated ? 0x00 : 0xFF));
     }
 
