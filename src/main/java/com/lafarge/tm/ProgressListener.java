@@ -1,5 +1,8 @@
 package com.lafarge.tm;
 
+/**
+ *  Implement this interface to obtain processing information from the Decoder
+ */
 public interface ProgressListener {
     enum State {
         STATE_HEADER,
