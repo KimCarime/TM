@@ -1,13 +1,10 @@
 package com.lafarge.tm;
 
-import java.lang.reflect.Field;
-
 public class TruckParameters {
 
     public enum CommandPumpMode {
         AUTO,
-        SEMI_AUTO,
-        LOCKED
+        SEMI_AUTO
     }
 
     public final double T1;
