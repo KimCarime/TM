@@ -71,7 +71,7 @@ public class GroupEncoderScenariosTest {
 
     @Test
     public void scenario() {
-        GroupEncoder encoder = new GroupEncoder();
+        GroupEncoder encoder = new GroupEncoder(null);
         final byte[] found;
         System.out.println("running: " + scenario);
         System.out.println("  testing: " + message.type + "\nExpected result: " + Convert.bytesToHex(result));

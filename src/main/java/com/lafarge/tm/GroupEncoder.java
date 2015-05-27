@@ -5,6 +5,10 @@ import java.io.IOException;
 
 public class GroupEncoder extends Encoder {
 
+    GroupEncoder(MessageSentListener messageSentListener) {
+        super(messageSentListener);
+    }
+
     public byte[] truckParameters(TruckParameters parameters) {
         assert parameters != null;
         ByteArrayOutputStream out = new ByteArrayOutputStream();

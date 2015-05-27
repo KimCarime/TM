@@ -8,121 +8,241 @@ import java.io.IOException;
 
 public class Encoder {
 
+    private MessageSentListener messageSentListener;
+
+    // TODO: Remove
     public Encoder() {
+        this(null);
+    }
+
+    public Encoder(MessageSentListener messageSentListener) {
+        this.messageSentListener = messageSentListener;
     }
 
     public byte[] targetSlump(int value) {
-        return encode(Protocol.TRAME_SLUMP_CIBLE, value);
+        byte[] result = encode(Protocol.TRAME_SLUMP_CIBLE, value);
+        if (messageSentListener != null) {
+            messageSentListener.targetSlump(value, result);
+        }
+        return result;
     }
 
     public byte[] maximumWater(int value) {
-        return encode(Protocol.TRAME_VOLUME_EAU_MAXIMUM, value);
+        byte[] result = encode(Protocol.TRAME_VOLUME_EAU_MAXIMUM, value);
+        if (messageSentListener != null) {
+            messageSentListener.maximumWater(value, result);
+        }
+        return result;
     }
 
     public byte[] waterAdditionPermission(boolean isAllowed) {
-        return encode(Protocol.TRAME_AUTORISATION_REFUS_AJOUT_EAU, (byte) (!isAllowed ? 0x00 : 0xFF));
+        byte[] result = encode(Protocol.TRAME_AUTORISATION_REFUS_AJOUT_EAU, (byte) (!isAllowed ? 0x00 : 0xFF));
+        if (messageSentListener != null) {
+            messageSentListener.waterAdditionPermission(isAllowed, result);
+        }
+        return result;
     }
 
     public byte[] changeExternalDisplayState(boolean isActivated) {
-        return encode(Protocol.TRAME_ACTIVATION_INHIBITION_AFFICHEUR, (byte) (!isActivated ? 0x00 : 0xFF));
+        byte[] result = encode(Protocol.TRAME_ACTIVATION_INHIBITION_AFFICHEUR, (byte) (!isActivated ? 0x00 : 0xFF));
+        if (messageSentListener != null) {
+            messageSentListener.changeExternalDisplayState(isActivated, result);
+        }
+        return result;
     }
 
     public byte[] endOfDelivery() {
-        return encode(Protocol.TRAME_NOTIFICATION_FIN_DECHARGEMENT);
+        byte[] result = encode(Protocol.TRAME_NOTIFICATION_FIN_DECHARGEMENT);
+        if (messageSentListener != null) {
+            messageSentListener.endOfDelivery(result);
+        }
+        return result;
     }
 
     public byte[] beginningOfDelivery() {
-        return encode(Protocol.TRAME_NOTIFICATION_ACCEPTATION_COMMANDE);
+        byte[] result = encode(Protocol.TRAME_NOTIFICATION_ACCEPTATION_COMMANDE);
+        if (messageSentListener != null) {
+            messageSentListener.beginningOfDelivery(result);
+        }
+        return result;
     }
 
     public byte[] loadVolume(double value) {
-        return encode(Protocol.TRAME_VOLUME_CHARGE, value);
+        byte[] result = encode(Protocol.TRAME_VOLUME_CHARGE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.loadVolume(value, result);
+        }
+        return result;
     }
 
     public byte[] parameterT1(double value) {
-        return encode(Protocol.TRAME_PARAMETRE_T1, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_T1, (value));
+        if (messageSentListener != null) {
+            messageSentListener.parameterT1(value, result);
+        }
+        return result;
     }
 
     public byte[] parameterA11(double value) {
-        return encode(Protocol.TRAME_PARAMETRE_A11, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_A11, (value));
+        if (messageSentListener != null) {
+            messageSentListener.parameterA11(value, result);
+        }
+        return result;
     }
 
     public byte[] parameterA12(double value) {
-        return encode(Protocol.TRAME_PARAMETRE_A12, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_A12, (value));
+        if (messageSentListener != null) {
+            messageSentListener.parameterA12(value, result);
+        }
+        return result;
     }
 
     public byte[] parameterA13(double value) {
-        return encode(Protocol.TRAME_PARAMETRE_A13, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_A13, (value));
+        if (messageSentListener != null) {
+            messageSentListener.parameterA13(value, result);
+        }
+        return result;
     }
 
     public byte[] magnetQuantity(int value) {
-        return encode(Protocol.TRAME_PARAMETRE_NOMBRE_D_AIMANTS, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_NOMBRE_D_AIMANTS, (value));
+        if (messageSentListener != null) {
+            messageSentListener.magnetQuantity(value, result);
+        }
+        return result;
     }
 
     public byte[] timePump(int value) {
-        return encode(Protocol.TRAME_PARAMETRE_TEMPS_AVANT_COULANT, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_TEMPS_AVANT_COULANT, (value));
+        if (messageSentListener != null) {
+            messageSentListener.timePump(value, result);
+        }
+        return result;
     }
 
     public byte[] timeDelayDriver(int value) {
-        return encode(Protocol.TRAME_PARAMETRE_TEMPO_ATTENTE_REPONSE_CONDUCTEUR, value);
+        byte[] result = encode(Protocol.TRAME_PARAMETRE_TEMPO_ATTENTE_REPONSE_CONDUCTEUR, (value));
+        if (messageSentListener != null) {
+            messageSentListener.timeDelayDriver(value, result);
+        }
+        return result;
     }
 
     public byte[] pulseNumber(int value) {
-        return encode(Protocol.TRAME_NOMBRE_D_IMPULSIONS_PAR_LITRE, value);
+        byte[] result = encode(Protocol.TRAME_NOMBRE_D_IMPULSIONS_PAR_LITRE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.pulseNumber(value, result);
+        }
+        return result;
     }
 
     public byte[] flowmeterFrequency(int value) {
-        return encode(Protocol.TRAME_FREQUENCE_DEBITMETRE, value);
+        byte[] result = encode(Protocol.TRAME_FREQUENCE_DEBITMETRE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.flowmeterFrequency(value, result);
+        }
+        return result;
     }
 
     public byte[] commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode) {
-        return encode(Protocol.TRAME_MODE_DE_COMMANDE_POMPE, (byte) (commandPumpMode == TruckParameters.CommandPumpMode.SEMI_AUTO ? 0x00 : 0xFF));
+        byte[] result = encode(Protocol.TRAME_MODE_DE_COMMANDE_POMPE, (byte) (commandPumpMode == TruckParameters.CommandPumpMode.SEMI_AUTO ? 0x00 : 0xFF));
+        if (messageSentListener != null) {
+            messageSentListener.commandPumpMode(commandPumpMode, result);
+        }
+        return result;
     }
 
     public byte[] calibrationInputSensorA(double value) {
-        return encode(Protocol.TRAME_FACTEUR_A_CAPTEUR_PRESSION_ENTREE, value);
+        byte[] result = encode(Protocol.TRAME_FACTEUR_A_CAPTEUR_PRESSION_ENTREE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.calibrationInputSensorA(value, result);
+        }
+        return result;
     }
 
     public byte[] calibrationOutputSensorA(double value) {
-        return encode(Protocol.TRAME_FACTEUR_A_CAPTEUR_PRESSION_SORTIE, value);
+        byte[] result = encode(Protocol.TRAME_FACTEUR_A_CAPTEUR_PRESSION_SORTIE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.calibrationOutputSensorA(value, result);
+        }
+        return result;
     }
 
     public byte[] calibrationInputSensorB(double value) {
-        return encode(Protocol.TRAME_FACTEUR_B_CAPTEUR_PRESSION_ENTREE, value);
+        byte[] result = encode(Protocol.TRAME_FACTEUR_B_CAPTEUR_PRESSION_ENTREE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.calibrationInputSensorB(value, result);
+        }
+        return result;
     }
 
     public byte[] calibrationOutputSensorB(double value) {
-        return encode(Protocol.TRAME_FACTEUR_B_CAPTEUR_PRESSION_SORTIE, value);
+        byte[] result = encode(Protocol.TRAME_FACTEUR_B_CAPTEUR_PRESSION_SORTIE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.calibrationOutputSensorB(value, result);
+        }
+        return result;
     }
 
     public byte[] openingTimeEV1(int value) {
-        return encode(Protocol.TRAME_DUREE_ATTENTE_OUVERTURE_EV1_VA1, value);
+        byte[] result = encode(Protocol.TRAME_DUREE_ATTENTE_OUVERTURE_EV1_VA1, (value));
+        if (messageSentListener != null) {
+            messageSentListener.openingTimeEV1(value, result);
+        }
+        return result;
     }
 
     public byte[] openingTimeVA1(int value) {
-        return encode(Protocol.TRAME_DUREE_ATTENTE_FERMETURE_VA1_EV1, value);
+        byte[] result = encode(Protocol.TRAME_DUREE_ATTENTE_FERMETURE_VA1_EV1, (value));
+        if (messageSentListener != null) {
+            messageSentListener.openingTimeVA1(value, result);
+        }
+        return result;
     }
 
     public byte[] countingTolerance(int value) {
-        return encode(Protocol.TRAME_TOLERANCE_DE_COMPTAGE, value);
+        byte[] result = encode(Protocol.TRAME_TOLERANCE_DE_COMPTAGE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.countingTolerance(value, result);
+        }
+        return result;
     }
 
     public byte[] waitingDurationAfterWaterAddition(int value) {
-        return encode(Protocol.TRAME_DUREE_ATTENTE_APRES_AJOUT_EAU, value);
+        byte[] result = encode(Protocol.TRAME_DUREE_ATTENTE_APRES_AJOUT_EAU, (value));
+        if (messageSentListener != null) {
+            messageSentListener.waitingDurationAfterWaterAddition(value, result);
+        }
+        return result;
     }
 
     public byte[] maxDelayBeforeFlowage(int value) {
-        return encode(Protocol.TRAME_DELAI_MAXIMUM_AVANT_ECOULEMENT, value);
+        byte[] result = encode(Protocol.TRAME_DELAI_MAXIMUM_AVANT_ECOULEMENT, (value));
+        if (messageSentListener != null) {
+            messageSentListener.maxDelayBeforeFlowage(value, result);
+        }
+        return result;
     }
 
     public byte[] maxFlowageError(int value) {
-        return encode(Protocol.TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT, value);
+        byte[] result = encode(Protocol.TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT, (value));
+        if (messageSentListener != null) {
+            messageSentListener.maxFlowageError(value, result);
+        }
+        return result;
     }
 
     public byte[] maxCountingError(int value) {
-        return encode(Protocol.TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, value);
+        byte[] result = encode(Protocol.TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, (value));
+        if (messageSentListener != null) {
+            messageSentListener.maxCountingError(value, result);
+        }
+        return result;
     }
-    
+
     private byte[] encode(String type) {
         return encode(type, null);
     }
@@ -165,7 +285,6 @@ public class Encoder {
         crc.update(result.toByteArray(), 0, result.size());
         try {
             result.write(crc.getCrcBytes());
-            System.out.println("Encoding result: " + Convert.bytesToHex(result.toByteArray()));
             return result.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
