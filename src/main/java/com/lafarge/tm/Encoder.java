@@ -71,7 +71,7 @@ public class Encoder {
         return encode(Protocol.TRAME_NOMBRE_D_IMPULSIONS_PAR_LITRE, value);
     }
 
-    public byte[] debimeterFrequency(int value) {
+    public byte[] flowmeterFrequency(int value) {
         return encode(Protocol.TRAME_FREQUENCE_DEBITMETRE, value);
     }
 

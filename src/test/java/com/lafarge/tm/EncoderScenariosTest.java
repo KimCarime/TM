@@ -123,7 +123,7 @@ public class EncoderScenariosTest {
                 found = encoder.pulseNumber(((Double) message.value).intValue());
                 break;
             case Protocol.TRAME_FREQUENCE_DEBITMETRE:
-                found = encoder.debimeterFrequency(((Double) message.value).intValue());
+                found = encoder.flowmeterFrequency(((Double) message.value).intValue());
                 break;
             case Protocol.TRAME_MODE_DE_COMMANDE_POMPE:
                 found = encoder.commandPumpMode(TruckParameters.CommandPumpMode.valueOf((String) message.value));

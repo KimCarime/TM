@@ -18,7 +18,7 @@ public class GroupEncoder extends Encoder {
             out.write(this.timePump(parameters.timePump));
             out.write(this.timeDelayDriver(parameters.timeDelayDriver));
             out.write(this.pulseNumber(parameters.pulseNumber));
-            out.write(this.debimeterFrequency(parameters.flowmeterFrequency));
+            out.write(this.flowmeterFrequency(parameters.flowmeterFrequency));
             out.write(this.commandPumpMode(parameters.commandPumpMode));
             out.write(this.calibrationInputSensorA(parameters.calibrationInputSensorA));
             out.write(this.calibrationInputSensorB(parameters.calibrationInputSensorB));

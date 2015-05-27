@@ -1,5 +1,5 @@
 {
-  "description": "debimeter frequency",
+  "description": "flowmeter frequency",
   "message": {
     "type": "TRAME_FREQUENCE_DEBITMETRE",
     "value": 60

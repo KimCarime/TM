@@ -76,7 +76,6 @@ public class Protocol {
      */
     public static final int TRAME_BIDON = 0xAFFE;
 
-
     /**
      * Spec
      */
