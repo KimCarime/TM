@@ -148,10 +148,12 @@ public class Communicator {
      *
      */
     public void setConnected(boolean isConnected) {
-        loggerListener.log("BLUETOOTH: connection state: " + (connected ? "CONNECTED" : "NOT CONNECTED"));
 
         if (!connected) {
             pauseTimer();
+        if (loggerListener != null) {
+            loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        }
         } else {
             if (state == State.WAITING_FOR_DELIVERY_NOTE) {
                 resumeTimer();
@@ -242,9 +244,9 @@ public class Communicator {
         public void slumpUpdated(int slump) {
             if (loggerListener != null) {
                 if (state == State.DELIVERY_IN_PROGRESS) {
-                    loggerListener.log("RECEIVED: slump updated: " + slump + "mm");
+                    loggerListener.log("RECEIVED: slump updated: " + slump + " mm");
                 } else {
-                    loggerListener.log("RECEIVED: IGNORED slump updated: " + slump + "mm");
+                    loggerListener.log("RECEIVED: IGNORED slump updated: " + slump + " mm");
                 }
             }
             if (state == State.DELIVERY_IN_PROGRESS) {
@@ -565,7 +567,7 @@ public class Communicator {
         @Override
         public void loadVolume(double value, byte[] bytes) {
             if (loggerListener != null) {
-                loggerListener.log("SENT: load volume: " + value + "m3" + "\n  " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: load volume: " + value + " m3" + "\n  " + Convert.bytesToHex(bytes));
             }
         }
 
