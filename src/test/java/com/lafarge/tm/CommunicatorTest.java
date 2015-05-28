@@ -70,7 +70,7 @@ public class CommunicatorTest {
         final byte[] deliveryParametersRequestBytes = new byte[]{(byte)0xC0, 0x01, 0x50 ,0x03 ,0x00, 0x00, (byte)0xCD, (byte)0xDB};
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
 
-        final int n = 3;
+        final int n = 2;
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
 
@@ -103,7 +103,7 @@ public class CommunicatorTest {
     @Test
     public void should_send_endOfDelivery_for_each_tick_in_WAITING_FOR_DELIVERY_NOTE_state() {
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
-        final int n = 3;
+        final int n = 2;
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
@@ -127,8 +127,8 @@ public class CommunicatorTest {
     @Test
     public void should_cancel_and_restart_correctly_timer_in_WAITING_FOR_DELIVERY_NOTE_state_and_send_endOfDelivery_for_each_tick() {
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
-        final int n = 5;
-        final int j = 3;
+        final int n = 1;
+        final int j = 2;
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
