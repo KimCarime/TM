@@ -140,18 +140,18 @@ public class CommunicatorScenariosTest {
 
         for (Step step : this.steps) {
             if (step instanceof Connected) {
-                System.out.println("--------- TEST: will change connection state");
+                System.out.println("--------- TEST: should change connection state");
                 communicator.setConnected(((Connected) step).connected);
             } else if (step instanceof Wait) {
-                System.out.println("--------- TEST: will wait " + ((Wait)step).waitInSec + " sec");
+                System.out.println("--------- TEST: should wait " + ((Wait)step).waitInSec + " sec");
                 Thread.sleep(((Wait) step).waitInSec * 1000);
             } else if (step instanceof Message) {
-                System.out.println("--------- TEST: did received: " + ((Message) step).description);
+                System.out.println("--------- TEST: should received: " + ((Message) step).description);
                 communicator.received(((Message) step).packets);
             } else if (step instanceof Action) {
                 switch (((Action) step).action) {
                     case "init":
-                        System.out.println("--------- TEST: truck parameters");
+                        System.out.println("--------- TEST: should set truck parameters");
                         communicator.setTruckParameters(new TruckParameters(
                                 ((Double) ((Action) step).values.get("T1")),
                                 ((Double) ((Action) step).values.get("A11")),
@@ -176,26 +176,26 @@ public class CommunicatorScenariosTest {
                                 ((Double) ((Action) step).values.get("maxCountingError")).intValue()));
                         break;
                     case "deliveryNoteReceived":
-                        System.out.println("--------- TEST: deliveryNoteReceived");
+                        System.out.println("--------- TEST: should receive delivery note");
                         communicator.deliveryNoteReceived(new DeliveryParameters(
                                 ((Double) ((Action) step).values.get("targetSlump")).intValue(),
                                 ((Double) ((Action) step).values.get("maxWater")).intValue(),
                                 ((Double) ((Action) step).values.get("loadVolume")).intValue()));
                         break;
                     case "acceptDelivery":
-                        System.out.println("--------- TEST: accept delivery");
+                        System.out.println("--------- TEST: should accept delivery");
                         communicator.acceptDelivery((Boolean) ((Action) step).values.get("accepted"));
                         break;
                     case "allowWaterAddition":
-                        System.out.println("--------- TEST: allow water addition");
+                        System.out.println("--------- TEST: should allow water addition");
                         communicator.allowWaterAddition((Boolean) ((Action) step).values.get("allowed"));
                         break;
                     case "endDelivery":
-                        System.out.println("--------- TEST: end Delivery");
+                        System.out.println("--------- TEST: should end delivery");
                         communicator.endDelivery();
                         break;
                     case "changeExternalDisplayState":
-                        System.out.println("--------- TEST: changed external display state");
+                        System.out.println("--------- TEST: should change external display state");
                         communicator.changeExternalDisplayState((Boolean) ((Action) step).values.get("activated"));
                         break;
                     default:
