@@ -86,18 +86,17 @@ public class CommunicatorTest {
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener, never()).askWaterAdditionAllowed();
+        verify(communicatorListener, never()).waterAdditionRequest(11);
         verify(communicatorListener, never()).send(addWaterPermissionBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener, never()).askWaterAdditionAllowed();
+        verify(communicatorListener, never()).waterAdditionRequest(11);
         verify(communicatorListener, never()).send(addWaterPermissionBytes);
 
         communicator.setState(Communicator.State.DELIVERY_IN_PROGRESS);
-        when(communicatorListener.askWaterAdditionAllowed()).thenReturn(accepted);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener).askWaterAdditionAllowed();
+        verify(communicatorListener).waterAdditionRequest(11);
         verify(communicatorListener).send(addWaterPermissionBytes);
     }
 
