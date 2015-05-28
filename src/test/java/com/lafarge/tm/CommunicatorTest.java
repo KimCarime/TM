@@ -146,16 +146,6 @@ public class CommunicatorTest {
     }
 
     @Test
-    public void should_not_start_a_new_timer_in_WAITING_FOR_DELIVERY_NOTE_multiple_times() {
-        final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
-
-        for (int i = 0; i < 3; i++) {
-            communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        }
-        verify(bytesListener, after((int) (Communicator.RESET_STATE_IN_MILLIS) + 100).times(2)).send(endOfDeliveryBytes);
-    }
-
-    @Test
     public void should_stop_and_restart_correctly_timer_in_WAITING_FOR_DELIVERY_NOTE_state_and_send_endOfDelivery_for_each_tick() {
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
         final int n = 1;
