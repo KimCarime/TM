@@ -74,7 +74,7 @@ public class Communicator {
         if (parameters == null) {
             throw new IllegalArgumentException("DeliveryParameters can't be null");
         }
-        if (state != State.WAITING_FOR_DELIVERY_NOTE) {
+        if (currentState() != State.WAITING_FOR_DELIVERY_NOTE) {
             throw new IllegalStateException("You cannot start a new delivery while the previous one isn't finish");
         }
         log("ACTION: delivery note received:\n  " + parameters.toString());
@@ -83,7 +83,7 @@ public class Communicator {
     }
 
     public void acceptDelivery(boolean accepted) {
-        if (state != State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
+        if (currentState() != State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
             throw new IllegalStateException("You should call deliveryNoteReceived() before accepting a delivery");
         }
         log("ACTION: accept delivery: " + (accepted ? "YES" : "NO"));
@@ -95,7 +95,7 @@ public class Communicator {
     }
 
     public void endDelivery() {
-        if (state != State.DELIVERY_IN_PROGRESS) {
+        if (currentState() != State.DELIVERY_IN_PROGRESS) {
             throw new IllegalStateException("You can't end a delivery if you have not started one");
         }
         log("ACTION: end delivery");
@@ -115,13 +115,10 @@ public class Communicator {
 
     public void setConnected(boolean isConnected) {
         log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
-        if (isConnected == this.isConnected()) {
-            return;
-        }
         if (!isConnected) {
             cancelTimer();
         } else {
-            if (!sync && (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
+            if (!isSync() && (currentState() == State.WAITING_FOR_DELIVERY_NOTE || currentState() == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
                 startTimer();
             }
         }
@@ -146,10 +143,12 @@ public class Communicator {
         switch (state) {
             case WAITING_FOR_DELIVERY_NOTE:
                 sync = false;
-                startTimer();
+                if (isConnected()) {
+                    startTimer();
+                }
                 break;
             case WAITING_FOR_DELIVERY_NOTE_ACCEPTATION:
-                if (sync) {
+                if (isSync()) {
                     cancelTimer();
                 }
                 break;
@@ -165,6 +164,10 @@ public class Communicator {
         return state;
     }
 
+    private boolean isSync() {
+        return sync;
+    }
+
     /**
      *  Private stuff
      */
@@ -173,6 +176,7 @@ public class Communicator {
     private void startTimer() {
         cancelTimer();
 
+        log("INTERNAL: start timer");
         final TimerTask task = new TimerTask() {
             @Override
             public void run () {
@@ -185,6 +189,7 @@ public class Communicator {
 
     private void cancelTimer() {
         if (timer != null) {
+            log("INTERNAL: cancel timer");
             timer.cancel();
             timer = null;
         }
@@ -208,13 +213,13 @@ public class Communicator {
     private final MessageReceivedListener messageReceivedListener = new MessageReceivedListener() {
         @Override
         public void slumpUpdated(int slump) {
-            if (state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.DELIVERY_IN_PROGRESS) {
                 log("RECEIVED: slump updated: " + slump + " mm");
                 if (communicatorListener != null && isConnected()) {
                     communicatorListener.slumpUpdated(slump);
                 }
             } else {
-                log("RECEIVED: IGNORED slump updated");
+                log("RECEIVED (IGNORED): slump updated");
             }
         }
 
@@ -236,23 +241,25 @@ public class Communicator {
 
         @Override
         public void waterAdded(int volume, WaterAdditionMode additionMode) {
-            if (state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.DELIVERY_IN_PROGRESS) {
                 log("RECEIVED: water added: " + volume + "L, additionMode: " + additionMode.toString());
                 if (communicatorListener != null && isConnected()) {
                     communicatorListener.waterAdded(volume, additionMode);
                 }
             } else {
-                log("RECEIVED: IGNORED water added");
+                log("RECEIVED (IGNORED): water added");
             }
         }
 
         @Override
         public void waterAdditionRequest(int volume) {
-            log("RECEIVED: water addition request: " + volume + " L");
-            if (state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.DELIVERY_IN_PROGRESS) {
+                log("RECEIVED: water addition request: " + volume + " L");
                 if (communicatorListener != null && isConnected()) {
                     communicatorListener.waterAdditionRequest(volume);
                 }
+            } else {
+                log("RECEIVED (IGNORED):: water addition request");
             }
         }
 
@@ -298,10 +305,10 @@ public class Communicator {
         @Override
         public void deliveryParametersRequest() {
             cancelTimer();
-            if (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
+            if (currentState() == State.WAITING_FOR_DELIVERY_NOTE || currentState() == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
                 sync = true;
             }
-            if (state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION || state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION || currentState() == State.DELIVERY_IN_PROGRESS) {
                 log("RECEIVED: delivery parameters request");
                 if (deliveryParameters != null) {
                     send(encoder.deliveryParameters(deliveryParameters));
@@ -309,7 +316,7 @@ public class Communicator {
                     log("  WARNING: delivery parameters was not set, we can't send");
                 }
             } else {
-                log("RECEIVED: IGNORED delivery parameters request");
+                log("RECEIVED (IGNORED): delivery parameters request");
             }
         }
 
@@ -321,7 +328,7 @@ public class Communicator {
         @Override
         public void deliveryValidationRequest() {
             log("RECEIVED: delivery validation request");
-            if (state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.DELIVERY_IN_PROGRESS) {
                 send(encoder.beginningOfDelivery());
             }
         }
@@ -361,13 +368,13 @@ public class Communicator {
 
         @Override
         public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
-            if (state == State.DELIVERY_IN_PROGRESS) {
+            if (currentState() == State.DELIVERY_IN_PROGRESS) {
                 log("RECEIVED: calibration data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", rotationSpeed: " + rotationSpeed + ")");
                 if (communicatorListener != null && isConnected()) {
                     communicatorListener.calibrationData(inPressure, outPressure, rotationSpeed);
                 }
             } else {
-                log("RECEIVED: IGNORED calibration data");
+                log("RECEIVED (IGNORED): calibration data");
             }
         }
 
