@@ -26,6 +26,7 @@ public class Communicator {
     private final Decoder decoder;
 
     // Listener
+    private final CommunicatorBytesListener bytesListener;
     private final CommunicatorListener communicatorListener;
     private final LoggerListener loggerListener;
 
@@ -45,7 +46,8 @@ public class Communicator {
      * @param communicatorListener
      * @param loggerListener
      */
-    public Communicator(CommunicatorListener communicatorListener, LoggerListener loggerListener) {
+    public Communicator(CommunicatorBytesListener bytesListener, CommunicatorListener communicatorListener, LoggerListener loggerListener) {
+        this.bytesListener = bytesListener;
         this.communicatorListener = communicatorListener;
         this.loggerListener = loggerListener;
         this.encoder = new GroupEncoder(messageSentListener);
@@ -124,8 +126,8 @@ public class Communicator {
         if (loggerListener != null) {
             loggerListener.log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
         }
-        if (communicatorListener != null && isConnected()) {
-            communicatorListener.send(encoder.changeExternalDisplayState(isActivated));
+        if (bytesListener != null && isConnected()) {
+            bytesListener.send(encoder.changeExternalDisplayState(isActivated));
         }
     }
 
@@ -137,8 +139,8 @@ public class Communicator {
             loggerListener.log("ACTION: allow water addition: " + (isAllowed ? "ALLOWED" : "NOT ALLOWED"));
         }
         // TODO: check if there was a water addition request before sending
-        if (communicatorListener != null && isConnected()) {
-            communicatorListener.send(encoder.waterAdditionPermission(isAllowed));
+        if (bytesListener != null && isConnected()) {
+            bytesListener.send(encoder.waterAdditionPermission(isAllowed));
         }
     }
 
@@ -187,12 +189,14 @@ public class Communicator {
             case WAITING_FOR_DELIVERY_NOTE:
                 resumeTimer();
                 break;
-            case DELIVERY_IN_PROGRESS:
-                if (communicatorListener != null && isConnected()) {
-                    communicatorListener.send(encoder.beginningOfDelivery());
+            case WAITING_FOR_DELIVERY_NOTE_ACCEPTATION:
                 }
                 break;
-            default:
+            case DELIVERY_IN_PROGRESS:
+                cancelTimer();
+                if (bytesListener != null && isConnected()) {
+                    bytesListener.send(encoder.beginningOfDelivery());
+                }
                 break;
         }
         this.state = state;
@@ -212,8 +216,8 @@ public class Communicator {
         final TimerTask task = new TimerTask() {
             @Override
             public void run () {
-                if (!timerWasStopped && communicatorListener != null && isConnected()) {
-                    communicatorListener.send(encoder.endOfDelivery());
+                if (bytesListener != null && isConnected()) {
+                    bytesListener.send(encoder.endOfDelivery());
                 }
             }
         };
@@ -289,7 +293,7 @@ public class Communicator {
         @Override
         public void waterAdditionRequest(int volume) {
             if (loggerListener != null) {
-                loggerListener.log("RECEIVED: water addition request: " + volume + "L");
+                loggerListener.log("RECEIVED: water addition request: " + volume + " L");
             }
             if (state == State.DELIVERY_IN_PROGRESS) {
                 if (communicatorListener != null && isConnected()) {
@@ -333,8 +337,8 @@ public class Communicator {
             if (loggerListener != null) {
                 loggerListener.log("RECEIVED: truck parameters request");
             }
-            if (communicatorListener != null && isConnected()) {
-                communicatorListener.send(encoder.truckParameters(truckParameters));
+            if (bytesListener != null && isConnected()) {
+                bytesListener.send(encoder.truckParameters(truckParameters));
             }
         }
 
@@ -355,8 +359,8 @@ public class Communicator {
             pauseTimer();
 
             if (state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION || state == State.DELIVERY_IN_PROGRESS) {
-                if (communicatorListener != null && isConnected()) {
-                    communicatorListener.send(encoder.deliveryParameters(deliveryParameters));
+                if (bytesListener != null && isConnected()) {
+                    bytesListener.send(encoder.deliveryParameters(deliveryParameters));
                 }
             }
         }
@@ -374,8 +378,8 @@ public class Communicator {
                 loggerListener.log("RECEIVED: delivery validation request");
             }
             if (state == State.DELIVERY_IN_PROGRESS) {
-                if (communicatorListener != null && isConnected()) {
-                    communicatorListener.send(encoder.beginningOfDelivery());
+                if (bytesListener != null && isConnected()) {
+                    bytesListener.send(encoder.beginningOfDelivery());
                 }
             }
         }

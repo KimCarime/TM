@@ -10,14 +10,14 @@ public class CommunicatorTest {
 
     private Encoder encoder;
     private Communicator communicator;
-    private CommunicatorListener communicatorListener;
+    private CommunicatorBytesListener bytesListener;
     private LoggerListener loggerListener;
 
     @Before
     public void setup() {
         encoder = new Encoder();
-        communicatorListener = mock(CommunicatorListener.class);
-        communicator = new Communicator(this.communicatorListener, new LoggerListener() {
+        bytesListener = mock(CommunicatorBytesListener.class);
+        communicator = new Communicator(this.bytesListener, null, new LoggerListener() {
             @Override
             public void log(String log) {
                 System.out.println(log);
@@ -35,15 +35,15 @@ public class CommunicatorTest {
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(truckParametersRequestBytes);
-        verify(communicatorListener).send(truckParametersBytes);
+        verify(bytesListener).send(truckParametersBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
         communicator.received(truckParametersRequestBytes);
-        verify(communicatorListener).send(truckParametersBytes);
+        verify(bytesListener).send(truckParametersBytes);
 
         communicator.setState(Communicator.State.DELIVERY_IN_PROGRESS);
         communicator.received(truckParametersRequestBytes);
-        verify(communicatorListener).send(truckParametersBytes);
+        verify(bytesListener).send(truckParametersBytes);
     }
 
     @Test @Ignore
@@ -55,15 +55,15 @@ public class CommunicatorTest {
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(deliveryParametersRequestBytes);
-        verify(communicatorListener, never()).send(deliveryParametersBytes);
+        verify(bytesListener, never()).send(deliveryParametersBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
         communicator.received(deliveryParametersRequestBytes);
-        verify(communicatorListener).send(deliveryParametersBytes);
+        verify(bytesListener).send(deliveryParametersBytes);
 
         communicator.setState(Communicator.State.DELIVERY_IN_PROGRESS);
         communicator.received(deliveryParametersRequestBytes);
-        verify(communicatorListener).send(deliveryParametersBytes);
+        verify(bytesListener).send(deliveryParametersBytes);
     }
 
     @Test
@@ -73,10 +73,10 @@ public class CommunicatorTest {
 
         final int n = 2;
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
 
         communicator.received(deliveryParametersRequestBytes);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
     }
     
     @Test @Ignore
@@ -87,18 +87,18 @@ public class CommunicatorTest {
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener, never()).waterAdditionRequest(11);
-        verify(communicatorListener, never()).send(addWaterPermissionBytes);
+//        verify(bytesListener, never()).waterAdditionRequest(11);
+        verify(bytesListener, never()).send(addWaterPermissionBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener, never()).waterAdditionRequest(11);
-        verify(communicatorListener, never()).send(addWaterPermissionBytes);
+//        verify(bytesListener, never()).waterAdditionRequest(11);
+        verify(bytesListener, never()).send(addWaterPermissionBytes);
 
         communicator.setState(Communicator.State.DELIVERY_IN_PROGRESS);
         communicator.received(addWaterRequestBytes);
-        verify(communicatorListener).waterAdditionRequest(11);
-        verify(communicatorListener).send(addWaterPermissionBytes);
+//        verify(bytesListener).waterAdditionRequest(11);
+        verify(bytesListener).send(addWaterPermissionBytes);
     }
 
     @Test
@@ -107,7 +107,7 @@ public class CommunicatorTest {
         final int n = 2;
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
     }
 
     @Test
@@ -116,13 +116,13 @@ public class CommunicatorTest {
         final int n = 1;
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
-        verify(communicatorListener, after(10 * 1000).times(n + 1)).send(encoder.endOfDelivery()); // No additional invocations
+        verify(bytesListener, after(10 * 1000).times(n + 1)).send(encoder.endOfDelivery()); // No additional invocations
 
         communicator.setState(Communicator.State.DELIVERY_IN_PROGRESS);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS)).times(1)).send(encoder.beginningOfDelivery());
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS)).times(1)).send(encoder.beginningOfDelivery());
     }
 
     @Test
@@ -132,12 +132,12 @@ public class CommunicatorTest {
         final int j = 2;
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        verify(communicatorListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (n * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + 1)).send(endOfDeliveryBytes);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
-        verify(communicatorListener, after((int) (5 * Communicator.RESET_STATE_IN_MILLIS)).times(n + 1)).send(encoder.endOfDelivery()); // No additional invocations
+        verify(bytesListener, after((int) (5 * Communicator.RESET_STATE_IN_MILLIS)).times(n + 1)).send(encoder.endOfDelivery()); // No additional invocations
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
-        verify(communicatorListener, after((int) (j * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + j + 2)).send(endOfDeliveryBytes);
+        verify(bytesListener, after((int) (j * Communicator.RESET_STATE_IN_MILLIS) + 100).times(n + j + 2)).send(endOfDeliveryBytes);
     }
 }
