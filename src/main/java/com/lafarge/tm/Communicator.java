@@ -38,6 +38,7 @@ public class Communicator {
     private State state;
 
     // Other
+    private boolean sync;
     private boolean connected;
 
     /**
@@ -148,15 +149,14 @@ public class Communicator {
      *
      */
     public void setConnected(boolean isConnected) {
-
-        if (!connected) {
-            pauseTimer();
         if (loggerListener != null) {
             loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
         }
+        if (!isConnected) {
+            cancelTimer();
         } else {
-            if (state == State.WAITING_FOR_DELIVERY_NOTE) {
-                resumeTimer();
+            if (!sync && (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
+                startTimer();
             }
         }
         this.connected = isConnected;
@@ -186,12 +186,14 @@ public class Communicator {
         if (loggerListener != null) {
             loggerListener.log("STATE: state changed: " + state.toString());
         }
-        pauseTimer();
         switch (state) {
             case WAITING_FOR_DELIVERY_NOTE:
-                resumeTimer();
+                sync = false;
+                startTimer();
                 break;
             case WAITING_FOR_DELIVERY_NOTE_ACCEPTATION:
+                if (sync) {
+                    cancelTimer();
                 }
                 break;
             case DELIVERY_IN_PROGRESS:
@@ -212,9 +214,10 @@ public class Communicator {
      *
      */
     private Timer timer;
-    private boolean timerWasStopped;
 
-    private void resumeTimer() {
+    private void startTimer() {
+        cancelTimer();
+
         final TimerTask task = new TimerTask() {
             @Override
             public void run () {
@@ -223,16 +226,14 @@ public class Communicator {
                 }
             }
         };
-        timerWasStopped = false;
         timer = new Timer();
         timer.schedule(task, 0L, RESET_STATE_IN_MILLIS);
     }
 
-    private void pauseTimer() {
+    private void cancelTimer() {
         if (timer != null) {
             timer.cancel();
             timer = null;
-            timerWasStopped = true;
         }
     }
 
@@ -357,8 +358,11 @@ public class Communicator {
                 loggerListener.log("RECEIVED: delivery parameters request");
             }
 
-            // Cancel synchronization on delivery parameters request
-            pauseTimer();
+            cancelTimer();
+
+            if (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
+                sync = true;
+            }
 
             if (state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION || state == State.DELIVERY_IN_PROGRESS) {
                 if (bytesListener != null && isConnected()) {
