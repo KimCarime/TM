@@ -1,5 +1,5 @@
 {
-  "description": "display activated",
+  "description": "external display activated",
   "message": {
     "type": "TRAME_ACTIVATION_INHIBITION_AFFICHEUR",
     "value": true
