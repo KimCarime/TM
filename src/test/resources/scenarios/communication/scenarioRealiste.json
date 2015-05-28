@@ -1,0 +1,150 @@
+{
+  "description": "scenario realiste",
+  "scenario": [
+	{
+      "bluetoothConnected": true
+    },
+    {
+      "action": "init",
+      "values": {
+        "T1": 3.4563,
+        "A11": 563.376,
+        "A12": -39.844,
+        "A13": 4.3254,
+        "magnetQuantity": 24,
+        "timePump": 15,
+        "timeDelayDriver": 120,
+        "pulseNumber": 45,
+        "flowmeterFrequency": 60,
+        "commandPumpMode": "SEMI_AUTO",
+        "calibrationInputSensorA": 2.5,
+        "calibrationInputSensorB": 0.0,
+        "calibrationOutputSensorA": 2.5,
+        "calibrationOutputSensorB": 0.0,
+        "openingTimeEV1": 3,
+        "openingTimeVA1": 180,
+        "toleranceCounting": 10,
+        "waitingDurationAfterWaterAddition": 90,
+        "maxDelayBeforeFlowage": 64,
+        "maxFlowageError": 5,
+        "maxCountingError": 6
+      }
+    },
+	{
+      "description": "bullshit",
+      "packets": ["0x04", "0x00","0x06", "0x00","0x00", "0x00","0x00", "0xFF","0xFF", "0x32", "0x66"]
+    },
+    {
+      "wait_in_sec": 1
+    },
+    {
+      "description": "delivery validation request",
+      "packets": ["0xC0", "0x01", "0x50" ,"0x04" ,"0x00", "0x00", "0x7C", "0x1A"]
+    },
+    {
+      "description": "state transition step: 6 sub-step: 0",
+      "packets": ["0xC0", "0x01", "0x30" ,"0x08" ,"0x00", "0x02", "0x06", "0x00" ,"0x1A", "0xCA"]
+    },
+	{
+      "wait_in_sec": 1
+    },
+	{
+      "description": "delivery parameter request",
+      "packets": ["0xC0", "0x01", "0x50" ,"0x03" ,"0x00", "0x00", "0xCD", "0xDB"]
+    },
+	{
+      "wait_in_sec": 1
+    },
+    {
+      "action": "deliveryNoteReceived",
+      "values": {
+        "targetSlump": 150,
+        "maxWater": 0,
+        "loadVolume": 6
+      }
+    },
+	{
+      "action": "acceptDelivery",
+      "values": {"accepted": true}
+    },
+	{
+      "wait_in_sec": 4
+    },
+	{
+      "description": "delivery parameter request",
+      "packets": ["0xC0", "0x01", "0x50" ,"0x03" ,"0x00", "0x00", "0xCD", "0xDB"]
+    },
+	{
+      "wait_in_sec": 5
+    },
+	{
+      "description": "raw data : 58, 716, 498, released ",
+      "packets": ["0xC0", "0x01", "0xD0" ,"0x02" ,"0x00", "0x0D", "0x00", "0x00" ,"0x00", "0x3A","0x00", "0x00", "0x02" ,"0xCC" ,"0x00", "0x00", "0x01", "0xF2" ,"0xFF", "0xDF", "0xAF"]
+    },
+	{
+      "description": "derived data : unloading, not stable, 0, 0 ",
+      "packets": ["0xC0", "0x01", "0xD0" ,"0x03" ,"0x00", "0x06", "0xFF", "0xFF" ,"0x00", "0x00","0x00", "0x00", "0x15" ,"0xFD"]
+    },
+		{
+      "description": "intern data : connected, connected, no, no, off, off ",
+      "packets": ["0xC0", "0x01", "0xD0" ,"0x04" ,"0x00", "0x06", "0x00", "0x00" ,"0x00", "0x00","0xFF", "0xFF", "0x32" ,"0x66"]
+    },
+	{
+      "wait_in_sec": 2
+    },
+	{
+      "description": "delivery parameters OK",
+      "packets": ["0xC0", "0x01", "0x30" ,"0x06" ,"0x00", "0x00", "0xC3", "0xDA"]
+    },
+    {
+      "description": "state transition step: 1 sub-step: 2",
+      "packets": ["0xC0", "0x01", "0x30" ,"0x08" ,"0x00", "0x02", "0x01", "0x02" ,"0x99", "0x3B"]
+    },
+	{
+      "wait_in_sec": 2
+    },
+	{
+      "action": "changeExternalDisplayState",
+      "values": {"activated": true}
+    },
+	{
+      "wait_in_sec": 1
+    },
+	{
+      "description": "calibration data 4.98713, 0.7852142, 7.473253 ",
+      "packets": ["0xC0", "0x01", "0xD0" ,"0x05" ,"0x00", "0x0C", "0x40", "0x9F", "0x96","0x92", "0x3F", "0x49" ,"0x03" ,"0xCC", "0x40", "0xEF", "0x24", "0xE3", "0xFF", "0x39"]
+    },
+	{
+      "description": "slump updated 119",
+      "packets": ["0xC0", "0x01", "0x10" ,"0x01" ,"0x00", "0x02", "0x00", "0x77" ,"0x82", "0x2D"]
+    },
+	{
+      "wait_in_sec": 2
+    },
+	{
+      "description": "slump updated 34",
+      "packets": ["0xC0", "0x01", "0x10" ,"0x01" ,"0x00", "0x02", "0x00", "0x22" ,"0x42", "0x12"]
+    },
+	{
+      "wait_in_sec": 2
+    },
+	{
+      "action": "endDelivery",
+      "values": {}
+    },
+    {
+      "wait_in_sec": 15
+    }
+  ],
+ 
+  "result_packets_to_send": [
+	["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"],
+	["0xC0", "0x01", "0x80", "0x06", "0x00", "0x00", "0xE5", "0x1A"],
+	["0xC0", "0x01", "0x80", "0x01", "0x00", "0x02", "0x00", "0x96", "0x5F", "0x35",
+	  "0xC0", "0x01", "0x80", "0x02", "0x00", "0x02", "0x00", "0x00", "0x9B", "0x5B",
+	  "0xC0", "0x01", "0x80", "0x07", "0x00", "0x08", "0x00", "0x00", "0x00", "0x00", "0x00", "0x00", "0x18", "0x40", "0x1D", "0x7A"],
+	["0xC0", "0x01", "0x80", "0x04", "0x00", "0x01", "0xFF", "0x9B", "0xE3"],
+	["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"],
+    ["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"]
+  ]
+}
