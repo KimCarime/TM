@@ -194,6 +194,10 @@ public class CommunicatorScenariosTest {
                         System.out.println("--------- TEST: end Delivery");
                         communicator.endDelivery();
                         break;
+                    case "changeExternalDisplayState":
+                        System.out.println("--------- TEST: changed external display state");
+                        communicator.changeExternalDisplayState((Boolean) ((Action) step).values.get("activated"));
+                        break;
                     default:
                         System.out.println("--------- TEST: action not defined: " + ((Action)step).action);
                         break;
