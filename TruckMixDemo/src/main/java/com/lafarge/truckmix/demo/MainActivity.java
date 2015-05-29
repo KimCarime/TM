@@ -4,8 +4,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.lafarge.tm.Communicator;
-import com.lafarge.tm.Decoder;
+import com.lafarge.truckmix.Communicator;
 
 
 public class MainActivity extends ActionBarActivity {
