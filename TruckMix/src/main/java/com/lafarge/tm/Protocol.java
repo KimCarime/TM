@@ -96,7 +96,7 @@ public class Protocol {
         }
     }
 
-    public static final HashMap<String, Spec> constants = new HashMap<>();
+    public static final HashMap<String, Spec> constants = new HashMap<String, Spec>();
     static
     {
         constants.put(TRAME_SLUMP_CIBLE, new Spec(0x8001, 2));
