@@ -250,7 +250,7 @@ public class Encoder {
         byte[] result = encode(Protocol.TRAME_BIDON, new byte[]{(byte)0xDE, (byte)0xAD, (byte)0xDE, (byte)0xAD,
                 (byte)0xDE, (byte)0xAD, (byte)0xDE, (byte)0xAD});
         if (messageSentListener != null) {
-            messageSentListener.fake();
+            messageSentListener.fake(result);
         }
         return result;
     }

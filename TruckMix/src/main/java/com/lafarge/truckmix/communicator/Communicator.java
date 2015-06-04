@@ -616,8 +616,8 @@ public class Communicator {
         }
 
         @Override
-        public void fake() {
-            log("SENT: trame bidon");
+        public void fake(byte[] bytes) {
+            log("SENT: trame bidon\n  " + Convert.bytesToHex(bytes));
         }
     };
 
