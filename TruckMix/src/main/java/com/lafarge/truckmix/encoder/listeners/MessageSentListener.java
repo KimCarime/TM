@@ -35,4 +35,5 @@ public interface MessageSentListener {
     void maxDelayBeforeFlowage(int value, byte[] bytes);
     void maxFlowageError(int value, byte[] bytes);
     void maxCountingError(int value, byte[] bytes);
+    void fake();
 }

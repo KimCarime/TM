@@ -114,13 +114,19 @@ public class Communicator {
 
     public void changeExternalDisplayState(boolean isActivated) {
         log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
-        send(encoder.changeExternalDisplayState(isActivated));
+        if (canSendBytes()) {
+            send(encoder.fake());
+            send(encoder.changeExternalDisplayState(isActivated));
+        }
     }
 
     public void allowWaterAddition(boolean isAllowed) {
         log("ACTION: allow water addition: " + (isAllowed ? "ALLOWED" : "NOT ALLOWED"));
         // TODO: check if there was a water addition request before sending
-        send(encoder.waterAdditionPermission(isAllowed));
+        if (canSendBytes()) {
+            send(encoder.fake());
+            send(encoder.waterAdditionPermission(isAllowed));
+        }
     }
 
     public void setConnected(boolean isConnected) {
@@ -164,7 +170,10 @@ public class Communicator {
                 break;
             case DELIVERY_IN_PROGRESS:
                 cancelTimer();
-                send(encoder.beginningOfDelivery());
+                if (canSendBytes()) {
+                    send(encoder.fake());
+                    send(encoder.beginningOfDelivery());
+                }
                 break;
         }
         this.state = state;
@@ -190,7 +199,10 @@ public class Communicator {
         final TimerTask task = new TimerTask() {
             @Override
             public void run () {
-                send(encoder.endOfDelivery());
+                if (canSendBytes()) {
+                    send(encoder.fake());
+                    send(encoder.endOfDelivery());
+                }
             }
         };
         timer = new Timer();
@@ -211,8 +223,12 @@ public class Communicator {
         }
     }
 
+    private boolean canSendBytes() {
+        return bytesListener != null && isConnected();
+    }
+
     private void send(byte[] bytes) {
-        if (bytesListener != null && isConnected()) {
+        if (bytesListener != null) {
             bytesListener.send(bytes);
         }
     }
@@ -301,7 +317,10 @@ public class Communicator {
         public void truckParametersRequest() {
             log("RECEIVED: truck parameters request");
             if (truckParameters != null) {
-                send(encoder.truckParameters(truckParameters));
+                if (canSendBytes()) {
+                    send(encoder.fake());
+                    send(encoder.truckParameters(truckParameters));
+                }
             } else {
                 log("  WARNING: truck parameters was not set, we can't send");
             }
@@ -321,7 +340,10 @@ public class Communicator {
             if (currentState() == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION || currentState() == State.DELIVERY_IN_PROGRESS) {
                 log("RECEIVED: delivery parameters request");
                 if (deliveryParameters != null) {
-                    send(encoder.deliveryParameters(deliveryParameters));
+                    if (canSendBytes()) {
+                        send(encoder.fake());
+                        send(encoder.deliveryParameters(deliveryParameters));
+                    }
                 } else {
                     log("  WARNING: delivery parameters was not set, we can't send");
                 }
@@ -339,7 +361,10 @@ public class Communicator {
         public void deliveryValidationRequest() {
             log("RECEIVED: delivery validation request");
             if (currentState() == State.DELIVERY_IN_PROGRESS) {
-                send(encoder.beginningOfDelivery());
+                if (canSendBytes()) {
+                    send(encoder.fake());
+                    send(encoder.beginningOfDelivery());
+                }
             }
         }
 
@@ -379,7 +404,8 @@ public class Communicator {
         @Override
         public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
             if (currentState() == State.DELIVERY_IN_PROGRESS) {
-                log("RECEIVED: calibration data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", rotationSpeed: " + rotationSpeed + ")");
+                log("RECEIVED: calibration data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", " +
+                        "rotationSpeed: " + rotationSpeed + " tr/min)");
                 if (communicatorListener != null && isConnected()) {
                     communicatorListener.calibrationData(inPressure, outPressure, rotationSpeed);
                 }
@@ -588,6 +614,11 @@ public class Communicator {
         public void maxCountingError(int value, byte[] bytes) {
             log("SENT: max couting error: " + value + "\n  " + Convert.bytesToHex(bytes));
         }
+
+        @Override
+        public void fake() {
+            log("SENT: trame bidon");
+        }
     };
 
     /**
@@ -601,11 +632,11 @@ public class Communicator {
 
         @Override
         public void willDecode(byte[] buff) {
-            log("PROCESS: will decode: " + Convert.bytesToHex(buff));
+            log("PROCESS: will decode:\n  " + Convert.bytesToHex(buff));
         }
 
         @Override
-        public void willProcessByte(State state, byte b) {
+        public void willProcessByte(ProgressState state, byte b) {
 //            log("PROCESS: current state: " + state.toString() + ", will process byte: " + Convert.byteToHex(b));
         }
 

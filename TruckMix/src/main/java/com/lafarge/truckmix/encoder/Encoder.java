@@ -246,6 +246,15 @@ public class Encoder {
         return result;
     }
 
+    public byte[] fake() {
+        byte[] result = encode(Protocol.TRAME_BIDON, new byte[]{(byte)0xDE, (byte)0xAD, (byte)0xDE, (byte)0xAD,
+                (byte)0xDE, (byte)0xAD, (byte)0xDE, (byte)0xAD});
+        if (messageSentListener != null) {
+            messageSentListener.fake();
+        }
+        return result;
+    }
+
     private byte[] encode(String type) {
         return encode(type, null);
     }

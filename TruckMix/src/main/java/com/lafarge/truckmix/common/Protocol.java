@@ -74,7 +74,7 @@ public class Protocol {
     /**
      * Other
      */
-    public static final int TRAME_BIDON = 0xAFFE;
+    public static final String TRAME_BIDON = "TRAME_BIDON";
 
     /**
      * Spec
@@ -127,6 +127,7 @@ public class Protocol {
         constants.put(TRAME_DELAI_MAXIMUM_AVANT_ECOULEMENT, new Spec(0xA013, 2));
         constants.put(TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT, new Spec(0xA014, 1));
         constants.put(TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, new Spec(0xA015, 1));
+        constants.put(TRAME_BIDON, new Spec(0xAFFE, 8));
 
         constants.put(TRAME_SLUMP_COURANT, new Spec(0x1001, 2));
         constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2, new int[]{1}));
