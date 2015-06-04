@@ -1,9 +1,10 @@
-package com.lafarge.truckmix.communicator;
+package com.lafarge.truckmix;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
+import com.lafarge.truckmix.communicator.Communicator;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import org.junit.Test;
