@@ -9,7 +9,9 @@ android:
     - extra-android-m2repository
 
 script:
-    - ./gradlew test
+    - ./gradlew test --info
+
+after_failure: print_surefire_reports.sh
 
 cache:
   directories:
