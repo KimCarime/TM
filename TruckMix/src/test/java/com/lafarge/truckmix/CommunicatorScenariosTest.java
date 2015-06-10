@@ -132,7 +132,7 @@ public class CommunicatorScenariosTest {
     public void scenario() throws InterruptedException {
         System.out.println("running: " + this.description);
         final List<byte[]> results = new LinkedList<byte[]>();
-        Scheduler scheduler = new Scheduler(100);
+        Scheduler scheduler = new Scheduler(150);
         Communicator communicator = new Communicator(new CommunicatorBytesListener() {
             @Override
             public void send(byte[] bytes) {
@@ -151,7 +151,7 @@ public class CommunicatorScenariosTest {
                 communicator.setConnected(((Connected) step).connected);
             } else if (step instanceof Wait) {
                 System.out.println("--------- TEST: should wait " + ((Wait)step).waitInSec + " sec");
-                Thread.sleep(((Wait) step).waitInSec*10);
+                Thread.sleep(((Wait) step).waitInSec*15);
             } else if (step instanceof Message) {
                 System.out.println("--------- TEST: should received: " + ((Message) step).description);
                 communicator.received(((Message) step).packets);
