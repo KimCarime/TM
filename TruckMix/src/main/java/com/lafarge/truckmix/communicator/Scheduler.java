@@ -22,7 +22,8 @@ public class Scheduler {
 
     public void start(Runnable task) {
         this.reset();
-        this.future = ex.scheduleAtFixedRate(task, 0L, wait, TimeUnit.MILLISECONDS);
+        task.run();
+        this.future = ex.scheduleAtFixedRate(task, wait, wait, TimeUnit.MILLISECONDS);
     }
 
     public void reset() {
