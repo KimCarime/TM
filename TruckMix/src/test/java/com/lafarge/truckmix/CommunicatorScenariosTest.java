@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
+import com.lafarge.truckmix.communicator.Scheduler;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import org.junit.Test;
@@ -131,6 +132,7 @@ public class CommunicatorScenariosTest {
     public void scenario() throws InterruptedException {
         System.out.println("running: " + this.description);
         final List<byte[]> results = new LinkedList<byte[]>();
+        Scheduler scheduler = new Scheduler(50);
         Communicator communicator = new Communicator(new CommunicatorBytesListener() {
             @Override
             public void send(byte[] bytes) {
@@ -141,7 +143,7 @@ public class CommunicatorScenariosTest {
             public void log(String log) {
                 System.out.println(log);
             }
-        });
+        }, scheduler);
 
         for (Step step : this.steps) {
             if (step instanceof Connected) {
@@ -149,7 +151,7 @@ public class CommunicatorScenariosTest {
                 communicator.setConnected(((Connected) step).connected);
             } else if (step instanceof Wait) {
                 System.out.println("--------- TEST: should wait " + ((Wait)step).waitInSec + " sec");
-                Thread.sleep(((Wait) step).waitInSec * 1000);
+                Thread.sleep(((Wait) step).waitInSec*5);
             } else if (step instanceof Message) {
                 System.out.println("--------- TEST: should received: " + ((Message) step).description);
                 communicator.received(((Message) step).packets);
@@ -208,6 +210,7 @@ public class CommunicatorScenariosTest {
                 }
             }
         }
+        scheduler.reset();
 
         assertThat(results, hasSize(this.packetsToSend.size()));
         for (int i = 0; i < this.packetsToSend.size(); i++) {

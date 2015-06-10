@@ -13,8 +13,6 @@ import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Communicator {
     /**
@@ -40,6 +38,8 @@ public class Communicator {
     private final CommunicatorListener communicatorListener;
     private final LoggerListener loggerListener;
 
+    private final Scheduler scheduler;
+
     // Parameters
     private TruckParameters truckParameters;
     private DeliveryParameters deliveryParameters;
@@ -59,6 +59,10 @@ public class Communicator {
      * @param loggerListener
      */
     public Communicator(CommunicatorBytesListener bytesListener, CommunicatorListener communicatorListener, LoggerListener loggerListener) {
+        this(bytesListener, communicatorListener, loggerListener, new Scheduler());
+    }
+
+    public Communicator(CommunicatorBytesListener bytesListener, CommunicatorListener communicatorListener, LoggerListener loggerListener, Scheduler scheduler) {
         this.bytesListener = bytesListener;
         this.communicatorListener = communicatorListener;
         this.loggerListener = loggerListener;
@@ -66,6 +70,7 @@ public class Communicator {
         this.decoder = new Decoder(messageReceivedListener, progressListener);
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
         this.connected = true;
+        this.scheduler = scheduler;
     }
 
     /**
@@ -131,6 +136,7 @@ public class Communicator {
 
     public void setConnected(boolean isConnected) {
         log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        this.connected = isConnected;
         if (!isConnected) {
             cancelTimer();
         } else {
@@ -138,7 +144,6 @@ public class Communicator {
                 startTimer();
             }
         }
-        this.connected = isConnected;
     }
 
     public boolean isConnected() {
@@ -187,34 +192,26 @@ public class Communicator {
         return sync;
     }
 
-    /**
+    /*
      *  Private stuff
      */
-    private Timer timer;
 
     private void startTimer() {
-        cancelTimer();
-
         log("INTERNAL: start timer");
-        final TimerTask task = new TimerTask() {
+        this.scheduler.start(new Runnable() {
             @Override
-            public void run () {
+            public void run() {
                 if (canSendBytes()) {
                     send(encoder.fake());
                     send(encoder.endOfDelivery());
                 }
             }
-        };
-        timer = new Timer();
-        timer.schedule(task, 0L, RESET_STATE_IN_MILLIS);
+        });
     }
 
     private void cancelTimer() {
-        if (timer != null) {
-            log("INTERNAL: cancel timer");
-            timer.cancel();
-            timer = null;
-        }
+        log("INTERNAL: cancel timer");
+        this.scheduler.reset();
     }
 
     private void log(String message) {
