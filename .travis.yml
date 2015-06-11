@@ -9,7 +9,8 @@ android:
     - extra-android-m2repository
 
 script:
-    - ./gradlew test
+    - ./gradlew test --info
+
 
 cache:
   directories:

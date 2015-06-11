@@ -5,6 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.GroupEncoder;
+import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +20,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.Mockito.mock;
 
 @RunWith(value = Parameterized.class)
 public class GroupEncoderScenariosTest {
@@ -74,7 +76,7 @@ public class GroupEncoderScenariosTest {
 
     @Test
     public void scenario() {
-        GroupEncoder encoder = new GroupEncoder(null);
+        GroupEncoder encoder = new GroupEncoder(mock(MessageSentListener.class));
         final byte[] found;
         System.out.println("running: " + scenario);
         System.out.println("  testing: " + message.type + "\nExpected result: " + Convert.bytesToHex(result));

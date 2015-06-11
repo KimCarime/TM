@@ -32,6 +32,9 @@ jacocoTestReport {
 test {
     testLogging {
         events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showExceptions true
+        showStackTraces true
     }
     jacoco {
         append = false

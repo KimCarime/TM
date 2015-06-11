@@ -13,8 +13,6 @@ import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * This class is the entry point of the whole library, it is responsible of the communication between the client
@@ -55,7 +53,7 @@ public class Communicator {
     private boolean isConnected;
 
     // Other
-    private Timer timer;
+    private final Scheduler scheduler;
 
     /**
      * Constructor should be called only once per session
@@ -67,6 +65,10 @@ public class Communicator {
      * @throws IllegalArgumentException If one of the parameters is null
      */
     public Communicator(CommunicatorBytesListener bytesListener, CommunicatorListener communicatorListener, LoggerListener loggerListener) {
+        this(bytesListener, communicatorListener, loggerListener, new Scheduler(RESET_STATE_IN_MILLIS));
+    }
+
+    public Communicator(CommunicatorBytesListener bytesListener, CommunicatorListener communicatorListener, LoggerListener loggerListener, Scheduler scheduler) {
         if (bytesListener == null) throw new IllegalArgumentException("bytes listener can't be null");
         if (communicatorListener == null) throw new IllegalArgumentException("communicatorListener can't be null");
         if (loggerListener == null) throw new IllegalArgumentException("loggerListener can't be null");
@@ -78,6 +80,7 @@ public class Communicator {
         this.decoder = new Decoder(messageReceivedListener, progressListener);
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
         this.isConnected = true;
+        this.scheduler = scheduler;
     }
 
     //
@@ -172,18 +175,18 @@ public class Communicator {
      * events...
      * Note that by default, this parameters is set to false.
      *
-     * @param connected true if the terminal is isConnected to the Wirma, otherwise false.
+     * @param isConnected true if the terminal is connected to the Wirma, otherwise false.
      */
-    public void setConnected(final boolean connected) {
-        loggerListener.log("BLUETOOTH: connection state: " + (connected ? "CONNECTED" : "NOT CONNECTED"));
-        if (!connected) {
+    public void setConnected(boolean isConnected) {
+        loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        this.isConnected = isConnected;
+        if (!isConnected) {
             cancelTimer();
         } else {
             if (!isSync && (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
                 startTimer();
             }
         }
-        this.isConnected = connected;
     }
 
     /** Returns the current connection state of the communicator */
@@ -244,28 +247,21 @@ public class Communicator {
     }
 
     private void startTimer() {
-        cancelTimer();
-
         loggerListener.log("INTERNAL: start timer");
-        final TimerTask task = new TimerTask() {
+        this.scheduler.start(new Runnable() {
             @Override
-            public void run () {
+            public void run() {
                 if (isConnected) {
                     bytesListener.send(encoder.fake());
                     bytesListener.send(encoder.endOfDelivery());
                 }
             }
-        };
-        timer = new Timer();
-        timer.schedule(task, 0L, RESET_STATE_IN_MILLIS);
+        });
     }
 
     private void cancelTimer() {
-        if (timer != null) {
-            loggerListener.log("INTERNAL: cancel timer");
-            timer.cancel();
-            timer = null;
-        }
+        loggerListener.log("INTERNAL: cancel timer");
+        this.scheduler.reset();
     }
 
     /**
