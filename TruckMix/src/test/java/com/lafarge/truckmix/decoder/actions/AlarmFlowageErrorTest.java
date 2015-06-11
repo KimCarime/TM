@@ -11,7 +11,7 @@ public class AlarmFlowageErrorTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new AlarmFlowageError(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).alarmFlowageError();
     }
 

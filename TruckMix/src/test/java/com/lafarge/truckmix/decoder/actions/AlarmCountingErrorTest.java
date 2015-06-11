@@ -11,7 +11,7 @@ public class AlarmCountingErrorTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new AlarmCountingError(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).alarmCountingError();
     }
 

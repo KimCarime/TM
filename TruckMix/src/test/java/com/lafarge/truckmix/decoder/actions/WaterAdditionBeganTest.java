@@ -11,7 +11,7 @@ public class WaterAdditionBeganTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new WaterAdditionBegan(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).waterAdditionBegan();
     }
 

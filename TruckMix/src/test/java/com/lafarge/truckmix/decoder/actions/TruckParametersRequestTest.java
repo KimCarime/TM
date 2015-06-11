@@ -11,7 +11,7 @@ public class TruckParametersRequestTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new TruckParametersRequest(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).truckParametersRequest();
     }
 

@@ -11,7 +11,7 @@ public class MixingModeActivatedTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new MixingModeActivated(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).mixingModeActivated();
     }
 

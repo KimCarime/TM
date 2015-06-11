@@ -11,7 +11,7 @@ public class DeliveryParametersReceivedTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new DeliveryParametersReceived(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).deliveryParametersReceived();
     }
 

@@ -11,7 +11,7 @@ public class UnloadingModeActivatedTest extends ReadActionTest {
         MessageReceivedListener callback = mock(MessageReceivedListener.class);
         ReadAction message = new UnloadingModeActivated(callback);
 
-        message.decode(null);
+        message.decode(new byte[0]);
         verify(callback, only()).unloadingModeActivated();
     }
 
