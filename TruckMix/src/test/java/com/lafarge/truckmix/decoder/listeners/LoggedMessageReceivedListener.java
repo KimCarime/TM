@@ -129,12 +129,12 @@ public class LoggedMessageReceivedListener implements MessageReceivedListener {
     }
 
     @Override
-    public void speedSensorHasExceedMinThreshold(boolean isOutOfRange) {
-        System.out.println("  -> speed sensor exceed min threshold: " + (isOutOfRange ? "NO" : "YES(out of range)"));
+    public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
+        System.out.println("  -> speed sensor exceed min threshold: " + (thresholdExceed ? "NO" : "YES(out of range)"));
     }
 
     @Override
-    public void speedSensorHasExceedMaxThreshold(boolean isOutOfRange) {
-        System.out.println("  -> speed sensor exceed max threshold: " + (isOutOfRange ? "NO" : "YES(out of range)"));
+    public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
+        System.out.println("  -> speed sensor exceed max threshold: " + (thresholdExceed ? "NO" : "YES(out of range)"));
     }
 }

@@ -22,6 +22,6 @@ public interface CommunicatorListener {
     void alarmCountingError();
     void inputSensorConnectionChanged(boolean connected);
     void outputSensorConnectionChanged(boolean connected);
-    void speedSensorHasExceedMinThreshold(boolean isOutOfRange);
-    void speedSensorHasExceedMaxThreshold(boolean isOutOfRange);
+    void speedSensorHasExceedMinThreshold(boolean thresholdExceed);
+    void speedSensorHasExceedMaxThreshold(boolean thresholdExceed);
 }
