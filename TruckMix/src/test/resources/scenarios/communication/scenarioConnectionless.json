@@ -64,5 +64,22 @@
   ],
   "result_packets_to_send": [
   
+  ],
+  "events": [
+    {
+      "description": "start delivery",
+      "id": 1,
+      "value": 1
+    },
+	{
+      "description": "bluetooth off",
+      "id": 10,
+      "value": 0
+    },
+	{
+      "description": "end of delivery",
+      "id": 2,
+      "value": 0
+    }
   ]
 }

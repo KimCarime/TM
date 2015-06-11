@@ -136,7 +136,6 @@
       "wait_in_sec": 15
     }
   ],
- 
   "result_packets_to_send": [
     ["0xC0", "0x01", "0xAF", "0xFE", "0x00", "0x08", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD",
       "0xD2", "0x16"],
@@ -158,5 +157,47 @@
     ["0xC0", "0x01", "0xAF", "0xFE", "0x00", "0x08", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD",
       "0xD2", "0x16"],
     ["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"]
+  ],
+  "events": [
+    {
+      "description": "start delivery",
+      "id": 1,
+      "value": 1
+    },
+    {
+      "description": "bluetooth on",
+      "id": 10,
+      "value": 1
+    },
+	{
+      "description": "rotation speed",
+      "id": 7,
+      "value": 7.473253
+    },
+	{
+      "description": "input pressure",
+      "id": 8,
+      "value": 4.98713
+    },
+	{
+      "description": "output pressure",
+      "id": 9,
+      "value": 0.7852142
+    },
+	{
+      "description": "new slump",
+      "id": 3,
+      "value": 119
+    },
+	{
+      "description": "new slump",
+      "id": 3,
+      "value": 34
+    },
+    {
+      "description": "end of delivery",
+      "id": 2,
+      "value": 34
+    }
   ]
 }

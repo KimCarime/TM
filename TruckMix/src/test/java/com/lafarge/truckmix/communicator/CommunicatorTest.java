@@ -4,6 +4,7 @@ import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.encoder.Encoder;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
@@ -33,6 +34,7 @@ public class CommunicatorTest {
             System.out.println(log);
         }
     };
+    private EventListener eventListener;
 
     @Before
     public void setup() {
@@ -40,7 +42,8 @@ public class CommunicatorTest {
         encoder = new Encoder(mock(MessageSentListener.class));
         bytesListener = mock(CommunicatorBytesListener.class);
         communicatorListener = mock(CommunicatorListener.class);
-        communicator = new Communicator(bytesListener, communicatorListener, loggerListener, scheduler);
+        eventListener = mock(EventListener.class);
+        communicator = new Communicator(bytesListener, communicatorListener, loggerListener, eventListener, scheduler);
     }
 
     @Test
@@ -58,7 +61,8 @@ public class CommunicatorTest {
                 }
             }
         };
-        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener);
+        Communicator communicator = new Communicator(bytesListener, communicatorListener,
+                loggerListener, eventListener);
         communicator.setTruckParameters(parameters);
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(truckParametersRequestBytes);
@@ -87,7 +91,7 @@ public class CommunicatorTest {
                     result.add(bytes);
                 }
             }
-        }, communicatorListener, loggerListener, scheduler);
+        }, communicatorListener, loggerListener, eventListener, scheduler);
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(deliveryParametersRequestBytes);
         communicator.deliveryNoteReceived(params);
@@ -106,7 +110,8 @@ public class CommunicatorTest {
         final byte[] deliveryParametersRequestBytes = new byte[]{(byte)0xC0, 0x01, 0x50 ,0x03 ,0x00, 0x00, (byte)0xCD, (byte)0xDB};
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
         CommunicatorBytesListener bytesListener = mock(CommunicatorBytesListener.class);
-        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener, scheduler);
+        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener,
+                eventListener, scheduler);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         scheduler.flush();
@@ -121,7 +126,8 @@ public class CommunicatorTest {
         final byte[] addWaterRequestBytes = new byte[]{(byte) 0xC0, 0x01, 0x50, 0x01, 0x00, 0x01, 0x0B, 0x5B, 0x7A};
 
         CommunicatorListener communicatorListener = mock(CommunicatorListener.class);
-        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener, scheduler);
+        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener,
+                eventListener, scheduler);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(addWaterRequestBytes);

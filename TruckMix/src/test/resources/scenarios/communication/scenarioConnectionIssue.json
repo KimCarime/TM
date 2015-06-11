@@ -230,5 +230,37 @@
     ["0xC0", "0x01", "0xAF", "0xFE", "0x00", "0x08", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD", "0xDE", "0xAD",
       "0xD2", "0x16"],
     ["0xC0", "0x01", "0x80", "0x05", "0x00", "0x00", "0x15", "0x1A"]
+  ],
+  "events": [
+    {
+      "description": "start delivery",
+      "id": 1,
+      "value": 1
+    },
+	{
+      "description": "bluetooth off",
+      "id": 10,
+      "value": 0
+    },
+    {
+      "description": "bluetooth on",
+      "id": 10,
+      "value": 1
+    },
+	{
+      "description": "new slump",
+      "id": 3,
+      "value": 119
+    },
+	{
+      "description": "bluetooth off",
+      "id": 10,
+      "value": 0
+    },
+		{
+      "description": "end of delivery",
+      "id": 2,
+      "value": 119
+    }
   ]
 }

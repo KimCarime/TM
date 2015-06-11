@@ -6,8 +6,10 @@ import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
 import com.lafarge.truckmix.communicator.Scheduler;
+import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +25,7 @@ import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.mock;
 
@@ -70,11 +73,13 @@ public class CommunicatorScenariosTest {
     private final String description;
     private final List<Step> steps;
     private final List<byte[]> packetsToSend;
+    private final List<Event> events;
 
-    public CommunicatorScenariosTest(String description, List<Step> steps, List<byte[]> packetsToSend) {
+    public CommunicatorScenariosTest(String description, List<Step> steps, List<byte[]> packetsToSend, List<Event> events) {
         this.description = description;
         this.steps = steps;
         this.packetsToSend = packetsToSend;
+        this.events = events;
     }
 
     @SuppressWarnings("unchecked")
@@ -86,7 +91,7 @@ public class CommunicatorScenariosTest {
         Set<String> files = reflections.getResources(Pattern.compile(".*\\.json"));
         List<Object[]> scenarios = new LinkedList<Object[]>();
         for (String file : files) {
-            Object[] values = new Object[3];
+            Object[] values = new Object[4];
             Map<String, Object> test = gson.fromJson(new InputStreamReader(CommunicatorScenariosTest.class.getResourceAsStream("/" + file)), token);
             values[0] = test.get("description");
 
@@ -125,6 +130,23 @@ public class CommunicatorScenariosTest {
             }
             values[2] = results;
 
+            List<Map<String, Object>> events_def = (List<Map<String, Object>>) test.get("events");
+            List<Event> eventResults = new LinkedList<Event>();
+            for (Map<String, Object> event_def : events_def) {
+
+                Event event;
+                Event.EventId eventId = Event.EventId.getEnum(((Double) event_def.get("id")).intValue());
+                Double value = (Double) event_def.get("value");
+                if (eventId == Event.EventId.ROTATION_SPEED || eventId == Event.EventId.INPUT_PRESSURE || eventId == Event.EventId
+                        .OUTPUT_PRESSURE) {
+                    event = new Event<Float>(eventId, value.floatValue());
+                } else {
+                    event = new Event<Integer>(eventId, value.intValue());
+                }
+                eventResults.add(event);
+            }
+            values[3] = eventResults;
+
             scenarios.add(values);
         }
         return scenarios;
@@ -134,18 +156,30 @@ public class CommunicatorScenariosTest {
     public void scenario() throws InterruptedException {
         System.out.println("running: " + this.description);
         final List<byte[]> results = new LinkedList<byte[]>();
+        final List<Event> eventResults = new LinkedList<Event>();
         Scheduler scheduler = new Scheduler(100 + 5);
-        Communicator communicator = new Communicator(new CommunicatorBytesListener() {
-            @Override
-            public void send(byte[] bytes) {
-                results.add(bytes);
-            }
-        }, mock(CommunicatorListener.class), new LoggerListener() {
-            @Override
-            public void log(String log) {
-                System.out.println(log);
-            }
-        }, scheduler);
+        Communicator communicator = new Communicator(
+                new CommunicatorBytesListener() {
+                    @Override
+                    public void send(byte[] bytes) {
+                        results.add(bytes);
+                    }
+                },
+                mock(CommunicatorListener.class),
+                new LoggerListener() {
+                    @Override
+                    public void log(String log) {
+                        System.out.println(log);
+                    }
+                },
+                new EventListener() {
+                    @Override
+                    public void onNewEvents(Event event) {
+                        eventResults.add(event);
+                    }
+                }
+                );
+        communicator.setQualityTrackingActivated(true);
 
         for (Step step : this.steps) {
             if (step instanceof Connected) {
@@ -218,5 +252,23 @@ public class CommunicatorScenariosTest {
         for (int i = 0; i < this.packetsToSend.size(); i++) {
             assertArrayEquals(results.get(i), this.packetsToSend.get(i));
         }
+        System.out.println("-> packages to send: OK");
+
+        System.out.println("Checking events:");
+        System.out.println("Expected:");
+        for (Event event : this.events) {
+            System.out.println("EVENT: {id: " + event.id.getIdValue() + ", value: " + event.value + "}");
+        }
+        System.out.println("Result:");
+        for (Event event : eventResults) {
+            System.out.println("EVENT: {id: " + event.id.getIdValue() + ", value: " + event.value + "}");
+        }
+
+        assertThat(eventResults, hasSize(this.events.size()));
+        for (int i = 0; i < this.events.size(); i++) {
+            assertThat(eventResults.get(i).id, is(this.events.get(i).id));
+            assertThat(eventResults.get(i).value, is(this.events.get(i).value));
+        }
+        System.out.println("-> events to send: OK");
     }
 }
