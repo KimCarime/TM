@@ -5,7 +5,7 @@ import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-import com.lafarge.truckmix.encoder.GroupEncoder;
+import com.lafarge.truckmix.encoder.Encoder;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class CommunicatorTest {
 
     private SchedulerMock scheduler;
-    private GroupEncoder encoder;
+    private Encoder encoder;
     private Communicator communicator;
     private CommunicatorBytesListener bytesListener;
     private CommunicatorListener communicatorListener;
@@ -37,7 +37,7 @@ public class CommunicatorTest {
     @Before
     public void setup() {
         scheduler = new SchedulerMock();
-        encoder = new GroupEncoder(mock(MessageSentListener.class));
+        encoder = new Encoder(mock(MessageSentListener.class));
         bytesListener = mock(CommunicatorBytesListener.class);
         communicatorListener = mock(CommunicatorListener.class);
         communicator = new Communicator(bytesListener, communicatorListener, loggerListener, scheduler);

@@ -3,6 +3,7 @@ package com.lafarge.truckmix;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.Encoder;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
@@ -30,10 +31,18 @@ public class EncoderScenariosTest {
     private static class Message {
         final String type;
         final Object value;
+        final Map<String, Object> values;
+
+        public Message(String type, Map<String, Object> values) {
+            this.type = type;
+            this.value = null;
+            this.values = values;
+        }
 
         public Message(String type, Object value) {
             this.type = type;
             this.value = value;
+            this.values = null;
         }
     }
 
@@ -62,7 +71,12 @@ public class EncoderScenariosTest {
             values[0] = test.get("description");
 
             Map<String, Object> message_def = (Map<String, Object>) test.get("message");
-            values[1] = new Message((String) message_def.get("type"), message_def.get("value"));
+            String type = (String) message_def.get("type");
+            if (type.equals("TRUCK_PARAMETERS") || type.equals("DELIVERY_PARAMETERS")) {
+                values[1] = new Message(type, (Map<String, Object>)message_def.get("values"));
+            } else {
+                values[1] = new Message(type, message_def.get("value"));
+            }
 
             List<String> result_def = (List<String>) test.get("result");
             ByteArrayOutputStream frame = new ByteArrayOutputStream();
@@ -166,6 +180,38 @@ public class EncoderScenariosTest {
 
         } else if (message.type.equals(Protocol.TRAME_NOMBRE_MAX_ERREURS_COMPTAGE)) {
             found = encoder.maxCountingError(((Double) message.value).intValue());
+
+        } else if (message.type.equals("TRUCK_PARAMETERS")) {
+            TruckParameters parameters = new TruckParameters(
+                    ((Double) message.values.get("T1")),
+                    ((Double) message.values.get("A11")),
+                    ((Double) message.values.get("A12")),
+                    ((Double) message.values.get("A13")),
+                    ((Double) message.values.get("magnetQuantity")).intValue(),
+                    ((Double) message.values.get("timePump")).intValue(),
+                    ((Double) message.values.get("timeDelayDriver")).intValue(),
+                    ((Double) message.values.get("pulseNumber")).intValue(),
+                    ((Double) message.values.get("flowmeterFrequency")).intValue(),
+                    TruckParameters.CommandPumpMode.valueOf(((String) message.values.get("commandPumpMode"))),
+                    ((Double) message.values.get("calibrationInputSensorA")),
+                    ((Double) message.values.get("calibrationInputSensorB")),
+                    ((Double) message.values.get("calibrationOutputSensorA")),
+                    ((Double) message.values.get("calibrationOutputSensorB")),
+                    ((Double) message.values.get("openingTimeEV1")).intValue(),
+                    ((Double) message.values.get("openingTimeVA1")).intValue(),
+                    ((Double) message.values.get("toleranceCounting")).intValue(),
+                    ((Double) message.values.get("waitingDurationAfterWaterAddition")).intValue(),
+                    ((Double) message.values.get("maxDelayBeforeFlowage")).intValue(),
+                    ((Double) message.values.get("maxFlowageError")).intValue(),
+                    ((Double) message.values.get("maxCountingError")).intValue());
+            found = encoder.truckParameters(parameters);
+
+        } else if (message.type.equals("DELIVERY_PARAMETERS")) {
+            DeliveryParameters parameters = new DeliveryParameters(
+                    ((Double) message.values.get("targetSlump")).intValue(),
+                    ((Double) message.values.get("maxWater")).intValue(),
+                    ((Double) message.values.get("loadVolume")).intValue());
+            found = encoder.deliveryParameters(parameters);
 
         } else {
             throw new IllegalArgumentException("unknown protocol type: " + message.type);

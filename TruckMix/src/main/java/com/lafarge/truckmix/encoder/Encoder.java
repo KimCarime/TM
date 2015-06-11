@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.encoder;
 
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.CRC16Modbus;
@@ -25,6 +26,53 @@ public class Encoder {
     public Encoder(MessageSentListener messageSentListener) {
         if (messageSentListener == null) throw new IllegalArgumentException("messageSentListener can't be null");
         this.messageSentListener = messageSentListener;
+    }
+
+    public byte[] truckParameters(TruckParameters parameters) {
+        assert parameters != null;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            out.write(parameterT1(parameters.T1));
+            out.write(parameterA11(parameters.A11));
+            out.write(parameterA12(parameters.A12));
+            out.write(parameterA13(parameters.A13));
+            out.write(magnetQuantity(parameters.magnetQuantity));
+            out.write(timePump(parameters.timePump));
+            out.write(timeDelayDriver(parameters.timeDelayDriver));
+            out.write(pulseNumber(parameters.pulseNumber));
+            out.write(flowmeterFrequency(parameters.flowmeterFrequency));
+            out.write(commandPumpMode(parameters.commandPumpMode));
+            out.write(calibrationInputSensorA(parameters.calibrationInputSensorA));
+            out.write(calibrationInputSensorB(parameters.calibrationInputSensorB));
+            out.write(calibrationOutputSensorA(parameters.calibrationOutputSensorA));
+            out.write(calibrationOutputSensorB(parameters.calibrationOutputSensorB));
+            out.write(openingTimeEV1(parameters.openingTimeEV1));
+            out.write(openingTimeVA1(parameters.openingTimeVA1));
+            out.write(countingTolerance(parameters.toleranceCounting));
+            out.write(waitingDurationAfterWaterAddition(parameters.waitingDurationAfterWaterAddition));
+            out.write(maxDelayBeforeFlowage(parameters.maxDelayBeforeFlowage));
+            out.write(maxFlowageError(parameters.maxFlowageError));
+            out.write(maxCountingError(parameters.maxCountingError));
+            return out.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public byte[] deliveryParameters(DeliveryParameters parameters) {
+        assert parameters != null;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        try {
+            out.write(targetSlump(parameters.targetSlump));
+            out.write(maximumWater(parameters.maxWater));
+            out.write(loadVolume(parameters.loadVolume));
+            return out.toByteArray();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public byte[] targetSlump(int value) {

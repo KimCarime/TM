@@ -8,7 +8,7 @@ import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.Decoder;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
-import com.lafarge.truckmix.encoder.GroupEncoder;
+import com.lafarge.truckmix.encoder.Encoder;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
 
@@ -35,7 +35,7 @@ public class Communicator {
     public static final long RESET_STATE_IN_MILLIS = 10 * 1000;
 
     // Encoder/Decoder
-    private final GroupEncoder encoder;
+    private final Encoder encoder;
     private final Decoder decoder;
 
     // Listener
@@ -76,7 +76,7 @@ public class Communicator {
         this.bytesListener = bytesListener;
         this.communicatorListener = communicatorListener;
         this.loggerListener = loggerListener;
-        this.encoder = new GroupEncoder(messageSentListener);
+        this.encoder = new Encoder(messageSentListener);
         this.decoder = new Decoder(messageReceivedListener, progressListener);
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
         this.isConnected = true;
