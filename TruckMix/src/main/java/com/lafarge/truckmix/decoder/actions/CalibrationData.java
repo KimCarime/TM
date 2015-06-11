@@ -25,8 +25,6 @@ public class CalibrationData extends ReadAction {
         float rotationSpeed = Convert.bytesToFloat(rotationSpeedBytes);
 
         // Inform listener
-        if (listener != null) {
-            listener.calibrationData(inPressure, outPressure, rotationSpeed);
-        }
+        listener.calibrationData(inPressure, outPressure, rotationSpeed);
     }
 }

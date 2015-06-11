@@ -18,8 +18,6 @@ public class SlumpUpdated extends ReadAction {
         int slump = Convert.bytesToInt(data);
 
         // Inform listener
-        if (listener != null) {
-            listener.slumpUpdated(slump);
-        }
+        listener.slumpUpdated(slump);
     }
 }

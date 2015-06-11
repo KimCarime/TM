@@ -11,13 +11,9 @@ public class MixingModeActivated extends ReadAction {
     @Override
     public void decode(byte[] data) {
         // Check data length
-        if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE);
-        }
+        checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE);
 
         // Inform listener
-        if (listener != null) {
-            listener.mixingModeActivated();
-        }
+        listener.mixingModeActivated();
     }
 }

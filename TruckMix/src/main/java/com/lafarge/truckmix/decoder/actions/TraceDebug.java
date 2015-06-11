@@ -13,8 +13,6 @@ public class TraceDebug extends ReadAction {
         String trace = new String(data);
 
         // Inform listener
-        if (listener != null) {
-            listener.traceDebug(trace);
-        }
+        listener.traceDebug(trace);
     }
 }

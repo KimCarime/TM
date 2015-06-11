@@ -31,8 +31,6 @@ public class DerivedData extends ReadAction {
         int expectedFrameSize = Convert.bytesToInt(expectedFrameSizeBytes);
 
         // Inform listener
-        if (listener != null) {
-            listener.derivedData(rotationDirection, isSlumpFrameStable, currentFrameSize, expectedFrameSize);
-        }
+        listener.derivedData(rotationDirection, isSlumpFrameStable, currentFrameSize, expectedFrameSize);
     }
 }

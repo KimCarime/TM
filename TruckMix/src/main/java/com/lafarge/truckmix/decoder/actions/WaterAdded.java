@@ -26,8 +26,6 @@ public class WaterAdded extends ReadAction {
         MessageReceivedListener.WaterAdditionMode additionMode = (additionModeByte == 0x00) ? MessageReceivedListener.WaterAdditionMode.MANUAL : MessageReceivedListener.WaterAdditionMode.AUTO;
 
         // Inform listener
-        if (listener != null) {
-            listener.waterAdded(volume, additionMode);
-        }
+        listener.waterAdded(volume, additionMode);
     }
 }

@@ -18,8 +18,6 @@ public class StateChanged extends ReadAction {
         int subStep = data[1];
 
         // Inform listener
-        if (listener != null) {
-            listener.stateChanged(step, subStep);
-        }
+        listener.stateChanged(step, subStep);
     }
 }

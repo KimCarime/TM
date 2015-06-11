@@ -24,8 +24,6 @@ public class SensorOutputConnectionChanged extends ReadAction {
         boolean isConnected = (isConnectedByte == 0x00);
 
         // Inform listener
-        if (listener != null) {
-            listener.outputSensorConnectionChanged(isConnected);
-        }
+        listener.outputSensorConnectionChanged(isConnected);
     }
 }

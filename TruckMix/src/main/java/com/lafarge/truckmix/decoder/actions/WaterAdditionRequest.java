@@ -17,8 +17,6 @@ public class WaterAdditionRequest extends ReadAction {
         int volume = data[0];
 
         // Inform listener
-        if (listener != null) {
-            listener.waterAdditionRequest(volume);
-        }
+        listener.waterAdditionRequest(volume);
     }
 }

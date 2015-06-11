@@ -30,10 +30,6 @@ public class RawData extends ReadAction {
         boolean buttonHold = (buttonHoldByte == 0x00);
 
         // Inform listener
-        if (listener != null) {
-            listener.rawData(inPressure, outPressure, interval, buttonHold);
-        } else {
-            System.out.println("listener OFF :(");
-        }
+        listener.rawData(inPressure, outPressure, interval, buttonHold);
     }
 }

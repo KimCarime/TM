@@ -39,8 +39,6 @@ public class InternData extends ReadAction {
         boolean commandVA1Activated = (data[5] == 0x00);
 
         // Inform listener
-        if (listener != null) {
-            listener.internData(inSensorConnected, outSensorConnected, speedTooLow, speedTooHigh, commandEP1Activated, commandVA1Activated);
-        }
+        listener.internData(inSensorConnected, outSensorConnected, speedTooLow, speedTooHigh, commandEP1Activated, commandVA1Activated);
     }
 }

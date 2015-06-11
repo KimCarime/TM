@@ -11,13 +11,9 @@ public class AlarmWaterAdditionBlocked extends ReadAction {
     @Override
     public void decode(byte[] data) {
         // Check data length
-        if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE);
-        }
+        checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_AJOUT_EAU_BLOQUE);
 
         // Inform listener
-        if (listener != null) {
-            listener.alarmWaterAdditionBlocked();
-        }
+        listener.alarmWaterAdditionBlocked();
     }
 }

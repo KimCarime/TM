@@ -11,13 +11,9 @@ public class AlarmFlowageError extends ReadAction {
     @Override
     public void decode(byte[] data) {
         // Check data length
-        if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_ERREUR_ECOULEMENT);
-        }
+        checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_ERREUR_ECOULEMENT);
 
         // Inform listener
-        if (listener != null) {
-            listener.alarmFlowageError();
-        }
+        listener.alarmFlowageError();
     }
 }

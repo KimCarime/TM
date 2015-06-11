@@ -11,13 +11,9 @@ public class DeliveryParametersRequest extends ReadAction {
     @Override
     public void decode(byte[] data) {
         // Check data length
-        if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_DEMANDE_PARAMETRES_DYNAMIQUES);
-        }
+        checkIfDataLengthIsValid(data.length, Protocol.TRAME_DEMANDE_PARAMETRES_DYNAMIQUES);
 
         // Inform listener
-        if (listener != null) {
-            listener.deliveryParametersRequest();
-        }
+        listener.deliveryParametersRequest();
     }
 }

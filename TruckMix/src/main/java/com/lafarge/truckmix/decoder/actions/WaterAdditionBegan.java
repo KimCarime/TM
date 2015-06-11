@@ -11,13 +11,9 @@ public class WaterAdditionBegan extends ReadAction {
     @Override
     public void decode(byte[] data) {
         // Check data length
-        if (data != null) {
-            checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_DEBUT_AJOUT_EAU);
-        }
+        checkIfDataLengthIsValid(data.length, Protocol.TRAME_NOTIFICATION_DEBUT_AJOUT_EAU);
 
         // Inform listener
-        if (listener != null) {
-            listener.waterAdditionBegan();
-        }
+        listener.waterAdditionBegan();
     }
 }

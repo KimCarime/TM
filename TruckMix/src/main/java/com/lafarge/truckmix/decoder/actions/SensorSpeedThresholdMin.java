@@ -24,8 +24,6 @@ public class SensorSpeedThresholdMin extends ReadAction {
         boolean thresholdExceed = (thresholdExceedByte != 0x00);
 
         // Inform listener
-        if (listener != null) {
-            listener.speedSensorHasExceedMinThreshold(thresholdExceed);
-        }
+        listener.speedSensorHasExceedMinThreshold(thresholdExceed);
     }
 }
