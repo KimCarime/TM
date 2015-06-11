@@ -8,11 +8,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * The fifth state of a message. Will return a CrcState if we pass valid bytes (i.e. respecting the protocol),
+ * otherwise will return HeaderState.
+ */
 public final class DataState extends State {
+
     private final int type;
     private final int expectedSize;
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+    /**
+     * Constructs a DataState
+     *
+     * @param type The message identifier
+     * @param size The expeceted size of data to decode
+     * @see State(Message, MessageReceivedListener, ProgressListener)
+     */
     public DataState(int type, int size, Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         super(message, messageListener, progressListener);
         this.type = type;
@@ -50,6 +62,7 @@ public final class DataState extends State {
         this.message.data = out.toByteArray();
     }
 
+    /** Helper to check if booleans is valid in received bytes */
     private boolean isDataFoundValidForGivenType(byte[] bytesToTest, int typeToMatch) {
         Protocol.Spec spec = getSpec(typeToMatch).getValue();
 

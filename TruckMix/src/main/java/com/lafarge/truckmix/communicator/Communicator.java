@@ -16,9 +16,14 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * This class is the entry point of the whole library, it is responsible of the communication between the client
+ * and the Wirma. All bytes to send to the Wirma will be given here (through listener) and all bytes received will be
+ * process here, and events will be triggered here.
+ */
 public class Communicator {
     /**
-     *  Internal state of the communicator
+     * Internal state of the communicator
      */
     enum State {
         WAITING_FOR_DELIVERY_NOTE,
@@ -27,7 +32,7 @@ public class Communicator {
     }
 
     /**
-     *  The period between two send
+     * Interval between two send of "end of delivery" in order to keep the Wirma sync with us
      */
     public static final long RESET_STATE_IN_MILLIS = 10 * 1000;
 
@@ -46,13 +51,14 @@ public class Communicator {
 
     // Current state
     private State state;
-
-    // Other
     private boolean sync;
     private boolean connected;
 
+    // Other
+    private Timer timer;
+
     /**
-     * Constructor
+     * Constructor should be called only once per session
      *
      * @param bytesListener
      * @param communicatorListener
@@ -68,10 +74,16 @@ public class Communicator {
         this.connected = true;
     }
 
-    /**
-     *  List of actions
-     */
+    //
+    // List of actions
+    //
 
+    /**
+     * Set the truck parameters. Will be send next time the Wirma request them.
+     *
+     * @param parameters The truck parameters
+     * @throws IllegalArgumentException If parameters is null
+     */
     public void setTruckParameters(TruckParameters parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("TruckParameters can't be null");
@@ -80,6 +92,12 @@ public class Communicator {
         truckParameters = parameters;
     }
 
+    /**
+     * Set the delivery parameters. Will be send next time the Wirma request them.
+     *
+     * @param parameters The delivery parameters
+     * @throws IllegalArgumentException If parameters is null
+     */
     public void deliveryNoteReceived(DeliveryParameters parameters) {
         if (parameters == null) {
             throw new IllegalArgumentException("DeliveryParameters can't be null");
@@ -92,6 +110,12 @@ public class Communicator {
         setState(State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION);
     }
 
+    /**
+     * Tell to the Wirma that we accepted or not the delivery. Note that you should call this method only after having
+     * given delivery parameters.
+     *
+     * @param accepted true to tell the Wirma to start a delivery, otherwise no.
+     */
     public void acceptDelivery(boolean accepted) {
         if (currentState() != State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
             throw new IllegalStateException("You should call deliveryNoteReceived() before accepting a delivery");
@@ -104,6 +128,9 @@ public class Communicator {
         }
     }
 
+    /**
+     * Tell the Wirma to end the current delivery in progress.
+     */
     public void endDelivery() {
         if (currentState() != State.DELIVERY_IN_PROGRESS) {
             throw new IllegalStateException("You can't end a delivery if you have not started one");
@@ -112,6 +139,11 @@ public class Communicator {
         setState(State.WAITING_FOR_DELIVERY_NOTE);
     }
 
+    /**
+     * Change the external display state of the truck.
+     *
+     * @param isActivated true to activate it, otherwise false to deactivate it.
+     */
     public void changeExternalDisplayState(boolean isActivated) {
         log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
         if (canSendBytes()) {
@@ -120,6 +152,12 @@ public class Communicator {
         }
     }
 
+    /**
+     * Give Wirma the permission to add water or note after. You should call this method only if you received a request
+     * to add water.
+     *
+     * @param isAllowed
+     */
     public void allowWaterAddition(boolean isAllowed) {
         log("ACTION: allow water addition: " + (isAllowed ? "ALLOWED" : "NOT ALLOWED"));
         // TODO: check if there was a water addition request before sending
@@ -129,22 +167,42 @@ public class Communicator {
         }
     }
 
-    public void setConnected(boolean isConnected) {
-        log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
-        if (!isConnected) {
+    /**
+     * Inform the communicator the current state of the connection of the Wirma.
+     * This is important because the communicator will continue to send logs and events to listeners if you continue
+     * to send bytes to through the method <code>void received(byte[] bytes)</code>. resulting in corrupted logs and
+     * events...
+     * Note that by default, this parameters is set to false.
+     *
+     * @param connected true if the terminal is connected to the Wirma, otherwise false.
+     */
+    public void setConnected(final boolean connected) {
+        loggerListener.log("BLUETOOTH: connection state: " + (connected ? "CONNECTED" : "NOT CONNECTED"));
+        if (!connected) {
             cancelTimer();
         } else {
-            if (!isSync() && (currentState() == State.WAITING_FOR_DELIVERY_NOTE || currentState() == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
+            if (!sync && (state == State.WAITING_FOR_DELIVERY_NOTE || state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION)) {
                 startTimer();
             }
         }
-        this.connected = isConnected;
+        this.connected = connected;
     }
 
+    /** Returns the current connection state of the communicator */
     public boolean isConnected() {
         return connected;
     }
 
+    /**
+     * This method is the entry point of the communicator. You should pass every bytes received from the Wirma in
+     * order to decode messages.
+     * Note that you can pass a buffer that contains only a part of a message, as long as each bytes is conform to the
+     * protocol, the communicator will keep them until to have a valid message.
+     * If a buffer is corrupted for whatever reason, the communicator will consume each bytes until
+     * a message conform to the protocol is decoded.
+     *
+     * @param bytes Bytes received from the Wirma
+     */
     public void received(byte[] bytes) {
         try {
             decoder.decode(bytes);
@@ -153,7 +211,11 @@ public class Communicator {
         }
     }
 
-    // TODO: should be private
+    //
+    // Private stuff
+    //
+
+    // TODO: Should be private
     public void setState(State state) {
         log("STATE: state changed: " + state.toString());
         switch (state) {
@@ -187,10 +249,6 @@ public class Communicator {
         return sync;
     }
 
-    /**
-     *  Private stuff
-     */
-    private Timer timer;
 
     private void startTimer() {
         cancelTimer();
@@ -234,7 +292,7 @@ public class Communicator {
     }
 
     /**
-     *  Message decoded by the Decoder
+     * Message decoded
      */
     private final MessageReceivedListener messageReceivedListener = new MessageReceivedListener() {
         @Override

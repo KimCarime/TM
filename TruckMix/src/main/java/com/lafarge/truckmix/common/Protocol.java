@@ -2,15 +2,25 @@ package com.lafarge.truckmix.common;
 
 import java.util.HashMap;
 
+/**
+ * Contains all the specifications about the protocol of communication with the Wirma.
+ */
 public class Protocol {
-    public static final String TAG = "KerlinkProtocol";
-
+    /**
+     * The first byte of every message, if a message doesn't start by this byte, then it is not considered valid.
+     */
     public static final int HEADER = 0xC0;
-    public static final int VERSION = 0x01;
 
     /**
-     *  Definition of messages send to the box
+     * The second byte of every message, if a message doesn't have a HEADER byte followed by this one, then is it not
+     * considered valid.
      */
+    public static final int VERSION = 0x01;
+
+    //
+    // Definition of messages send to the Wirma.
+    //
+
     public static final String TRAME_SLUMP_CIBLE = "TRAME_SLUMP_CIBLE";
     public static final String TRAME_VOLUME_EAU_MAXIMUM = "TRAME_VOLUME_EAU_MAXIMUM";
     public static final String TRAME_AUTORISATION_REFUS_AJOUT_EAU = "TRAME_AUTORISATION_REFUS_AJOUT_EAU";
@@ -40,9 +50,10 @@ public class Protocol {
     public static final String TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT = "TRAME_NOMBRE_MAX_ERREURS_ECOULEMENT";
     public static final String TRAME_NOMBRE_MAX_ERREURS_COMPTAGE = "TRAME_NOMBRE_MAX_ERREURS_COMPTAGE";
 
-    /**
-     *  Definition of messages to received from the box
-     */
+    //
+    // Definition of messages to received from the Wirma.
+    //
+
     public static final String TRAME_SLUMP_COURANT = "TRAME_SLUMP_COURANT";
     public static final String TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE = "TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE";
     public static final String TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE = "TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE";
@@ -77,18 +88,31 @@ public class Protocol {
     public static final String TRAME_BIDON = "TRAME_BIDON";
 
     /**
-     * Spec
+     * Specification of a message
      */
     public static class Spec {
+        /** This is for message that don't have defined data size e.g. TRAME_TRACE_DEBUG. */
         public static final int SIZE_UNDEFINED = -1;
 
+        /** The byte identifier of the message */
         public final int address;
+        /** The data size of the message */
         public final int size;
+        /** An array of offset in order to check at parsing time data that should be equal to 0x00 or 0xFF */
         public final int[] booleansToCheck;
 
+        /** @see Spec(int, int, int[]) */
         public Spec(int address, int size) {
             this(address, size, null);
         }
+
+        /**
+         * Constructs a new Message with its specifications
+         *
+         * @param address (required) The byte identifier of the message
+         * @param size (required) The data size of the message
+         * @param booleansToCheck (optional) The array of offsets to check for boolean (can be null)
+         */
         public Spec(int address, int size, int[] booleansToCheck) {
             this.address = address;
             this.size = size;
@@ -96,9 +120,13 @@ public class Protocol {
         }
     }
 
+    /**
+     * The list of valid messages with its specifications.
+     */
     public static final HashMap<String, Spec> constants = new HashMap<String, Spec>();
     static
     {
+        // List of messages to send to the Wirma.
         constants.put(TRAME_SLUMP_CIBLE, new Spec(0x8001, 2));
         constants.put(TRAME_VOLUME_EAU_MAXIMUM, new Spec(0x8002, 2));
         constants.put(TRAME_AUTORISATION_REFUS_AJOUT_EAU, new Spec(0x8003, 1));
@@ -129,6 +157,7 @@ public class Protocol {
         constants.put(TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, new Spec(0xA015, 1));
         constants.put(TRAME_BIDON, new Spec(0xAFFE, 8));
 
+        // List of messages received from the Wirma.
         constants.put(TRAME_SLUMP_COURANT, new Spec(0x1001, 2));
         constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2, new int[]{1}));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, new Spec(0x3001, 0));

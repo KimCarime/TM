@@ -1,12 +1,17 @@
 package com.lafarge.truckmix.common.models;
 
+/**
+ * This class contains all information the Wirma need for calibration.
+ */
 public class TruckParameters {
 
+    /** Represent the command pump mode */
     public enum CommandPumpMode {
         AUTO,
         SEMI_AUTO
     }
 
+    // Member fields
     public final double T1;
     public final double A11;
     public final double A12;
@@ -29,6 +34,9 @@ public class TruckParameters {
     public final int maxFlowageError;
     public final int maxCountingError;
 
+    /**
+     * Constructor
+     */
     public TruckParameters(double T1, double A11, double A12, double A13, int magnetQuantity, int timePump, int timeDelayDriver, int pulseNumber, int flowmeterFrequency, CommandPumpMode commandPumpMode, double calibrationInputSensorA, double calibrationInputSensorB, double calibrationOutputSensorA, double calibrationOutputSensorB, int openingTimeEV1, int openingTimeVA1, int toleranceCounting, int waitingDurationAfterWaterAddition, int maxDelayBeforeFlowage, int maxFlowageError, int maxCountingError) {
         this.T1 = T1;
         this.A11 = A11;

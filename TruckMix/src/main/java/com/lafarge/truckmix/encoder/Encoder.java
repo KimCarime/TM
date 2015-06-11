@@ -9,6 +9,9 @@ import com.lafarge.truckmix.utils.Convert;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * The Encoder part of the library, this class is responsible of encoding messages to send to the Wirma.
+ */
 public class Encoder {
 
     private MessageSentListener messageSentListener;
@@ -255,22 +258,34 @@ public class Encoder {
         return result;
     }
 
+    /** @see Encoder#encode(String, byte[]) */
     private byte[] encode(String type) {
         return encode(type, null);
     }
 
+    /** @see Encoder#encode(String, byte[]) */
     private byte[] encode(String type, int value) {
         return encode(type, Convert.intToBytes(value, Protocol.constants.get(type).size));
     }
 
+    /** @see Encoder#encode(String, byte[]) */
     private byte[] encode(String type, double value) {
         return encode(type, Convert.doubleToBytes(value));
     }
 
+    /** @see Encoder#encode(String, byte[]) */
     private byte[] encode(String type, byte dataByte) {
         return encode(type, new byte[]{dataByte});
     }
 
+    /**
+     * Encode a valid message for a given type with its data.
+     *
+     * @param type The type of the message
+     * @param dataBytes The data bytes to encode
+     * @return The message encoded to send to the Wirma.
+     * @throws RuntimeException If dataBytes length isn't equal with spec size of given type
+     */
     private byte[] encode(String type, byte[] dataBytes) {
         Protocol.Spec spec = Protocol.constants.get(type);
 

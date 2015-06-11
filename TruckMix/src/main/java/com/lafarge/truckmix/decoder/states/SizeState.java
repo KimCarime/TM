@@ -9,13 +9,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * The fourth state of a message. Will return a DataState if we pass valid bytes (i.e. respecting the protocol) or
+ * directly a CrcState if size found is equal to 0, otherwise will return HeaderState.
+ */
 public final class SizeState extends State {
 
+    /** The number of bytes of the size part of a message */
     private static final int SIZE_NB_BYTES = 2;
 
     private final int type;
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+    /**
+     * Constructs a SizeState
+     *
+     * @param type The message identifier
+     * @see State(Message, MessageReceivedListener, ProgressListener)
+     */
     public SizeState(int type, Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         super(message, messageListener, progressListener);
         this.type = type;
@@ -60,6 +71,7 @@ public final class SizeState extends State {
         this.message.sizeLsb = buff[1];
     }
 
+    /** Helper to check if size found match with the protocol bytes by bytes */
     private boolean isSizeFoundDoesMatchForGivenType(byte[] sizeToTest, int type) {
         Protocol.Spec spec = getSpec(type).getValue();
         if (spec.size == Protocol.Spec.SIZE_UNDEFINED) {

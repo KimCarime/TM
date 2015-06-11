@@ -3,7 +3,7 @@ package com.lafarge.truckmix.encoder.listeners;
 import com.lafarge.truckmix.common.models.TruckParameters;
 
 /**
- *  Implement this interface to obtain every methods that the encoder actually want to send
+ * This interface list every messages that the Encoder have actually encoded.
  */
 public interface MessageSentListener {
 

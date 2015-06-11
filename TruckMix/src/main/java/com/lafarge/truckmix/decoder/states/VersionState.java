@@ -7,8 +7,17 @@ import com.lafarge.truckmix.common.Protocol;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * The second state of a message. Will return a TypeState if we pass a valid byte, otherwise
+ * will return HeaderState.
+ */
 public final class VersionState extends State {
 
+    /**
+     * Constructs a VersionState
+     *
+     * @see State(Message, MessageReceivedListener, ProgressListener)
+     */
     public VersionState(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         super(message, messageListener, progressListener);
     }

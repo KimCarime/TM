@@ -2,6 +2,9 @@ package com.lafarge.truckmix.utils;
 
 import java.util.zip.Checksum;
 
+/**
+ * Class that compute a crc 16 modbus for a given buffer of bytes.
+ */
 public class CRC16Modbus implements Checksum {
     private static final int[] TABLE = {
             0x0000, 0xc0c1, 0xc181, 0x0140, 0xc301, 0x03c0, 0x0280, 0xc241,

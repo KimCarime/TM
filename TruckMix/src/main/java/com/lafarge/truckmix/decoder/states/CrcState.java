@@ -11,13 +11,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+/**
+ * The sixth and last state of a message. Will send the decoded event though the MessageReceivedListener if we pass
+ * valid bytes (i.e. computed crc (thanks to Message object) match with the crc received),
+ * otherwise will return HeaderState.
+ */
 public final class CrcState extends State {
 
+    /** The number of bytes of the crc part of a message */
     private static final int CRC_NB_BYTES = 2;
 
     private byte[] crcToMatch;
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+    /**
+     * Constructs a CrcState.
+     *
+     * @see State(Message, MessageReceivedListener, ProgressListener)
+     */
     public CrcState(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) throws IOException {
         super(message, messageListener, progressListener);
         this.crcToMatch = computeCrc(message);
@@ -52,6 +63,7 @@ public final class CrcState extends State {
     @Override
     protected void saveBuffer() {} // Nothing to do here.
 
+    /** Helper to check if computed crc match with given crc bytes by bytes */
     private boolean isCrcFoundMatch(byte[] crcToTest) {
         for (int i = 0; i < crcToTest.length; i++) {
             if (crcToTest[i] != crcToMatch[i]) {
@@ -61,6 +73,12 @@ public final class CrcState extends State {
         return true;
     }
 
+    /**
+     * Compute crc to valid message for a given message.
+     *
+     * @param message The message we want to compute the crc.
+     * @return The crc
+     */
     private byte[] computeCrc(State.Message message) throws IOException {
         CRC16Modbus crc = new CRC16Modbus();
         for (byte b : message.getMessageBytes()) {
@@ -69,6 +87,12 @@ public final class CrcState extends State {
         return crc.getCrcBytes();
     }
 
+    /**
+     * Return an action to do for a given message identifier. Should be called only if the message decoded is valid.
+     *
+     * @param type The message identifier
+     * @return An action to perform @see ReadAction
+     */
     private ReadAction getAction(int type) {
         Map.Entry<String, Protocol.Spec> entry = getSpec(type);
 

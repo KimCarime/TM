@@ -10,12 +10,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+/**
+ * The third state of a message. Will return a SizeState if we pass valid bytes (.i.e. if message found exist in the
+ * protocol, will return HeaderState.
+ */
 public final class TypeState extends State {
 
+    /** The nb bytes of Type part of a message */
     private static final int TYPE_NB_BYTES = 2;
 
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
+    /**
+     * Constructs a TypeState
+     *
+     * @see State(Message, MessageReceivedListener, ProgressListener)
+     */
     public TypeState(Message message, MessageReceivedListener messageListener, ProgressListener progressListener) {
         super(message, messageListener, progressListener);
     }

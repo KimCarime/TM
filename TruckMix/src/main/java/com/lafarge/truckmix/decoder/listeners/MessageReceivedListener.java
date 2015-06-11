@@ -1,5 +1,8 @@
 package com.lafarge.truckmix.decoder.listeners;
 
+/**
+ * This interface list all message decoded received from the Wirma.
+ */
 public interface MessageReceivedListener {
 
     enum WaterAdditionMode {

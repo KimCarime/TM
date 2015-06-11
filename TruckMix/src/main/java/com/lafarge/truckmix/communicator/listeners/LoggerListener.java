@@ -1,8 +1,13 @@
 package com.lafarge.truckmix.communicator.listeners;
 
 /**
- *  Implement this interface to obtain the logs of the Communicator
+ * Interface responsible of sending logs of the Communicator.
  */
 public interface LoggerListener {
+    /**
+     * Triggered when the Communicator send logs.
+     *
+     * @param log The message
+     */
     void log(String log);
 }

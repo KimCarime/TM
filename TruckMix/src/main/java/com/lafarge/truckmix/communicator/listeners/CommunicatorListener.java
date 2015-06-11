@@ -2,6 +2,9 @@ package com.lafarge.truckmix.communicator.listeners;
 
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
+/**
+ * Interface of message received from the Wirma.
+ */
 public interface CommunicatorListener {
 
     void slumpUpdated(int slump);
