@@ -6,6 +6,7 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.encoder.GroupEncoder;
+import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,7 +24,8 @@ public class CommunicatorTest {
     private GroupEncoder encoder;
     private Communicator communicator;
     private CommunicatorBytesListener bytesListener;
-    private LoggerListener loggerListener = new LoggerListener() {
+    private CommunicatorListener communicatorListener;
+    private final LoggerListener loggerListener = new LoggerListener() {
         @Override
         public void log(String log) {
             System.out.println(log);
@@ -32,9 +34,11 @@ public class CommunicatorTest {
 
     @Before
     public void setup() {
-        encoder = new GroupEncoder(null);
+        encoder = new GroupEncoder(mock(MessageSentListener.class));
         bytesListener = mock(CommunicatorBytesListener.class);
-        communicator = new Communicator(this.bytesListener, null, loggerListener);
+        communicatorListener = mock(CommunicatorListener.class);
+        communicator = new Communicator(bytesListener, communicatorListener, loggerListener);
+        communicator.setConnected(true);
     }
 
     @Test
@@ -81,7 +85,8 @@ public class CommunicatorTest {
                     result.add(bytes);
                 }
             }
-        }, null, loggerListener);
+        }, communicatorListener, loggerListener);
+
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(deliveryParametersRequestBytes);
         communicator.deliveryNoteReceived(params);
@@ -100,7 +105,7 @@ public class CommunicatorTest {
         final byte[] deliveryParametersRequestBytes = new byte[]{(byte)0xC0, 0x01, 0x50 ,0x03 ,0x00, 0x00, (byte)0xCD, (byte)0xDB};
         final byte[] endOfDeliveryBytes = encoder.endOfDelivery();
         CommunicatorBytesListener bytesListener = mock(CommunicatorBytesListener.class);
-        Communicator communicator = new Communicator(bytesListener, null, loggerListener);
+        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener);
 
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         verify(bytesListener, after((int) (Communicator.RESET_STATE_IN_MILLIS) + 100).times(2)).send(endOfDeliveryBytes);
@@ -111,10 +116,7 @@ public class CommunicatorTest {
     @Test
     public void should_inform_waterAdditionRequest_only_in_DELIVERY_IN_PROGRESS_state() {
         final byte[] addWaterRequestBytes = new byte[]{(byte) 0xC0, 0x01, 0x50, 0x01, 0x00, 0x01, 0x0B, 0x5B, 0x7A};
-
-        CommunicatorListener communicatorListener = mock(CommunicatorListener.class);
-        Communicator communicator = new Communicator(null, communicatorListener, loggerListener);
-
+        Communicator communicator = new Communicator(bytesListener, communicatorListener, loggerListener);
         communicator.setState(Communicator.State.WAITING_FOR_DELIVERY_NOTE);
         communicator.received(addWaterRequestBytes);
         verify(communicatorListener, never()).waterAdditionRequest(11);

@@ -38,14 +38,10 @@ public final class DataState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_DATA, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_DATA, (byte) read);
             out.write(read);
             if (!isDataFoundValidForGivenType(out.toByteArray(), type)) {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_DATA_BOOLEAN_TYPE, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_DATA_BOOLEAN_TYPE, (byte) read);
                 return new HeaderState(messageListener, progressListener).decode(in);
             }
             if (out.size() < expectedSize) {

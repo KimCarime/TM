@@ -39,14 +39,10 @@ public final class SizeState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_SIZE, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_SIZE, (byte) read);
             out.write(read);
             if (!isSizeFoundDoesMatchForGivenType(out.toByteArray(), type)) {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_SIZE, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_SIZE, (byte) read);
                 return new HeaderState(messageListener, progressListener).decode(in);
             }
             if (out.size() < SIZE_NB_BYTES) {

@@ -41,14 +41,10 @@ public final class CrcState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_CRC, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_CRC, (byte) read);
             out.write(read);
             if (!isCrcFoundMatch(out.toByteArray())) {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_CRC, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_CRC, (byte) read);
                 return new HeaderState(messageListener, progressListener).decode(in);
             }
             if (out.size() < CRC_NB_BYTES) {

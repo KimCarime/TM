@@ -37,14 +37,10 @@ public final class TypeState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_TYPE, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_TYPE, (byte) read);
             out.write(read);
             if (!isTypeFoundExist(out.toByteArray())) {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_TYPE, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_TYPE, (byte) read);
                 return new HeaderState(messageListener, progressListener).decode(in);
             }
             if (out.size() < TYPE_NB_BYTES) {
@@ -64,6 +60,7 @@ public final class TypeState extends State {
         this.message.typeLsb = buffer[1];
     }
 
+    /** Helper to check if message found exist in the protocol bytes by bytes */
     private boolean isTypeFoundExist(byte[] typeToTest) {
         for (Map.Entry<String, Protocol.Spec> entry : Protocol.constants.entrySet()) {
             byte[] typeToMatch = Convert.intToBytes(entry.getValue().address, 2);

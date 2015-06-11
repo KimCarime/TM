@@ -5,7 +5,9 @@ import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.Encoder;
+import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -20,6 +22,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.Mockito.mock;
 
 @RunWith(value = Parameterized.class)
 public class EncoderScenariosTest {
@@ -75,7 +78,8 @@ public class EncoderScenariosTest {
 
     @Test
     public void scenario() throws IOException {
-        final Encoder encoder = new Encoder();
+        final MessageSentListener messageSentListener = mock(MessageSentListener.class);
+        final Encoder encoder = new Encoder(messageSentListener);
         final byte[] found;
         System.out.println("running: " + scenario);
         System.out.println("  testing: " + message.type + "\nExpected result: " + Convert.bytesToHex(result));

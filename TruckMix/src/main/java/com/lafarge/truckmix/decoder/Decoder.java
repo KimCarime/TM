@@ -36,6 +36,8 @@ public class Decoder {
      * @throws IllegalArgumentException If one of parameters is null
      */
     public Decoder(MessageReceivedListener messageListener, ProgressListener progressListener) {
+        if (messageListener == null) throw new IllegalArgumentException("messageListener can't be null");
+        if (progressListener == null) throw new IllegalArgumentException("progressListener can't be null");
         this.messageListener = messageListener;
         this.progressListener = progressListener;
         this.state = new HeaderState(messageListener, progressListener);
@@ -52,18 +54,14 @@ public class Decoder {
      * @throws IOException
      */
     public void decode(byte[] in) throws IOException {
-        if (progressListener != null) {
-            progressListener.willDecode(in);
-        }
-        boolean expired = this.lastDecode > 0 && (System.currentTimeMillis() - this.lastDecode > STATE_EXPIRATION_DELAY_MILLIS);
-        this.lastDecode = System.currentTimeMillis();
+        progressListener.willDecode(in);
+        boolean expired = lastDecode > 0 && (System.currentTimeMillis() - lastDecode > STATE_EXPIRATION_DELAY_MILLIS);
+        lastDecode = System.currentTimeMillis();
         if (expired && !(state instanceof HeaderState)) {
-            if (progressListener != null) {
-                progressListener.timeout();
-            }
-            this.state = new HeaderState(messageListener, progressListener).decode(new ByteArrayInputStream(in));
+            progressListener.timeout();
+            state = new HeaderState(messageListener, progressListener).decode(new ByteArrayInputStream(in));
         } else {
-            this.state = this.state.decode(new ByteArrayInputStream(in));
+            state = state.decode(new ByteArrayInputStream(in));
         }
     }
 }

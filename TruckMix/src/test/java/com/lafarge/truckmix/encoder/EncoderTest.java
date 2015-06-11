@@ -1,20 +1,23 @@
 package com.lafarge.truckmix.encoder;
 
-import com.lafarge.truckmix.encoder.Encoder;
+import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.Mockito.mock;
 
 public class EncoderTest {
 
     private Encoder encoder;
+    private MessageSentListener messageSentListener;
 
     @Before
     public void setup() {
-        this.encoder = new Encoder();
+        this.messageSentListener = mock(MessageSentListener.class);
+        this.encoder = new Encoder(messageSentListener);
     }
 
     @Test

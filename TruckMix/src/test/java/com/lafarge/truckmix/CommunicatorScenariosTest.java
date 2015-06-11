@@ -6,6 +6,7 @@ import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
+import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertArrayEquals;
+import static org.mockito.Mockito.mock;
 
 @RunWith(value = Parameterized.class)
 public class CommunicatorScenariosTest {
@@ -136,7 +138,7 @@ public class CommunicatorScenariosTest {
             public void send(byte[] bytes) {
                 results.add(bytes);
             }
-        }, null, new LoggerListener() {
+        }, mock(CommunicatorListener.class), new LoggerListener() {
             @Override
             public void log(String log) {
                 System.out.println(log);

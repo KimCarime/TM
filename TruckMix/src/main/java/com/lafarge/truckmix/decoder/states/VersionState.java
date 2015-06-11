@@ -29,16 +29,12 @@ public final class VersionState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_VERSION, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_VERSION, (byte) read);
             if (read == Protocol.VERSION) {
                 saveBuffer();
                 return new TypeState(message, messageListener, progressListener).decode(in);
             } else {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_VERSION, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_VERSION, (byte) read);
                 return new HeaderState(messageListener, progressListener).decode(in);
             }
         }

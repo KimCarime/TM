@@ -29,16 +29,12 @@ public final class HeaderState extends State {
         if (read == -1) {
             return this;
         } else {
-            if (progressListener != null) {
-                progressListener.willProcessByte(ProgressListener.ProgressState.STATE_HEADER, (byte) read);
-            }
+            progressListener.willProcessByte(ProgressListener.ProgressState.STATE_HEADER, (byte) read);
             if (read == Protocol.HEADER) {
                 saveBuffer();
                 return new VersionState(message, messageListener, progressListener).decode(in);
             } else {
-                if (progressListener != null) {
-                    progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_HEADER, (byte) read);
-                }
+                progressListener.parsingFailed(ProgressListener.ParsingError.ERROR_PARSING_HEADER, (byte) read);
                 return decode(in);
             }
         }
