@@ -134,7 +134,7 @@ public class CommunicatorScenariosTest {
     public void scenario() throws InterruptedException {
         System.out.println("running: " + this.description);
         final List<byte[]> results = new LinkedList<byte[]>();
-        Scheduler scheduler = new Scheduler(100);
+        Scheduler scheduler = new Scheduler(100 + 5);
         Communicator communicator = new Communicator(new CommunicatorBytesListener() {
             @Override
             public void send(byte[] bytes) {
