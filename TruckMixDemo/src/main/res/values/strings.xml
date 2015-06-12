@@ -1,6 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TruckMix Demo</string>
 
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <!-- MainActivity -->
+    <string name="title_main_section1">Console</string>
+    <string name="title_main_section2">Vue d\'ensemble</string>
+
+    <!-- ParametersActivity -->
+    <string name="title_customize_parameters_section1">Paramètre camion</string>
+    <string name="title_customize_parameters_section2">Paramètre de livraison</string>
+
 </resources>

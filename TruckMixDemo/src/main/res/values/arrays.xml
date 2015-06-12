@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="send_frame_array">
+        <item>Paramètres camion</item>
+        <item>Paramètres livraison</item>
+        <item>Début livraison</item>
+        <item>Fin livraison</item>
+        <item>Affichage extérieur</item>
+    </array>
+    <array name="truck_parameters_command_pump_modes">
+        <item>AUTO</item>
+        <item>SEMI_AUTO</item>
+    </array>
+</resources>

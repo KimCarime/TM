@@ -1,9 +1,18 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
+      xmlns:compat="http://schemas.android.com/apk/res-auto"
       tools:context=".MainActivity">
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
-          android:orderInCategory="100"
-          app:showAsAction="never"/>
+
+    <item android:id="@+id/send_frame"
+          compat:showAsAction="always"
+          android:title="Actions"/>
+    <item android:id="@+id/scan"
+          compat:showAsAction="never"
+          android:title="Connecte"/>
+    <item android:id="@+id/clear"
+          compat:showAsAction="never"
+          android:title="Clear"/>
+    <item android:id="@+id/customize_parameters"
+          compat:showAsAction="never"
+          android:title="Customize parameters"/>
 </menu>
