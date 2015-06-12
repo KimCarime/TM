@@ -1,11 +1,9 @@
-package com.lafarge.truckmix;
+package com.lafarge.truckmix.communicator;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
-import com.lafarge.truckmix.communicator.Communicator;
-import com.lafarge.truckmix.communicator.Scheduler;
 import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
@@ -157,7 +155,7 @@ public class CommunicatorScenariosTest {
         System.out.println("running: " + this.description + "\n");
         final List<byte[]> results = new LinkedList<byte[]>();
         final List<Event> eventResults = new LinkedList<Event>();
-        Scheduler scheduler = new Scheduler(100);
+        CountingSchedulerMock scheduler = new CountingSchedulerMock(Communicator.RESET_STATE_IN_MILLIS);
         Communicator communicator = new Communicator(
                 new CommunicatorBytesListener() {
                     @Override
@@ -186,8 +184,8 @@ public class CommunicatorScenariosTest {
             if (step instanceof Connected) {
                 communicator.setConnected(((Connected) step).connected);
             } else if (step instanceof Wait) {
-                System.out.println("TEST: should wait " + ((Wait)step).waitInSec + " sec");
-                Thread.sleep(((Wait) step).waitInSec*10);
+                System.out.println("--------- TEST: should wait " + ((Wait)step).waitInSec + " sec");
+                scheduler.forward(((Wait) step).waitInSec * 1000);
             } else if (step instanceof Message) {
                 communicator.received(((Message) step).packets);
             } else if (step instanceof Action) {

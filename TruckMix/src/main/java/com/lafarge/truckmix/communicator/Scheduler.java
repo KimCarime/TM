@@ -7,13 +7,9 @@ import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
 
+    protected final long wait;
     private final ScheduledExecutorService ex;
-    private final long wait;
     private ScheduledFuture<?> future;
-
-    public Scheduler() {
-        this(10 * 1000);
-    }
 
     public Scheduler(long wait) {
         this.ex = Executors.newSingleThreadScheduledExecutor();

@@ -1,9 +1,13 @@
 package com.lafarge.truckmix.communicator;
 
 
-public class SchedulerMock extends Scheduler {
+public class FlushedSchedulerMock extends Scheduler {
 
     private Runnable task;
+
+    public FlushedSchedulerMock() {
+        super(42);
+    }
 
     @Override
     public void start(Runnable task) {
