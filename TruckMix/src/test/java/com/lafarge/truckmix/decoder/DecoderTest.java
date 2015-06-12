@@ -6,6 +6,7 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
 import com.lafarge.truckmix.decoder.states.HeaderState;
 import com.lafarge.truckmix.decoder.states.TypeState;
+import com.lafarge.truckmix.utils.MessageReceivedFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -33,19 +34,7 @@ public class DecoderTest {
 
     @Test
     public void should_decode_message() throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        out.write(0xC0); // Header
-        out.write(0x01); // Version
-        out.write(0x10); // TRAME_SLUMP_COURANT
-        out.write(0x01);
-        out.write(0x00); // Size
-        out.write(0x02);
-        out.write(0x00); // Data
-        out.write(0xEE);
-        out.write(0x42); // CRC
-        out.write(0x47);
-
-        decoder.decode(out.toByteArray());
+        decoder.decode(MessageReceivedFactory.createSlumpUpdatedMessage());
         verify(messageListener).slumpUpdated(238);
     }
 

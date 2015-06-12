@@ -93,7 +93,7 @@ public class Communicator {
         this.encoder = new Encoder(messageSentListener);
         this.decoder = new Decoder(messageReceivedListener, progressListener);
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
-        this.isConnected = true;
+        this.isConnected = false;
         this.scheduler = scheduler;
     }
 
@@ -198,6 +198,7 @@ public class Communicator {
      * to send bytes to through the method <code>void received(byte[] bytes)</code>. resulting in corrupted logs and
      * events...
      * Note that by default, this parameters is set to false.
+     * By default, the Communicator is not connected.
      *
      * @param isConnected true if the terminal is connected to the Wirma, otherwise false.
      */
@@ -231,6 +232,7 @@ public class Communicator {
 
     /**
      * Allow water actions, useful for countries that doesn't allow water addition in the concrete.
+     * By default, water request is not allowed.
      *
      * @param waterRequestAllowed true if you want to interact with the water, otherwise false.
      */
@@ -245,6 +247,7 @@ public class Communicator {
 
     /**
      * Activate the quality tracking, if true, events will be send to the EventListener passed in constructor.
+     * By default, quality traduction is not enabled.
      *
      * @param activated true to activate the quality tracking, otherwise false.
      */
@@ -279,8 +282,7 @@ public class Communicator {
     // Private stuff
     //
 
-    // TODO: Should be private
-    public void setState(State state) {
+    private void setState(State state) {
         loggerListener.log("STATE: state changed: " + state.toString());
         switch (state) {
             case WAITING_FOR_DELIVERY_NOTE:

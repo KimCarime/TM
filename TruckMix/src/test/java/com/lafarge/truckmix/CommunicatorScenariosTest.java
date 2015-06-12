@@ -154,10 +154,10 @@ public class CommunicatorScenariosTest {
 
     @Test
     public void scenario() throws InterruptedException {
-        System.out.println("running: " + this.description);
+        System.out.println("running: " + this.description + "\n");
         final List<byte[]> results = new LinkedList<byte[]>();
         final List<Event> eventResults = new LinkedList<Event>();
-        Scheduler scheduler = new Scheduler(100 + 5);
+        Scheduler scheduler = new Scheduler(100);
         Communicator communicator = new Communicator(
                 new CommunicatorBytesListener() {
                     @Override
@@ -177,23 +177,21 @@ public class CommunicatorScenariosTest {
                     public void onNewEvents(Event event) {
                         eventResults.add(event);
                     }
-                }
-                );
+                },
+                scheduler);
         communicator.setQualityTrackingActivated(true);
+        communicator.setWaterRequestAllowed(true);
 
         for (Step step : this.steps) {
             if (step instanceof Connected) {
-                System.out.println("--------- TEST: should change connection state");
                 communicator.setConnected(((Connected) step).connected);
             } else if (step instanceof Wait) {
-                System.out.println("--------- TEST: should wait " + ((Wait)step).waitInSec + " sec");
+                System.out.println("TEST: should wait " + ((Wait)step).waitInSec + " sec");
                 Thread.sleep(((Wait) step).waitInSec*10);
             } else if (step instanceof Message) {
-                System.out.println("--------- TEST: should received: " + ((Message) step).description);
                 communicator.received(((Message) step).packets);
             } else if (step instanceof Action) {
                 if (((Action) step).action.equals("init")) {
-                    System.out.println("--------- TEST: should set truck parameters");
                     communicator.setTruckParameters(new TruckParameters(
                             ((Double) ((Action) step).values.get("T1")),
                             ((Double) ((Action) step).values.get("A11")),
@@ -218,26 +216,21 @@ public class CommunicatorScenariosTest {
                             ((Double) ((Action) step).values.get("maxCountingError")).intValue()));
 
                 } else if (((Action) step).action.equals("deliveryNoteReceived")) {
-                    System.out.println("--------- TEST: should receive delivery note");
                     communicator.deliveryNoteReceived(new DeliveryParameters(
                             ((Double) ((Action) step).values.get("targetSlump")).intValue(),
                             ((Double) ((Action) step).values.get("maxWater")).intValue(),
                             ((Double) ((Action) step).values.get("loadVolume")).intValue()));
 
                 } else if (((Action) step).action.equals("acceptDelivery")) {
-                    System.out.println("--------- TEST: should accept delivery");
                     communicator.acceptDelivery((Boolean) ((Action) step).values.get("accepted"));
 
                 } else if (((Action) step).action.equals("allowWaterAddition")) {
-                    System.out.println("--------- TEST: should allow water addition");
                     communicator.allowWaterAddition((Boolean) ((Action) step).values.get("allowed"));
 
                 } else if (((Action) step).action.equals("endDelivery")) {
-                    System.out.println("--------- TEST: should end delivery");
                     communicator.endDelivery();
 
                 } else if (((Action) step).action.equals("changeExternalDisplayState")) {
-                    System.out.println("--------- TEST: should change external display state");
                     communicator.changeExternalDisplayState((Boolean) ((Action) step).values.get("activated"));
 
                 } else {
@@ -248,13 +241,14 @@ public class CommunicatorScenariosTest {
         }
         scheduler.reset();
 
+        System.out.println("\nChecking packets to send:");
         assertThat(results, hasSize(this.packetsToSend.size()));
         for (int i = 0; i < this.packetsToSend.size(); i++) {
             assertArrayEquals(results.get(i), this.packetsToSend.get(i));
         }
         System.out.println("-> packages to send: OK");
 
-        System.out.println("Checking events:");
+        System.out.println("\nChecking events:");
         System.out.println("Expected:");
         for (Event event : this.events) {
             System.out.println("EVENT: {id: " + event.id.getIdValue() + ", value: " + event.value + "}");
