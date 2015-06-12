@@ -1,17 +1,10 @@
 package com.lafarge.truckmix.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.Service;
-import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.*;
-import android.support.annotation.Nullable;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
@@ -19,8 +12,6 @@ import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-import com.lafarge.truckmix.service.models.DeliveryParametersParcelable;
-import com.lafarge.truckmix.service.models.TruckParametersParcelable;
 
 public class TruckMix {
 
