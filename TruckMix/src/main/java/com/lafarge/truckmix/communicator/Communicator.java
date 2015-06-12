@@ -174,6 +174,8 @@ public class Communicator {
             loggerListener.log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
             bytesListener.send(encoder.fake());
             bytesListener.send(encoder.changeExternalDisplayState(isActivated));
+        } else {
+            loggerListener.log("ACTION (IGNORED): change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
         }
     }
 
