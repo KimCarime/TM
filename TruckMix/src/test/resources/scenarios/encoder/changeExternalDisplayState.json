@@ -1,0 +1,8 @@
+{
+  "description": "external display activated",
+  "message": {
+    "type": "TRAME_ACTIVATION_INHIBITION_AFFICHEUR",
+    "value": true
+  },
+  "result": ["0xC0", "0x01", "0x80", "0x04", "0x00", "0x01", "0xFF", "0x9B", "0xE3"]
+}

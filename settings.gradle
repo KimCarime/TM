@@ -1,0 +1,3 @@
+include ':TruckMix'
+include ':TruckMixService'
+include ':TruckMixDemo'

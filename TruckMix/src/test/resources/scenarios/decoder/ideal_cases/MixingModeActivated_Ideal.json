@@ -1,0 +1,12 @@
+{ 
+  "description": "notification mixing",
+  "packets" : [
+    ["0xC0", "0x01", "0x30" ,"0x01" ,"0x00", "0x00", "0x72", "0x1B"]
+  ],
+  "results": [
+    {
+      "message": "TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE",
+      "data": []
+    }
+  ]
+}

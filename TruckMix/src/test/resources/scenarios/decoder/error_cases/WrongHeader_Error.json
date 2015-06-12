@@ -1,0 +1,12 @@
+{ 
+  "description": "wrong header",
+  "packets" : [
+    ["0xC1", "0x01", "0xF0" ,"0x05" ,"0x00", "0x01", "0xFF", "0xDB", "0xD4"]
+  ],
+  "results": [
+	{
+      "error": "ERROR_PARSING_HEADER",
+      "count": 9
+	}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": "2 packets 2 crossed frames(1fs) data+CRC missing",
+  "packets" : [
+    ["0xC0", "0x01", "0xF0" ,"0x05" ,"0x00", "0x01"],
+	["0xC0", "0x01", "0xF0" ,"0x06" ,"0x00", "0x01", "0x00", "0x9B", "0xD0"]
+  ],
+  "results": [
+	{
+	  "error": "ERROR_PARSING_DATA_BOOLEAN_TYPE",
+	  "count": 1
+	},
+	{
+	  "error": "ERROR_PARSING_HEADER",
+	  "count": 8
+	}
+  ]
+}

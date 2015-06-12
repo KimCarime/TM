@@ -1,0 +1,85 @@
+{
+  "description": "scenario connectionless",
+  "scenario": [
+    {
+      "bluetoothConnected": false
+    },
+    {
+      "action": "init",
+      "values": {
+        "T1": 3.4563,
+        "A11": 563.376,
+        "A12": -39.844,
+        "A13": 4.3254,
+        "magnetQuantity": 24,
+        "timePump": 15,
+        "timeDelayDriver": 120,
+        "pulseNumber": 45,
+        "flowmeterFrequency": 60,
+        "commandPumpMode": "SEMI_AUTO",
+        "calibrationInputSensorA": 2.5,
+        "calibrationInputSensorB": 0.0,
+        "calibrationOutputSensorA": 2.5,
+        "calibrationOutputSensorB": 0.0,
+        "openingTimeEV1": 3,
+        "openingTimeVA1": 180,
+        "toleranceCounting": 10,
+        "waitingDurationAfterWaterAddition": 90,
+        "maxDelayBeforeFlowage": 64,
+        "maxFlowageError": 5,
+        "maxCountingError": 6
+      }
+    },
+    {
+      "wait_in_sec": 1
+    },
+    {
+      "action": "deliveryNoteReceived",
+      "values": {
+        "targetSlump": 150,
+        "maxWater": 0,
+        "loadVolume": 6
+      }
+    },
+    {
+      "wait_in_sec": 1
+    },
+	{
+      "action": "acceptDelivery",
+      "values": {
+          "accepted": true
+      }
+    },
+	{
+      "wait_in_sec": 4
+    },
+	{
+      "action": "endDelivery",
+      "values": {}
+    },
+	{
+      "wait_in_sec": 15
+    }
+    
+  ],
+  "result_packets_to_send": [
+  
+  ],
+  "events": [
+    {
+      "description": "start delivery",
+      "id": 1,
+      "value": 1
+    },
+	{
+      "description": "bluetooth off",
+      "id": 10,
+      "value": 0
+    },
+	{
+      "description": "end of delivery",
+      "id": 2,
+      "value": 0
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+apply plugin: 'jacoco'
+apply plugin: 'java'
+
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'org.reflections:reflections:0.9.9'
+    testCompile 'com.google.code.gson:gson:2.3.1'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+    testCompile 'org.hamcrest:hamcrest-library:1.3'
+    testCompile 'junit:junit:4.12'
+}
+
+jacoco {
+    toolVersion = "0.7.0.201403182114"
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/reports/coverage/html"
+    }
+}
+
+test {
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+        showExceptions true
+        showStackTraces true
+    }
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/reports/coverage/jacocoTest.exec")
+        classDumpFile = file("$buildDir/reports/coverage/classpathdumps")
+    }
+}

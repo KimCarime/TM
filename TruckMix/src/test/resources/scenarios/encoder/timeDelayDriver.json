@@ -1,0 +1,8 @@
+{
+  "description": "time delay driver",
+  "message": {
+    "type": "TRAME_PARAMETRE_TEMPO_ATTENTE_REPONSE_CONDUCTEUR",
+    "value": 120
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x07", "0x00", "0x02", "0x00", "0x78", "0x50", "0x19"]
+}

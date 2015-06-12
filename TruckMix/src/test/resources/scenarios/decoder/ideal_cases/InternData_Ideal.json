@@ -1,0 +1,12 @@
+{ 
+  "description": "Intern data Ideal cases",
+  "packets" : [
+    ["0xC0", "0x01", "0xD0" ,"0x04" ,"0x00", "0x06", "0x00", "0x00", "0x00" ,"0x00" ,"0xFF", "0xFF", "0x32", "0x66"]
+  ],
+  "results": [
+    {
+      "message": "TRAME_DONNEES_INTERNES",
+      "data": [true, true, false, false, false, false]
+    }
+  ]
+}

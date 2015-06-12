@@ -1,0 +1,8 @@
+{
+  "description": "water addition permission",
+  "message": {
+    "type": "TRAME_AUTORISATION_REFUS_AJOUT_EAU",
+    "value": false
+  },
+  "result": ["0xC0", "0x01", "0x80", "0x03", "0x00", "0x01", "0x00", "0xDA", "0xD7"]
+}

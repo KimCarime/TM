@@ -1,0 +1,8 @@
+{
+  "description": "max counting error",
+  "message": {
+    "type": "TRAME_NOMBRE_MAX_ERREURS_COMPTAGE",
+    "value": 6
+  },
+  "result": ["0xC0", "0x01", "0xA0", "0x15", "0x00", "0x01", "0x06", "0xDF", "0x5A"]
+}
