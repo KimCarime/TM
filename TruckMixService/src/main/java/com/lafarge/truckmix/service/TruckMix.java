@@ -1,141 +1,281 @@
 package com.lafarge.truckmix.service;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.*;
 import android.util.Log;
-import android.widget.Toast;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
-public class TruckMix {
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
+/**
+ * A class used to set up interaction with the calculator from an <code>Activity</code> or <code>Service</code>.
+ * This class is used in conjunction with <code>TruckMixConsumer</code> interface, which provides a callback
+ * when the <code>TruckMixService</code> is ready to use. Until this callback is made, no interaction will be possible
+ * with the calculator.
+ */
+public class TruckMix {
     static private final String TAG = "TruckMix";
 
+    // Instances
+    protected static TruckMix mClient;
     private Context mContext;
 
-    /** Flag indicating whether we have called bind on the service. */
+    // Service communication
+    private Messenger mServiceMessenger;
     private boolean mBound;
-
-    /** Messenger for communicating with the service. */
-    private Messenger mServiceMessenger = null;
-
-    /** Target we publish for clients to send messages to IncomingHandler. */
     private final Messenger mMessenger;
     private final IncomingHandler mHandler;
 
-    private boolean mSkipWater;
+    // Clients
+    private final ConcurrentMap<TruckMixConsumer, ConsumerInfo> mConsumers;
+
+    // Options
+    private boolean mWaterRequestAllowed;
+    private boolean mQualityTrackingEnabled;
 
     // Listeners
-    private CommunicatorListener communicatorListener;
-    private LoggerListener loggerListener;
+    private CommunicatorListener mCommunicatorListener;
+    private TruckMixConnectionState mConnectionState;
+    private LoggerListener mLoggerListener;
+    private EventListener mEventListener;
 
-    public TruckMix(Context context, CommunicatorListener communicatorListener, LoggerListener loggerListener) {
-        this.mContext = context;
-        this.communicatorListener = communicatorListener;
-        this.loggerListener = loggerListener;
-        this.mHandler = new IncomingHandler();
-        this.mMessenger = new Messenger(this.mHandler);
+    /**
+     * An accessor for the singleton instance of this class. A context must be provided, but if you need to use it from a non-Activity
+     * or non-Service class, you can attach it to another singleton or a subclass of the Android Application class.
+     */
+    public static TruckMix getInstanceForApplication(Context context) {
+        if (mClient == null) {
+            Log.d(TAG, "TruckMix instance creation");
+            mClient = new TruckMix(context);
+        }
+        return mClient;
     }
 
-    public boolean startService() {
-        Log.d(TAG, "bind service");
-        Intent i = new Intent(mContext.getApplicationContext(), TruckMixService.class);
-        return mContext.getApplicationContext().bindService(i, mTruckMixServiceConnection, Context.BIND_AUTO_CREATE);
+    protected TruckMix(Context context) {
+        mContext = context;
+        mHandler = new IncomingHandler();
+        mMessenger = new Messenger(this.mHandler);
+        mConsumers = new ConcurrentHashMap<TruckMixConsumer, ConsumerInfo>();
     }
 
-    public void stopService() {
-        if (mBound) {
-            Log.d(TAG, "unbind service");
-            sendMessage(Message.obtain(null, TruckMixServiceMessages.MSG_UNREGISTER_CLIENT));
-            mContext.getApplicationContext().unbindService(mTruckMixServiceConnection);
-            mBound = false;
+    /**
+     * Binds an Android <code>Activity</code> or <code>Service</code> to the <code>BeaconService</code>. The
+     * <code>Activity</code> or <code>Service</code> must implement the <code>beaconConsumer</code> interface so
+     * that it can get a callback when the service is ready to use.
+     *
+     * @param consumer the <code>Activity</code> or <code>Service</code> that will receive the callback when the service is ready.
+     */
+    public void bind(TruckMixConsumer consumer) {
+        synchronized (mConsumers) {
+            ConsumerInfo consumerInfo = mConsumers.putIfAbsent(consumer, new ConsumerInfo());
+            if (consumerInfo != null) {
+                Log.d(TAG, "This consumer is already bound");
+            } else {
+                Log.d(TAG, "This consumer is not bound. binding: " + consumer);
+                Intent intent = new Intent(consumer.getApplicationContext(), TruckMixService.class);
+                consumer.bindService(intent, mTruckMixServiceConnection, Context.BIND_AUTO_CREATE);
+                Log.d(TAG, "consumer count is now " + mConsumers.size());
+            }
         }
     }
 
     /**
-     * Tell the service to try to connect to a remote bluetooth device
-     * @param address The address of the remote bluetooth device
+     * Unbinds an Android <code>Activity</code> or <code>Service</code> to the <code>BeaconService</code>.  This should
+     * typically be called in the onDestroy() method.
+     *
+     * @param consumer the <code>Activity</code> or <code>Service</code> that no longer needs to use the service.
      */
-    public void connect(String address) {
+    public void unbind(TruckMixConsumer consumer) {
+        synchronized (mConsumers) {
+            if (mConsumers.containsKey(consumer)) {
+                Log.d(TAG, "Unbinding");
+                consumer.unbindService(mTruckMixServiceConnection);
+                mConsumers.remove(consumer);
+                if (mConsumers.size() == 0) {
+                    // If this is the last consumer to disconnect, the service will exit
+                    // release the serviceMessenger.
+                    mServiceMessenger = null;
+                }
+            } else {
+                Log.d(TAG, "This consumer is not bound to: " + consumer);
+                Log.d(TAG, "Bound consumers: ");
+                Set<Map.Entry<TruckMixConsumer, ConsumerInfo>> consumers = mConsumers.entrySet();
+                for (Map.Entry<TruckMixConsumer, ConsumerInfo> consumerEntry : consumers) {
+                    Log.d(TAG, String.valueOf(consumerEntry.getValue()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Tells you if the passed TruckMix consumer is bound to the service.
+     *
+     * @param consumer The checked consumer
+     * @return true if the passed consumer is bound to the service, otherwise false
+     */
+    public boolean isBound(TruckMixConsumer consumer) {
+        synchronized(mConsumers) {
+            return consumer != null && mConsumers.get(consumer) != null && mServiceMessenger != null;
+        }
+    }
+
+    /**
+     * Tells you if the any TruckMix consumer is bound to the service.
+     *
+     * @return true if any consumer is bound, other false
+     */
+    public boolean isAnyConsumerBound() {
+        synchronized(mConsumers) {
+            return mConsumers.size() > 0 && mServiceMessenger != null;
+        }
+    }
+
+    /**
+     * Tell the service to try to connect to a remote bluetooth device.
+     * If the remote device isn't found, the service will retry to make a connection every 10sec until it successes.
+     *
+     * @param address The address of the remote bluetooth device
+     * @param connectionState
+     * @param communicatorListener
+     * @param eventListener
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
+     * @throws IllegalArgumentException If address isn't a valid mac-address or if mCommunicatorListener is null.
+     */
+    public void connect(String address, TruckMixConnectionState connectionState, CommunicatorListener communicatorListener, LoggerListener loggerListener, EventListener eventListener) throws RemoteException {
+        if (!BluetoothAdapter.checkBluetoothAddress(address)) {
+            throw new IllegalArgumentException("Address " + address + " isn't a valid address");
+        } else if (connectionState == null || communicatorListener == null || loggerListener == null || eventListener == null) {
+            throw new IllegalArgumentException("Parameters can't be null");
+        }
+        mConnectionState = connectionState;
+        mCommunicatorListener = communicatorListener;
+        mLoggerListener = loggerListener;
+        mEventListener = eventListener;
         sendMessage(TruckMixServiceMessages.createConnectMessage(address));
     }
 
     /**
-     * Set Truck parameters to the service, will be send next time the wirma will request them
+     * Set Truck parameters to the service, will be send next time the calculator will request them.
+     *
      * @param parameters The truck parameters
      * @throws IllegalArgumentException If parameters is null
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void setTruckParameters(TruckParameters parameters) {
+    public void setTruckParameters(TruckParameters parameters) throws RemoteException {
+        if (parameters == null) throw new IllegalArgumentException("Truck parameters can't be null");
         sendMessage(TruckMixServiceMessages.createTruckParametersMessage(parameters));
     }
 
     /**
-     * Set Delivery parameters to the service, will be send next time the wirma will request them
+     * Set Delivery parameters to the service, will be send next time the calculator will request them.
+     *
      * @param parameters The delivery parameters
      * @throws IllegalArgumentException If parameters is null
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void deliveryNoteReceived(DeliveryParameters parameters) {
+    public void deliveryNoteReceived(DeliveryParameters parameters) throws RemoteException {
+        if (parameters == null) throw new IllegalArgumentException("Delivery parameters can't be null");
         sendMessage(TruckMixServiceMessages.createDeliveryParametersMessage(parameters));
     }
 
     /**
-     * Tell the wirma to pass in "delivery in progress" or not, you should not call this method without having called
+     * Tell the calculator to pass in "delivery in progress" or not, you should not call this method without having called
      * <code>setTruckParameters</code> and <code>deliveryNoteReceived</code> before.
-     * @param accepted Pass true to start a delivery or false, to reset the state of the wirma
+     * 
+     * @param accepted Pass true to start a delivery or false, to reset the state of the calculator
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void acceptDelivery(boolean accepted) {
+    public void acceptDelivery(boolean accepted) throws RemoteException {
         sendMessage(TruckMixServiceMessages.createAcceptDeliveryMessage(accepted));
     }
 
     /**
-     * Tell the wirma to end a delivery in progress
+     * Tell the calculator to end a delivery in progress.
+     *
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void endDelivery() {
+    public void endDelivery() throws RemoteException {
         sendMessage(TruckMixServiceMessages.createEndDeliveryMessage());
     }
 
     /**
-     * Tell the wirma to allow a water addition or not, you should have received a request from the wirma before use
+     * Tell the calculator to allow a water addition or not, you should have received a request from the calculator before use
      * this method.
-     * Also, if you have <code>setSkipWater</code> to <code>true</code>, this method will have no effect
-     * @param allowWaterAddition
+     * Also, if you have <code>void setWaterRequestAllowed(boolean)</code> to <code>true</code>, this method will have no effect.
+     *
+     * @param allowWaterAddition true to accept the water addition request, otherwise false.
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void allowWaterAddition(boolean allowWaterAddition) {
-        if (mSkipWater) return;
-        sendMessage(TruckMixServiceMessages.createAllowWaterAdditionMessage(allowWaterAddition));
+    public void allowWaterAddition(boolean allowWaterAddition) throws RemoteException {
+        if (mWaterRequestAllowed) {
+            sendMessage(TruckMixServiceMessages.createAllowWaterAdditionMessage(allowWaterAddition));
+        } else {
+            Log.w(TAG, "allowWaterAddition ignored because water request isn't allowed - use setWaterRequestAllowed(boolean)");
+        }
     }
 
     /**
      * Change the external display state on the truck.
      * Note that if the external display state is for example currently activated, passing true will have no effect
      * on it.
+     *
      * @param activated true to activate the external display, or false to shutdown it
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void changeExternalDisplayState(boolean activated) {
-        sendMessage(TruckMixServiceMessages.createChangeExternalDisplayState(activated));
+    public void changeExternalDisplayState(boolean activated) throws RemoteException {
+        sendMessage(TruckMixServiceMessages.createChangeExternalDisplayStateMessage(activated));
     }
 
     /**
-     * Tell the service to skip water request that come from the wirma and the service
-     * @param skipWater true to skip water request, or false
+     * Allow water actions, useful for countries that doesn't allow water addition in the concrete.
+     * By default, water request is not allowed.
+     *
+     * @param waterRequestAllowed true if you want to interact with the water, otherwise false to disable it.
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
      */
-    public void setSkipWater(boolean skipWater) {
-        this.mSkipWater = skipWater;
+    public void setWaterRequestAllowed(boolean waterRequestAllowed) throws RemoteException {
+        mWaterRequestAllowed = waterRequestAllowed;
+        sendMessage(TruckMixServiceMessages.createWaterRequestAllowedMessage(waterRequestAllowed));
     }
 
-    public boolean isSkippingWater() {
-        return mSkipWater;
+    /** Return the state of the water request allowance */
+    public boolean isWaterRequestAllowed() {
+        return mWaterRequestAllowed;
     }
 
-    private void sendMessage(Message msg) {
-        if (!mBound || mServiceMessenger == null) return;
+    /**
+     * Activate the quality tracking, if true, events will be send to the EventListener passed in constructor.
+     * By default, quality traduction is not enabled.
+     *
+     * @param qualityTrackingEnabled true to activate the quality tracking, otherwise false to disable it.
+     * @throws RemoteException If the TruckMix instance isn't bound to the service.
+     */
+    public void setQualityTrackingActivated(boolean qualityTrackingEnabled) throws RemoteException {
+        mQualityTrackingEnabled = qualityTrackingEnabled;
+        sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(qualityTrackingEnabled));
+    }
 
+    /** Return the state of the quality tracking */
+    public boolean isQualityTrackingActivated() {
+        return mQualityTrackingEnabled;
+    }
+
+    private void sendMessage(Message msg) throws RemoteException {
+        if (!mBound || mServiceMessenger == null) {
+            throw new RemoteException("TruckMix is not bound to the service. Call truckMix.bind(TruckMixConsumer consumer) and wait for a callback to onTruckMixServiceConnect()");
+        }
         try {
             msg.replyTo = mMessenger;
             mServiceMessenger.send(msg);
@@ -146,27 +286,37 @@ public class TruckMix {
     }
 
     /**
-     *
+     * Implementation of the interface that monitor the state of the connection with the Service.
      */
-     private final ServiceConnection mTruckMixServiceConnection = new ServiceConnection() {
+     private ServiceConnection mTruckMixServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             // Called when the connection with the service is established
-            Log.i(TAG, "Service connected: " + className.getShortClassName());
+            Log.d(TAG, "Service connected: " + className.getShortClassName());
             mServiceMessenger = new Messenger(service);
             mBound = true;
-            sendMessage(Message.obtain(null, TruckMixServiceMessages.MSG_REGISTER_CLIENT));
-            Toast.makeText(mContext, "Service connected", Toast.LENGTH_SHORT).show();
+            synchronized (mConsumers) {
+                for (Map.Entry<TruckMixConsumer, ConsumerInfo> entry : mConsumers.entrySet()) {
+                    if (!entry.getValue().isConnected) {
+                        entry.getKey().onTruckMixServiceConnect();
+                        entry.getValue().isConnected = true;
+                    }
+                }
+            }
+            try {
+                sendMessage(Message.obtain(null, TruckMixServiceMessages.MSG_REGISTER_CLIENT));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName className) {
             // Called when the connection with the service has been unexpectedly disconnected -- that is, its process
             // crashed.
-            Log.i(TAG, "Service disconnected: " + className.getShortClassName());
+            Log.e(TAG, "Service disconnected: " + className.getShortClassName());
             mServiceMessenger = null;
             mBound = false;
-            Toast.makeText(mContext, "Service disconnected", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -180,36 +330,43 @@ public class TruckMix {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case TruckMixServiceMessages.MSG_LOG:
-                    loggerListener.log(TruckMixServiceMessages.getLogFromLogMessage(msg));
+                    mLoggerListener.log(TruckMixServiceMessages.getLogFromLogMessage(msg));
+                    break;
+                case TruckMixServiceMessages.MSG_CALCULATOR_CONNECTED:
+                    mConnectionState.onCalculatorConnected();
+                    break;
+                case TruckMixServiceMessages.MSG_CALCULATOR_CONNECTING:
+                    mConnectionState.onCalculatorConnecting();
+                    break;
+                case TruckMixServiceMessages.MSG_CALCULATOR_DISCONNECTED:
+                    mConnectionState.onCalculatorDisconnected();
                     break;
                 case TruckMixServiceMessages.MSG_SLUMP_UPDATED:
-                    communicatorListener.slumpUpdated(TruckMixServiceMessages.getSlumpFromSlumpUpdatedMessage(msg));
+                    mCommunicatorListener.slumpUpdated(TruckMixServiceMessages.getSlumpFromSlumpUpdatedMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_MIXING_MODE_ACTIVATED:
-                    communicatorListener.mixingModeActivated();
+                    mCommunicatorListener.mixingModeActivated();
                     break;
                 case TruckMixServiceMessages.MSG_UNLOADING_MODE_ACTIVATED:
-                    communicatorListener.unloadingModeActivated();
+                    mCommunicatorListener.unloadingModeActivated();
                     break;
                 case TruckMixServiceMessages.MSG_WATER_ADDED: {
                     int volume = TruckMixServiceMessages.getVolumeFromWaterAddedMessage(msg);
-                    MessageReceivedListener.WaterAdditionMode additionMode = TruckMixServiceMessages
-                            .getAdditionModeFromWaterAddedMessage(msg);
-                    communicatorListener.waterAdded(volume, additionMode);
+                    MessageReceivedListener.WaterAdditionMode additionMode = TruckMixServiceMessages.getAdditionModeFromWaterAddedMessage(msg);
+                    mCommunicatorListener.waterAdded(volume, additionMode);
                     break;
                 }
                 case TruckMixServiceMessages.MSG_WATER_ADDITION_REQUEST:
-                    communicatorListener.waterAdditionRequest(TruckMixServiceMessages
-                            .getVolumeFromWaterAdditionRequestMessage(msg));
+                    mCommunicatorListener.waterAdditionRequest(TruckMixServiceMessages.getVolumeFromWaterAdditionRequestMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_WATER_ADDITION_BEGAN:
-                    communicatorListener.waterAdditionBegan();
+                    mCommunicatorListener.waterAdditionBegan();
                     break;
                 case TruckMixServiceMessages.MSG_WATER_ADDITION_END:
-                    communicatorListener.waterAdditionEnd();
+                    mCommunicatorListener.waterAdditionEnd();
                     break;
                 case TruckMixServiceMessages.MSG_STATE_CHANGED:
-                    communicatorListener.stateChanged(msg.arg1, msg.arg2);
+                    mCommunicatorListener.stateChanged(msg.arg1, msg.arg2);
                     break;
                 case TruckMixServiceMessages.MSG_CALIBRATION_DATA: {
                     float inputPressure = msg.getData().getFloat(TruckMixServiceMessages
@@ -218,40 +375,42 @@ public class TruckMix {
                             .KEY_MSG_DATA_CALIBRATION_OUTPUT_PRESSION);
                     float rotationSpeed = msg.getData().getFloat(TruckMixServiceMessages
                             .KEY_MSG_DATA_CALIBRATION_ROTATION_SPEED);
-                    communicatorListener.calibrationData(inputPressure, outputPressure, rotationSpeed);
+                    mCommunicatorListener.calibrationData(inputPressure, outputPressure, rotationSpeed);
                     break;
                 }
                 case TruckMixServiceMessages.MSG_ALARM_WATER_ADDITION_BLOCK:
-                    communicatorListener.alarmWaterAdditionBlocked();
+                    mCommunicatorListener.alarmWaterAdditionBlocked();
                     break;
                 case TruckMixServiceMessages.MSG_ALARM_WATER_MAX:
-                    communicatorListener.alarmWaterMax();
+                    mCommunicatorListener.alarmWaterMax();
                     break;
                 case TruckMixServiceMessages.MSG_ALARM_FLOWAGE_ERROR:
-                    communicatorListener.alarmFlowageError();
+                    mCommunicatorListener.alarmFlowageError();
                     break;
                 case TruckMixServiceMessages.MSG_ALARM_COUNTING_ERROR:
-                    communicatorListener.alarmCountingError();
+                    mCommunicatorListener.alarmCountingError();
                     break;
                 case TruckMixServiceMessages.MSG_INPUT_SENSOR_CONNECTION_CHANGED:
-                    communicatorListener.inputSensorConnectionChanged(TruckMixServiceMessages
-                            .getValueFromInputSensorConnectionChangedMessage(msg));
+                    mCommunicatorListener.inputSensorConnectionChanged(TruckMixServiceMessages.getValueFromInputSensorConnectionChangedMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_OUTPUT_SENSOR_CONNECTION_CHANGED:
-                    communicatorListener.outputSensorConnectionChanged(TruckMixServiceMessages
-                            .getValueFromOutputSensorConnectionChangedMessage(msg));
+                    mCommunicatorListener.outputSensorConnectionChanged(TruckMixServiceMessages.getValueFromOutputSensorConnectionChangedMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_SPEED_SENSOR_MIN_EXCEED:
-                    communicatorListener.speedSensorHasExceedMinThreshold(TruckMixServiceMessages
-                            .getValueFromSpeedSensorHasExceedMinThressThresholdMessage(msg));
+                    mCommunicatorListener.speedSensorHasExceedMinThreshold(TruckMixServiceMessages.getValueFromSpeedSensorHasExceedMinThressThresholdMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_SPEED_SENSOR_MAX_EXCEED:
-                    communicatorListener.speedSensorHasExceedMaxThreshold(TruckMixServiceMessages
-                            .getValueFromSpeedSensorHasExceedMaxThressThresholdMessage(msg));
+                    mCommunicatorListener.speedSensorHasExceedMaxThreshold(TruckMixServiceMessages.getValueFromSpeedSensorHasExceedMaxThressThresholdMessage(msg));
                     break;
+                case TruckMixServiceMessages.MSG_NEW_EVENT:
+                    mEventListener.onNewEvents(TruckMixServiceMessages.getDataFromNewEventMessage(msg));
                 default:
                     super.handleMessage(msg);
             }
         }
+    }
+
+    private class ConsumerInfo {
+        public boolean isConnected = false;
     }
 }
