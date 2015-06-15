@@ -8,7 +8,11 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.service.models.DeliveryParametersParcelable;
 import com.lafarge.truckmix.service.models.TruckParametersParcelable;
 
+/**
+ * Define several constants of the TruckMixService incoming and outgoing messages.
+ */
 public class TruckMixServiceMessages {
+
     //
     // Messages coming from TruckMixService
     //
@@ -69,7 +73,7 @@ public class TruckMixServiceMessages {
     public static final String KEY_MSG_CHANGE_EXTERNAL_DISPLAY_STATE_VALUE = "change_external_display_value";
 
     //
-    // Factory of message to send by the service
+    // Factory of messages coming from TruckMixService
     //
 
     public static Message createSlumpUpdatedMessage(int slump) {
@@ -181,7 +185,7 @@ public class TruckMixServiceMessages {
     }
 
     //
-    // Getter of values sent by Service
+    // Getter of values coming from TruckMixService
     //
 
     public static int getSlumpFromSlumpUpdatedMessage(Message msg) {
@@ -220,7 +224,10 @@ public class TruckMixServiceMessages {
         return msg.getData().getString(KEY_MSG_LOG_VALUE);
     }
 
-    /** Factory of message to send by the client */
+
+    //
+    // Factory of message coming from clients
+    //
 
     public static Message createConnectMessage(String address) {
         Message msg = Message.obtain(null, TruckMixServiceMessages.MSG_CONNECT_DEVICE);
@@ -275,7 +282,7 @@ public class TruckMixServiceMessages {
     }
 
     //
-    // Getter of values sent by clients
+    // Getter of values coming from clients
     //
 
     public static String getAddressFromConnectMessage(Message msg) {

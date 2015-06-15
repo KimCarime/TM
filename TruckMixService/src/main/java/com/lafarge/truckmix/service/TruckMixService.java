@@ -166,7 +166,8 @@ public class TruckMixService extends Service {
     }
 
     /**
-     *
+     * Implementation of the CommunicatorBytesListener.
+     * Every bytes retrieved here should be send via Bluetooth.
      */
     private final CommunicatorBytesListener mBytesListener = new CommunicatorBytesListener() {
         @Override
@@ -176,7 +177,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the CommunicatorListener.
      */
     private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
         @Override
@@ -264,7 +265,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the LoggerListener
      */
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
@@ -274,7 +275,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the EventListener
      */
     private final EventListener mEventListener = new EventListener() {
         @Override
@@ -284,7 +285,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Send a message of the list of clients. Note that we should only have one client in the array.
      */
     private void sendMessage(Message msg) {
         // We are going through the list from back to front so this is safe to do inside the loop.

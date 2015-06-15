@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.common.models;
 
 /**
- * This class contains all information that the Wirma need for a delivery.
+ * This class contains all information that the calculator need for a delivery.
  */
 public class DeliveryParameters {
 

@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * The Encoder part of the library, this class is responsible of encoding messages to send to the Wirma.
+ * The Encoder part of the library, this class is responsible of encoding messages to send to the calculator.
  */
 public class Encoder {
 
@@ -275,7 +275,7 @@ public class Encoder {
      *
      * @param type The type of the message
      * @param dataBytes The data bytes to encode
-     * @return The message encoded to send to the Wirma.
+     * @return The message encoded to send to the calculator.
      * @throws RuntimeException If dataBytes length isn't equal with spec size of given type
      */
     private byte[] encode(String type, byte[] dataBytes) {

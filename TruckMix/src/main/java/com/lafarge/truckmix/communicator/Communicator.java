@@ -18,7 +18,7 @@ import java.io.IOException;
 
 /**
  * This class is the entry point of the whole library, it is responsible of the communication between the client
- * and the Wirma. All bytes to send to the Wirma will be given here (through listener) and all bytes received will be
+ * and the calculator. All bytes to send to the calculator will be given here (through listener) and all bytes received will be
  * process here, and events will be triggered here.
  */
 public class Communicator {
@@ -32,7 +32,7 @@ public class Communicator {
     }
 
     /**
-     * Interval between two send of "end of delivery" in order to keep the Wirma isSync with us
+     * Interval between two send of "end of delivery" in order to keep the calculator isSync with us
      */
     public static final long RESET_STATE_IN_MILLIS = 10 * 1000;
 
@@ -102,7 +102,7 @@ public class Communicator {
     //
 
     /**
-     * Set the truck parameters. Will be send next time the Wirma request them.
+     * Set the truck parameters. Will be send next time the calculator request them.
      *
      * @param parameters The truck parameters
      * @throws IllegalArgumentException If parameters is null
@@ -114,7 +114,7 @@ public class Communicator {
     }
 
     /**
-     * Set the delivery parameters. Will be send next time the Wirma request them.
+     * Set the delivery parameters. Will be send next time the calculator request them.
      *
      * @param parameters The delivery parameters
      * @throws IllegalArgumentException If parameters is null
@@ -131,10 +131,10 @@ public class Communicator {
     }
 
     /**
-     * Tell to the Wirma that we accepted or not the delivery. Note that you should call this method only after having
+     * Tell to the calculator that we accepted or not the delivery. Note that you should call this method only after having
      * given delivery parameters.
      *
-     * @param accepted true to tell the Wirma to start a delivery, otherwise no.
+     * @param accepted true to tell the calculator to start a delivery, otherwise no.
      */
     public void acceptDelivery(boolean accepted) {
         if (state == State.WAITING_FOR_DELIVERY_NOTE_ACCEPTATION) {
@@ -150,7 +150,7 @@ public class Communicator {
     }
 
     /**
-     * Tell the Wirma to end the current delivery in progress.
+     * Tell the calculator to end the current delivery in progress.
      */
     public void endDelivery() {
         if (state == State.DELIVERY_IN_PROGRESS) {
@@ -180,7 +180,7 @@ public class Communicator {
     }
 
     /**
-     * Give Wirma the permission to add water or note after. You should call this method only if you received a request
+     * Give calculator the permission to add water or note after. You should call this method only if you received a request
      * to add water.
      *
      * @param isAllowed
@@ -195,14 +195,14 @@ public class Communicator {
     }
 
     /**
-     * Inform the communicator the current state of the connection of the Wirma.
+     * Inform the communicator the current state of the connection of the calculator.
      * This is important because the communicator will continue to send logs and events to listeners if you continue
      * to send bytes to through the method <code>void received(byte[] bytes)</code>. resulting in corrupted logs and
      * events...
      * Note that by default, this parameters is set to false.
      * By default, the Communicator is not connected.
      *
-     * @param isConnected true if the terminal is connected to the Wirma, otherwise false.
+     * @param isConnected true if the terminal is connected to the calculator, otherwise false.
      */
     public void setConnected(boolean isConnected) {
         loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
@@ -222,12 +222,12 @@ public class Communicator {
         return isConnected;
     }
 
-    /** Returns the current slump sent by the Wirma */
+    /** Returns the current slump sent by the calculator */
     public int currentSlump() {
         return currentSlump;
     }
 
-    /** Return the current rotation mode sent by the Wirma */
+    /** Return the current rotation mode sent by the calculator */
     public MessageReceivedListener.RotationDirection currentRotation() {
         return currentRotation;
     }
@@ -263,14 +263,14 @@ public class Communicator {
     }
 
     /**
-     * This method is the entry point of the communicator. You should pass every bytes received from the Wirma in
+     * This method is the entry point of the communicator. You should pass every bytes received from the calculator in
      * order to decode messages.
      * Note that you can pass a buffer that contains only a part of a message, as long as each bytes is conform to the
      * protocol, the communicator will keep them until to have a valid message.
      * If a buffer is corrupted for whatever reason, the communicator will consume each bytes until
      * a message conform to the protocol is decoded.
      *
-     * @param bytes Bytes received from the Wirma
+     * @param bytes Bytes received from the calculator
      */
     public void received(byte[] bytes) {
         try {
