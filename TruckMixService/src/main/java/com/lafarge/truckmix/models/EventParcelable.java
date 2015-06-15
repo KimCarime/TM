@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import com.lafarge.truckmix.communicator.events.Event;
 
-public class EventParcelable<T> extends Event<T> implements Parcelable     {
+public class EventParcelable<T> extends Event<T> implements Parcelable {
 
     public EventParcelable(Event<T> event) {
         super(event.id, event.value, event.timestamp);

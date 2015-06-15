@@ -216,6 +216,8 @@ public class BluetoothChatService {
      *
      */
     private void retryConnection(final BluetoothDevice device) {
+        if (mStopped) return;
+
         Log.i(TAG, "Retry connection with device " + device);
 
         // Cancel threads and timer, just to be sure...
@@ -242,16 +244,7 @@ public class BluetoothChatService {
      * Indicate that the connection was lost.
      */
     private void connectionLost() {
-        // Start the service over to restart listening mode
-        if (mConnectionThread != null) {
-            mConnectionThread.cancel();
-            mConnectionThread = null;
-        }
-
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
+        cancelThreads();
 
         setState(STATE_NONE);
     }
@@ -313,9 +306,7 @@ public class BluetoothChatService {
             } catch (IOException e) {
                 Log.e(TAG, "unable to connect() with device " + mmDevice);
                 // Close the socket
-                if (!mStopped) {
-                    retryConnection(mmDevice);
-                }
+                retryConnection(mmDevice);
                 return;
             }
 
@@ -384,9 +375,7 @@ public class BluetoothChatService {
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
-                    if (!mStopped) {
-                        retryConnection(mmDevice);
-                    }
+                    retryConnection(mmDevice);
                 }
             }
         }
@@ -407,15 +396,15 @@ public class BluetoothChatService {
                 // Connection was lost
                 Log.e(TAG, "Exception during write", e);
                 connectionLost();
-                if (!mStopped) {
-                    retryConnection(mmDevice);
-                }
+                retryConnection(mmDevice);
             }
         }
 
         public void cancel() {
             try {
                 mmSocket.close();
+                mmInStream.close();
+                mmOutStream.close();
             } catch (IOException e) {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
