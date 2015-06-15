@@ -6,10 +6,6 @@ import com.lafarge.truckmix.common.models.TruckParameters;
 
 public class TruckParametersParcelable extends TruckParameters implements Parcelable {
 
-    public TruckParametersParcelable(double T1, double A11, double A12, double A13, int magnetQuantity, int timePump, int timeDelayDriver, int pulseNumber, int flowmeterFrequency, CommandPumpMode commandPumpMode, double calibrationInputSensorA, double calibrationInputSensorB, double calibrationOutputSensorA, double calibrationOutputSensorB, int openingTimeEV1, int openingTimeVA1, int toleranceCounting, int waitingDurationAfterWaterAddition, int maxDelayBeforeFlowage, int maxFlowageError, int maxCountingError) {
-        super(T1, A11, A12, A13, magnetQuantity, timePump, timeDelayDriver, pulseNumber, flowmeterFrequency, commandPumpMode, calibrationInputSensorA, calibrationInputSensorB, calibrationOutputSensorA, calibrationOutputSensorB, openingTimeEV1, openingTimeVA1, toleranceCounting, waitingDurationAfterWaterAddition, maxDelayBeforeFlowage, maxFlowageError, maxCountingError);
-    }
-
     public TruckParametersParcelable(TruckParameters parameters) {
         super(parameters.T1, parameters.A11, parameters.A12, parameters.A13, parameters.magnetQuantity, parameters.timePump, parameters.timeDelayDriver, parameters.pulseNumber, parameters.flowmeterFrequency, parameters.commandPumpMode, parameters.calibrationInputSensorA, parameters.calibrationInputSensorB, parameters.calibrationOutputSensorA, parameters.calibrationOutputSensorB, parameters.openingTimeEV1, parameters.openingTimeVA1, parameters.toleranceCounting, parameters.waitingDurationAfterWaterAddition, parameters.maxDelayBeforeFlowage, parameters.maxFlowageError, parameters.maxCountingError);
     }

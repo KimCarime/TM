@@ -5,9 +5,6 @@ import android.os.Parcelable;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 
 public class DeliveryParametersParcelable extends DeliveryParameters implements Parcelable {
-    public DeliveryParametersParcelable(int targetSlump, int maxWater, int loadVolume) {
-        super(targetSlump, maxWater, loadVolume);
-    }
 
     public DeliveryParametersParcelable(DeliveryParameters parameters) {
         super(parameters.targetSlump, parameters.maxWater, parameters.loadVolume);
