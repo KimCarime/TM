@@ -12,8 +12,8 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-import com.lafarge.truckmix.service.bluetooth.BluetoothChatService;
-import com.lafarge.truckmix.service.bluetooth.BluetoothChatServiceMessages;
+import com.lafarge.truckmix.bluetooth.BluetoothChatService;
+import com.lafarge.truckmix.bluetooth.BluetoothChatServiceMessages;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

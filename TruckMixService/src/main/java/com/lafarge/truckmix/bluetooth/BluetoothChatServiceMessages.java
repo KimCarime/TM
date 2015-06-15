@@ -1,4 +1,4 @@
-package com.lafarge.truckmix.service.bluetooth;
+package com.lafarge.truckmix.bluetooth;
 
 /**
  * Defines several constants of the BluetoothChatService.

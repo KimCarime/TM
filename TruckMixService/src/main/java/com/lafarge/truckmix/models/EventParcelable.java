@@ -1,4 +1,4 @@
-package com.lafarge.truckmix.service.models;
+package com.lafarge.truckmix.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;

@@ -6,9 +6,9 @@ import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-import com.lafarge.truckmix.service.models.DeliveryParametersParcelable;
-import com.lafarge.truckmix.service.models.EventParcelable;
-import com.lafarge.truckmix.service.models.TruckParametersParcelable;
+import com.lafarge.truckmix.models.DeliveryParametersParcelable;
+import com.lafarge.truckmix.models.EventParcelable;
+import com.lafarge.truckmix.models.TruckParametersParcelable;
 
 /**
  * Define several constants of the TruckMixService incoming and outgoing messages.

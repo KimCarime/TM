@@ -1,8 +1,9 @@
-package com.lafarge.truckmix.service;
+package com.lafarge.truckmix;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import com.lafarge.truckmix.TruckMix;
 
 /**
  * An interface for an Android <code>Activity</code> or <code>Service</code>

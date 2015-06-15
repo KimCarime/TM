@@ -23,9 +23,9 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.demo.fragments.ConsoleListFragment;
 import com.lafarge.truckmix.demo.fragments.OverviewFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
-import com.lafarge.truckmix.service.TruckMix;
-import com.lafarge.truckmix.service.TruckMixConnectionState;
-import com.lafarge.truckmix.service.TruckMixConsumer;
+import com.lafarge.truckmix.TruckMix;
+import com.lafarge.truckmix.TruckMixConnectionState;
+import com.lafarge.truckmix.TruckMixConsumer;
 
 import java.util.Locale;
 

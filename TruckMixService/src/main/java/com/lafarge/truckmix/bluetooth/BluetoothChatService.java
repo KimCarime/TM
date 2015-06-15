@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lafarge.truckmix.service.bluetooth;
+package com.lafarge.truckmix.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

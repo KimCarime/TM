@@ -1,4 +1,4 @@
-package com.lafarge.truckmix.service;
+package com.lafarge.truckmix;
 
 public interface TruckMixConnectionState {
 

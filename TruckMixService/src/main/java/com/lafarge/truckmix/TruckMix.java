@@ -1,4 +1,4 @@
-package com.lafarge.truckmix.service;
+package com.lafarge.truckmix;
 
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
@@ -13,6 +13,8 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+import com.lafarge.truckmix.service.TruckMixService;
+import com.lafarge.truckmix.service.TruckMixServiceMessages;
 
 import java.util.Map;
 import java.util.Set;
