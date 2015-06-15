@@ -4,14 +4,14 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import com.lafarge.truckmix.communicator.events.Event;
 
-public class EventParcelable extends Event implements Parcelable     {
+public class EventParcelable<T> extends Event<T> implements Parcelable     {
 
-    public EventParcelable(Event event) {
+    public EventParcelable(Event<T> event) {
         super(event.id, event.value, event.timestamp);
     }
 
-    public EventParcelable(Parcel in) {
-        super((Event.EventId) in.readValue(Event.EventId.class.getClassLoader()), in.readInt(), in.readLong());
+    public EventParcelable(EventId id, T value, long timestamp) {
+        super(id, value, timestamp);
     }
 
     @Override
@@ -21,7 +21,7 @@ public class EventParcelable extends Event implements Parcelable     {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(value.getClass().getClassLoader());
+        dest.writeValue(value.getClass().getName());
         dest.writeValue(id);
         dest.writeValue(value);
         dest.writeLong(timestamp);
@@ -31,7 +31,14 @@ public class EventParcelable extends Event implements Parcelable     {
     public static final Parcelable.Creator<Event> CREATOR = new Parcelable.Creator<Event>() {
         @Override
         public Event createFromParcel(Parcel in) {
-            return new EventParcelable(in);
+            String type = in.readString();
+            if (Integer.class.getName().equals(type)) {
+                return new EventParcelable<Integer>(EventId.getEnum(in.readInt()), in.readInt(), in.readLong());
+            } else if (Float.class.getName().equals(type)) {
+                return new EventParcelable<Float>(EventId.getEnum(in.readInt()), in.readFloat(), in.readLong());
+            } else {
+                throw new IllegalArgumentException("unknown type " + type);
+            }
         }
 
         @Override
