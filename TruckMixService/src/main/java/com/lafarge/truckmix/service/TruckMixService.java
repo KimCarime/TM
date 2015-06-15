@@ -42,13 +42,11 @@ public class TruckMixService extends Service {
     public void onCreate() {
         mBluetoothChatService = new BluetoothChatService(new BluetoothChatServiceHandler(this));
         mCommunicator = new Communicator(mBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
-        showNotification(false);
     }
 
     @Override
     public void onDestroy() {
         mBluetoothChatService.stop();
-        hideNotification();
     }
 
     @Override
@@ -144,13 +142,11 @@ public class TruckMixService extends Service {
                     switch (msg.arg1) {
                         case BluetoothChatService.STATE_CONNECTED:
                             service.mCommunicator.setConnected(true);
-                            service.showNotification(true);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
                             break;
                         case BluetoothChatService.STATE_NONE:
                             service.mCommunicator.setConnected(false);
-                            service.showNotification(false);
                             break;
                     }
                     break;
@@ -302,37 +298,5 @@ public class TruckMixService extends Service {
                 mClients.remove(i);
             }
         }
-    }
-
-    /**
-     *
-     */
-    static final public int NOTIFICATION_ID = 42;
-    private NotificationManager mNotificationManager = null;
-
-    private Notification createNotification(boolean connected) {
-        return new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.notification_template_icon_bg)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContentTitle("TruckMix")
-                .setWhen(System.currentTimeMillis())
-//                .setContentIntent(pendingIntent)
-                .setOngoing(true)
-                .setTicker("Camion " + (connected ? "connecté" : "déconnecté"))
-                .setContentText("Camion " + (connected ? "connecté" : "déconnecté"))
-                .build();
-    }
-
-    private void hideNotification() {
-        mNotificationManager.cancel(NOTIFICATION_ID);
-    }
-
-    private void showNotification(boolean connected) {
-        if (mNotificationManager == null) {
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        }
-        mNotificationManager.cancel(NOTIFICATION_ID);
-        mNotificationManager.notify(NOTIFICATION_ID, createNotification(connected));
     }
 }
