@@ -213,7 +213,6 @@ public class BluetoothChatService {
      * Reinitialize threads and retry a connection.
      *
      * @param device The device to reconnect
-     *
      */
     private void retryConnection(final BluetoothDevice device) {
         if (mStopped) return;
