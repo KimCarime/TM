@@ -239,6 +239,7 @@ public class Communicator {
      * @param waterRequestAllowed true if you want to interact with the water, otherwise false.
      */
     public void setWaterRequestAllowed(boolean waterRequestAllowed) {
+        loggerListener.log("OPTION: water request is " + (waterRequestAllowed ? "ALLOWED" : "NOT ALLOWED"));
         this.waterRequestAllowed = waterRequestAllowed;
     }
 
@@ -254,6 +255,7 @@ public class Communicator {
      * @param activated true to activate the quality tracking, otherwise false.
      */
     public void setQualityTrackingActivated(boolean activated) {
+        loggerListener.log("OPTION: quality tracking is " + (waterRequestAllowed ? "ENABLED" : "DISABLED"));
         this.qualityTrackingActivated = activated;
     }
 
