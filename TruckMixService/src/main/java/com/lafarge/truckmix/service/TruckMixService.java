@@ -17,6 +17,7 @@ import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.service.bluetooth.BluetoothChatService;
+import com.lafarge.truckmix.service.bluetooth.BluetoothChatServiceMessages;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -139,7 +140,7 @@ public class TruckMixService extends Service {
             if (service == null) return;
 
             switch (msg.what) {
-                case Constants.MESSAGE_STATE_CHANGE:
+                case BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothChatService.STATE_CONNECTED:
                             service.mCommunicator.setConnected(true);
@@ -153,12 +154,12 @@ public class TruckMixService extends Service {
                             break;
                     }
                     break;
-                case Constants.MESSAGE_WRITE:
+                case BluetoothChatServiceMessages.MESSAGE_WRITE:
                     break;
-                case Constants.MESSAGE_READ:
+                case BluetoothChatServiceMessages.MESSAGE_READ:
                     service.mCommunicator.received(Arrays.copyOf((byte[]) msg.obj, msg.arg1));
                     break;
-                case Constants.MESSAGE_DEVICE_NAME:
+                case BluetoothChatServiceMessages.MESSAGE_DEVICE_NAME:
                     break;
             }
         }
