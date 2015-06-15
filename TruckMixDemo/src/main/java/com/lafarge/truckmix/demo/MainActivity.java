@@ -4,33 +4,44 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.demo.fragments.ConsoleListFragment;
 import com.lafarge.truckmix.demo.fragments.OverviewFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
 import com.lafarge.truckmix.service.TruckMix;
+import com.lafarge.truckmix.service.TruckMixConnectionState;
+import com.lafarge.truckmix.service.TruckMixConsumer;
 
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TruckMixConsumer {
+    private static final String TAG = "MainActivity";
 
     private ViewPager mViewPager;
     private SectionsPagerAdapter mPagerAdapter;
     private boolean serviceConnected;
 
-    TruckMix mTruckMix;
-    UserPreferences mPrefs;
+    private TruckMix mTruckMix = TruckMix.getInstanceForApplication(this);
+    private UserPreferences mPrefs;
+
+    //
+    // Life cycle
+    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,18 +53,22 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mPagerAdapter);
 
+        // Binding to the service
+        mTruckMix.bind(this);
+
         // Others
-        mTruckMix = new TruckMix(this, communicatorListener, loggerListener);
         mPrefs = new UserPreferences(this);
-
-        toggleService();
     }
 
+    @Override
     protected void onDestroy() {
-        if (!isFinishing()) {
-            mTruckMix.stopService();
-        }
+        super.onDestroy();
+        mTruckMix.unbind(this);
     }
+
+    //
+    // Menu management
+    //
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -66,9 +81,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.scan:
-                mTruckMix.connect("00:12:6F:35:7E:70");
-                return true;
             case R.id.send_frame:
                 createSendFrameDialog().show();
                 return true;
@@ -84,129 +96,42 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void toggleService() {
-        if (!this.serviceConnected) {
-            mTruckMix.startService();
-        } else {
-            mTruckMix.stopService();
-        }
+    //
+    // TruckMix interface
+    //
 
-        this.serviceConnected = !this.serviceConnected;
+    @Override
+    public void onTruckMixServiceConnect() {
+        // This is the bluetooth mac address of the calculator.
+        final String address = "00:12:6F:35:7E:70";
+
+        try {
+            mTruckMix.connect(address, mConnectionState, mCommunicatorListener, mLoggerListener, mEventListener);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private final TruckMixConnectionState mConnectionState = new TruckMixConnectionState() {
+        @Override
+        public void onCalculatorConnected() {
+            Log.i(TAG, "Calculator connected");
+        }
 
-        public static final int TAB_CONSOLE = 0;
-        public static final int TAB_OVERVIEW = 1;
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
+        public void onCalculatorConnecting() {
+            Log.i(TAG, "Calculator connecting");
         }
 
         @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case TAB_CONSOLE:
-                    return ConsoleListFragment.newInstance();
-                case TAB_OVERVIEW:
-                    return OverviewFragment.newInstance();
-                default:
-                    return null;
-            }
+        public void onCalculatorDisconnected() {
+            Log.i(TAG, "Calculator disconnected");
         }
-
-        @Override
-        public int getCount() {
-            return 2;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            Locale l = Locale.getDefault();
-            switch (position) {
-                case TAB_CONSOLE:
-                    return getString(R.string.title_main_section1).toUpperCase(l);
-                case TAB_OVERVIEW:
-                    return getString(R.string.title_main_section2).toUpperCase(l);
-                default:
-                    return null;
-            }
-        }
-    }
-
-    private Dialog createSendFrameDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Actions");
-        builder.setItems(R.array.send_frame_array, new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        mTruckMix.setTruckParameters(mPrefs.getTruckParameters());
-                        break;
-                    case 1:
-                        mTruckMix.deliveryNoteReceived(mPrefs.getDeliveryParameters());
-                        break;
-                    case 2:
-                        mTruckMix.acceptDelivery(true);
-                        break;
-                    case 3:
-                        mTruckMix.endDelivery();
-                        break;
-                    case 4:
-                        mTruckMix.changeExternalDisplayState(true);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        });
-        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.cancel();
-            }
-        });
-        return builder.create();
-    }
-
-    private Dialog createAddWaterConfirmationDialog(int volume) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Confirmez");
-        builder.setMessage("Autorisez-vous à ajouter " + volume + " L d'eau ?");
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mTruckMix.allowWaterAddition(true);
-                dialog.dismiss();
-            }
-        });
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mTruckMix.allowWaterAddition(false);
-                dialog.dismiss();
-            }
-        });
-        return builder.create();
-    }
-
-    private ConsoleListFragment getConsoleFragment() {
-        return ((ConsoleListFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_CONSOLE));
-    }
-
-    private OverviewFragment getOverviewFragment() {
-        return ((OverviewFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_OVERVIEW));
-    }
-
-    private Fragment findFragmentByPosition(int position) {
-        return getSupportFragmentManager().findFragmentByTag(
-                "android:switcher:" + mViewPager.getId() + ":" + mPagerAdapter.getItemId(position));
-    }
+    };
 
     /**
      *
      */
-    private final LoggerListener loggerListener = new LoggerListener() {
+    private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
         public void log(String log) {
             getConsoleFragment().addLog(log);
@@ -216,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      *
      */
-    private final CommunicatorListener communicatorListener = new CommunicatorListener() {
+    private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
         @Override
         public void slumpUpdated(int slump) {
             getOverviewFragment().updateSlump(slump);
@@ -257,9 +182,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
-            getOverviewFragment().updateInputPressure(inPressure);
-            getOverviewFragment().updateOutputPressure(outPressure);
+        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
+            getOverviewFragment().updateInputPressure(inputPressure);
+            getOverviewFragment().updateOutputPressure(outputPressure);
             getOverviewFragment().updateRotationSpeed(rotationSpeed);
         }
 
@@ -298,4 +223,146 @@ public class MainActivity extends AppCompatActivity {
             getOverviewFragment().updateMaxSensorExceed(thresholdExceed);
         }
     };
+
+    /**
+     *
+     */
+    private final EventListener mEventListener = new EventListener() {
+        @Override
+        public void onNewEvents(Event event) {
+
+        }
+    };
+
+    /**
+     *
+     */
+    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        public static final int TAB_CONSOLE = 0;
+        public static final int TAB_OVERVIEW = 1;
+
+        public SectionsPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case TAB_CONSOLE:
+                    return ConsoleListFragment.newInstance();
+                case TAB_OVERVIEW:
+                    return OverviewFragment.newInstance();
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            Locale l = Locale.getDefault();
+            switch (position) {
+                case TAB_CONSOLE:
+                    return getString(R.string.title_main_section1).toUpperCase(l);
+                case TAB_OVERVIEW:
+                    return getString(R.string.title_main_section2).toUpperCase(l);
+                default:
+                    return null;
+            }
+        }
+    }
+
+    //
+    // Dialogs factory
+    //
+
+    private Dialog createSendFrameDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Actions");
+        builder.setItems(R.array.send_frame_array, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    switch (which) {
+                        case 0:
+                            mTruckMix.setTruckParameters(mPrefs.getTruckParameters());
+                            break;
+                        case 1:
+                            mTruckMix.deliveryNoteReceived(mPrefs.getDeliveryParameters());
+                            break;
+                        case 2:
+                            mTruckMix.acceptDelivery(true);
+                            break;
+                        case 3:
+                            mTruckMix.endDelivery();
+                            break;
+                        case 4:
+                            mTruckMix.changeExternalDisplayState(true);
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+        return builder.create();
+    }
+
+    private Dialog createAddWaterConfirmationDialog(int volume) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Confirmez");
+        builder.setMessage("Autorisez-vous à ajouter " + volume + " L d'eau ?");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    mTruckMix.allowWaterAddition(true);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                try {
+                    mTruckMix.allowWaterAddition(false);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                dialog.dismiss();
+            }
+        });
+        return builder.create();
+    }
+
+    //
+    // Fragment getters
+    //
+
+    private ConsoleListFragment getConsoleFragment() {
+        return ((ConsoleListFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_CONSOLE));
+    }
+
+    private OverviewFragment getOverviewFragment() {
+        return ((OverviewFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_OVERVIEW));
+    }
+
+    private Fragment findFragmentByPosition(int position) {
+        return getSupportFragmentManager().findFragmentByTag(
+                "android:switcher:" + mViewPager.getId() + ":" + mPagerAdapter.getItemId(position));
+    }
 }

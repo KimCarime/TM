@@ -1,12 +1,8 @@
 package com.lafarge.truckmix.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.*;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 import com.lafarge.truckmix.communicator.Communicator;
@@ -40,12 +36,14 @@ public class TruckMixService extends Service {
 
     @Override
     public void onCreate() {
-        mBluetoothChatService = new BluetoothChatService(new BluetoothChatServiceHandler(this));
+        Log.i(TAG, "TruckMixService version " + BuildConfig.VERSION_NAME + " is starting up");
+        mBluetoothChatService = new BluetoothChatService(this, new BluetoothChatServiceHandler(this));
         mCommunicator = new Communicator(mBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
     }
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy called. Stop bluetooth connection");
         mBluetoothChatService.stop();
     }
 
@@ -101,6 +99,12 @@ public class TruckMixService extends Service {
                 case TruckMixServiceMessages.MSG_CONNECT_DEVICE:
                     service.mBluetoothChatService.connect(TruckMixServiceMessages.getAddressFromConnectMessage(msg));
                     break;
+                case TruckMixServiceMessages.MSG_ALLOW_WATER_REQUEST:
+                    service.mCommunicator.setWaterRequestAllowed(TruckMixServiceMessages.getValueFromAllowWaterRequestMessage(msg));
+                    break;
+                case TruckMixServiceMessages.MSG_ENABLE_QUALITY_TRACKING:
+                    service.mCommunicator.setQualityTrackingActivated(TruckMixServiceMessages.getValueFromEnableQualityTrackingMessage(msg));
+                    break;
                 case TruckMixServiceMessages.MSG_TRUCK_PARAMETERS:
                     service.mCommunicator.setTruckParameters(TruckMixServiceMessages.getDataFromTruckParametersMessage(msg));
                     break;
@@ -117,8 +121,7 @@ public class TruckMixService extends Service {
                     service.mCommunicator.allowWaterAddition(TruckMixServiceMessages.getValueFromAddWaterPermissionMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_CHANGE_EXTERNAL_DISPLAY_STATE:
-                    service.mCommunicator.changeExternalDisplayState(TruckMixServiceMessages
-                            .getValueFromChangeExternalDisplayStateMessage(msg));
+                    service.mCommunicator.changeExternalDisplayState(TruckMixServiceMessages.getValueFromChangeExternalDisplayStateMessage(msg));
             }
         }
     };
@@ -141,11 +144,14 @@ public class TruckMixService extends Service {
                 case BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothChatService.STATE_CONNECTED:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectedMessage());
                             service.mCommunicator.setConnected(true);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectingMessage());
                             break;
                         case BluetoothChatService.STATE_NONE:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsDisconnectedMessage());
                             service.mCommunicator.setConnected(false);
                             break;
                     }
@@ -202,12 +208,10 @@ public class TruckMixService extends Service {
         }
 
         @Override
-        public void waterAdditionBegan() {
-        }
+        public void waterAdditionBegan() {}
 
         @Override
-        public void waterAdditionEnd() {
-        }
+        public void waterAdditionEnd() {}
 
         @Override
         public void alarmWaterAdditionBlocked() {
@@ -220,8 +224,8 @@ public class TruckMixService extends Service {
         }
 
         @Override
-        public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
-            sendMessage(TruckMixServiceMessages.createCalibrationDataMessage(inPressure, outPressure, rotationSpeed));
+        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
+            sendMessage(TruckMixServiceMessages.createCalibrationDataMessage(inputPressure, outputPressure, rotationSpeed));
         }
 
         @Override
@@ -276,7 +280,7 @@ public class TruckMixService extends Service {
     private final EventListener mEventListener = new EventListener() {
         @Override
         public void onNewEvents(Event event) {
-
+            sendMessage(TruckMixServiceMessages.createNewEventMessage(event));
         }
     };
 
