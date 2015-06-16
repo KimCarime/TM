@@ -17,6 +17,16 @@ The last project, TruckMixDemo, is a demo project to show how to integrate Truck
 
 # Integration
 
-Add these permissions in AndroidManifest.xml:<br>
-    `<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />`<br>
-    `<uses-permission android:name="android.permission.BLUETOOTH" />`
+Add these permissions in `AndroidManifest.xml`:
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+
+Then declare the service as follow :<br>
+
+    <service
+        android:name="com.lafarge.truckmix.service.TruckMixService"
+        android:exported="false"
+        android:label="TruckMix Service"
+        android:process=":TruckMix">
+    </service>
