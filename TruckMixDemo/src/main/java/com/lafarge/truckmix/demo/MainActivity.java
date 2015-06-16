@@ -3,7 +3,9 @@ package com.lafarge.truckmix.demo;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,6 +17,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import com.lafarge.truckmix.TruckMix;
+import com.lafarge.truckmix.TruckMixConnectionState;
+import com.lafarge.truckmix.TruckMixConsumer;
 import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
@@ -23,12 +28,11 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.demo.fragments.ConsoleListFragment;
 import com.lafarge.truckmix.demo.fragments.OverviewFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
-import com.lafarge.truckmix.TruckMix;
-import com.lafarge.truckmix.TruckMixConnectionState;
-import com.lafarge.truckmix.TruckMixConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements TruckMixConsumer {
@@ -41,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     private boolean serviceConnected;
 
     private TruckMix mTruckMix = TruckMix.getInstanceForApplication(this);
+    private ArrayList<Event> mEvents = new ArrayList<Event>();
     private UserPreferences mPrefs;
 
     //
@@ -94,6 +99,17 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
             case R.id.customize_parameters: {
                 final Intent intent = new Intent(this, ParametersActivity.class);
                 startActivity(intent);
+            }
+            case R.id.send_logs: {
+                final Intent intent=new Intent(Intent.ACTION_SEND);
+                String[] recipients = {"kim.abdoul-carime@lafarge.com"};
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_EMAIL, recipients);
+                intent.putExtra(Intent.EXTRA_SUBJECT, "[TruckMix] Logs");
+                intent.putExtra(Intent.EXTRA_TEXT, "Vous trouverez les logs ci-joint.\nCordialement,\nTruckMix");
+                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, getUriListForLogs());
+
+                startActivity(Intent.createChooser(intent, "Envoie mail"));
             }
             default:
                 return super.onOptionsItemSelected(item);
@@ -235,6 +251,12 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     private final EventListener mEventListener = new EventListener() {
         @Override
         public void onNewEvents(Event event) {
+            String str =
+                    "{" +
+                    "  id: " + event.id.getIdValue() +
+                    "  value:" + event.value +
+                    "  timestamp: " + event.timestamp +
+                    "}";
 
         }
     };
@@ -369,5 +391,24 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     private Fragment findFragmentByPosition(int position) {
         return getSupportFragmentManager().findFragmentByTag(
                 "android:switcher:" + mViewPager.getId() + ":" + mPagerAdapter.getItemId(position));
+    }
+
+    //
+    // Other
+    //
+
+    private ArrayList<Uri> getUriListForLogs() {
+        ArrayList<Uri> uris = new ArrayList<Uri>();
+
+        String path = Environment.getExternalStorageDirectory().toString()+"/Android/data/com.lafarge.truckmix.demo/logs";
+        Log.d("Files", "Path: " + path);
+        File f = new File(path);
+        File files[] = f.listFiles();
+        Log.d("Files", "Size: "+ files.length);
+        for (File file : files) {
+            Log.d("Files", "FileName:" + file.getName());
+            uris.add(Uri.fromFile(file));
+        }
+        return uris;
     }
 }
