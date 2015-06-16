@@ -3,7 +3,7 @@ package com.lafarge.truckmix.common;
 import java.util.HashMap;
 
 /**
- * Contains all the specifications about the protocol of communication with the Wirma.
+ * Contains all the specifications about the protocol of communication with the calculator.
  */
 public class Protocol {
     /**
@@ -18,7 +18,7 @@ public class Protocol {
     public static final int VERSION = 0x01;
 
     //
-    // Definition of messages send to the Wirma.
+    // Definition of messages send to the calculator.
     //
 
     public static final String TRAME_SLUMP_CIBLE = "TRAME_SLUMP_CIBLE";
@@ -51,7 +51,7 @@ public class Protocol {
     public static final String TRAME_NOMBRE_MAX_ERREURS_COMPTAGE = "TRAME_NOMBRE_MAX_ERREURS_COMPTAGE";
 
     //
-    // Definition of messages to received from the Wirma.
+    // Definition of messages to received from the calculator.
     //
 
     public static final String TRAME_SLUMP_COURANT = "TRAME_SLUMP_COURANT";
@@ -126,7 +126,7 @@ public class Protocol {
     public static final HashMap<String, Spec> constants = new HashMap<String, Spec>();
     static
     {
-        // List of messages to send to the Wirma.
+        // List of messages to send to the calculator.
         constants.put(TRAME_SLUMP_CIBLE, new Spec(0x8001, 2));
         constants.put(TRAME_VOLUME_EAU_MAXIMUM, new Spec(0x8002, 2));
         constants.put(TRAME_AUTORISATION_REFUS_AJOUT_EAU, new Spec(0x8003, 1));
@@ -157,7 +157,7 @@ public class Protocol {
         constants.put(TRAME_NOMBRE_MAX_ERREURS_COMPTAGE, new Spec(0xA015, 1));
         constants.put(TRAME_BIDON, new Spec(0xAFFE, 8));
 
-        // List of messages received from the Wirma.
+        // List of messages received from the calculator.
         constants.put(TRAME_SLUMP_COURANT, new Spec(0x1001, 2));
         constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2, new int[]{1}));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, new Spec(0x3001, 0));

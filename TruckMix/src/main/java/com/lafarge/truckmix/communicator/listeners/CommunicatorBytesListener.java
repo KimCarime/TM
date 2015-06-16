@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.communicator.listeners;
 
 /**
- * Interface responsible for bytes to send to the Wirma.
+ * Interface responsible for bytes to send to the calculator.
  */
 public interface CommunicatorBytesListener {
 

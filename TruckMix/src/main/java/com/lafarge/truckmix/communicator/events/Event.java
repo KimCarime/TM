@@ -45,8 +45,12 @@ public class Event<T> {
     public final long timestamp;
 
     public Event(EventId id, T value) {
+        this(id, value, System.currentTimeMillis());
+    }
+
+    public Event(EventId id, T value, long timestamp) {
         this.id = id;
         this.value = value;
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = timestamp;
     }
 }

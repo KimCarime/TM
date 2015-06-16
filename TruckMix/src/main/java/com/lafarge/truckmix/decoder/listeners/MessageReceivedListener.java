@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.decoder.listeners;
 
 /**
- * This interface list all message decoded received from the Wirma.
+ * This interface list all message decoded received from the calculator.
  */
 public interface MessageReceivedListener {
 

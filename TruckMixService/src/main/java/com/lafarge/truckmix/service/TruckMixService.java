@@ -1,12 +1,8 @@
 package com.lafarge.truckmix.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.os.*;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 import com.lafarge.truckmix.communicator.Communicator;
@@ -16,7 +12,8 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-import com.lafarge.truckmix.service.bluetooth.BluetoothChatService;
+import com.lafarge.truckmix.bluetooth.BluetoothChatService;
+import com.lafarge.truckmix.bluetooth.BluetoothChatServiceMessages;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -39,15 +36,15 @@ public class TruckMixService extends Service {
 
     @Override
     public void onCreate() {
-        mBluetoothChatService = new BluetoothChatService(new BluetoothChatServiceHandler(this));
+        Log.i(TAG, "TruckMixService version " + BuildConfig.VERSION_NAME + " is starting up");
+        mBluetoothChatService = new BluetoothChatService(this, new BluetoothChatServiceHandler(this));
         mCommunicator = new Communicator(mBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
-        showNotification(false);
     }
 
     @Override
     public void onDestroy() {
+        Log.i(TAG, "onDestroy called. Stop bluetooth connection");
         mBluetoothChatService.stop();
-        hideNotification();
     }
 
     @Override
@@ -102,6 +99,12 @@ public class TruckMixService extends Service {
                 case TruckMixServiceMessages.MSG_CONNECT_DEVICE:
                     service.mBluetoothChatService.connect(TruckMixServiceMessages.getAddressFromConnectMessage(msg));
                     break;
+                case TruckMixServiceMessages.MSG_ALLOW_WATER_REQUEST:
+                    service.mCommunicator.setWaterRequestAllowed(TruckMixServiceMessages.getValueFromAllowWaterRequestMessage(msg));
+                    break;
+                case TruckMixServiceMessages.MSG_ENABLE_QUALITY_TRACKING:
+                    service.mCommunicator.setQualityTrackingActivated(TruckMixServiceMessages.getValueFromEnableQualityTrackingMessage(msg));
+                    break;
                 case TruckMixServiceMessages.MSG_TRUCK_PARAMETERS:
                     service.mCommunicator.setTruckParameters(TruckMixServiceMessages.getDataFromTruckParametersMessage(msg));
                     break;
@@ -118,8 +121,7 @@ public class TruckMixService extends Service {
                     service.mCommunicator.allowWaterAddition(TruckMixServiceMessages.getValueFromAddWaterPermissionMessage(msg));
                     break;
                 case TruckMixServiceMessages.MSG_CHANGE_EXTERNAL_DISPLAY_STATE:
-                    service.mCommunicator.changeExternalDisplayState(TruckMixServiceMessages
-                            .getValueFromChangeExternalDisplayStateMessage(msg));
+                    service.mCommunicator.changeExternalDisplayState(TruckMixServiceMessages.getValueFromChangeExternalDisplayStateMessage(msg));
             }
         }
     };
@@ -139,33 +141,35 @@ public class TruckMixService extends Service {
             if (service == null) return;
 
             switch (msg.what) {
-                case Constants.MESSAGE_STATE_CHANGE:
+                case BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothChatService.STATE_CONNECTED:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectedMessage());
                             service.mCommunicator.setConnected(true);
-                            service.showNotification(true);
                             break;
                         case BluetoothChatService.STATE_CONNECTING:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectingMessage());
                             break;
                         case BluetoothChatService.STATE_NONE:
+                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsDisconnectedMessage());
                             service.mCommunicator.setConnected(false);
-                            service.showNotification(false);
                             break;
                     }
                     break;
-                case Constants.MESSAGE_WRITE:
+                case BluetoothChatServiceMessages.MESSAGE_WRITE:
                     break;
-                case Constants.MESSAGE_READ:
+                case BluetoothChatServiceMessages.MESSAGE_READ:
                     service.mCommunicator.received(Arrays.copyOf((byte[]) msg.obj, msg.arg1));
                     break;
-                case Constants.MESSAGE_DEVICE_NAME:
+                case BluetoothChatServiceMessages.MESSAGE_DEVICE_NAME:
                     break;
             }
         }
     }
 
     /**
-     *
+     * Implementation of the CommunicatorBytesListener.
+     * Every bytes retrieved here should be send via Bluetooth.
      */
     private final CommunicatorBytesListener mBytesListener = new CommunicatorBytesListener() {
         @Override
@@ -175,7 +179,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the CommunicatorListener.
      */
     private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
         @Override
@@ -204,12 +208,10 @@ public class TruckMixService extends Service {
         }
 
         @Override
-        public void waterAdditionBegan() {
-        }
+        public void waterAdditionBegan() {}
 
         @Override
-        public void waterAdditionEnd() {
-        }
+        public void waterAdditionEnd() {}
 
         @Override
         public void alarmWaterAdditionBlocked() {
@@ -222,8 +224,8 @@ public class TruckMixService extends Service {
         }
 
         @Override
-        public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
-            sendMessage(TruckMixServiceMessages.createCalibrationDataMessage(inPressure, outPressure, rotationSpeed));
+        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
+            sendMessage(TruckMixServiceMessages.createCalibrationDataMessage(inputPressure, outputPressure, rotationSpeed));
         }
 
         @Override
@@ -263,7 +265,7 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the LoggerListener
      */
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
@@ -273,17 +275,17 @@ public class TruckMixService extends Service {
     };
 
     /**
-     *
+     * Implementation of the EventListener
      */
     private final EventListener mEventListener = new EventListener() {
         @Override
         public void onNewEvents(Event event) {
-
+            sendMessage(TruckMixServiceMessages.createNewEventMessage(event));
         }
     };
 
     /**
-     *
+     * Send a message of the list of clients. Note that we should only have one client in the array.
      */
     private void sendMessage(Message msg) {
         // We are going through the list from back to front so this is safe to do inside the loop.
@@ -300,37 +302,5 @@ public class TruckMixService extends Service {
                 mClients.remove(i);
             }
         }
-    }
-
-    /**
-     *
-     */
-    static final public int NOTIFICATION_ID = 42;
-    private NotificationManager mNotificationManager = null;
-
-    private Notification createNotification(boolean connected) {
-        return new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.notification_template_icon_bg)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setContentTitle("TruckMix")
-                .setWhen(System.currentTimeMillis())
-//                .setContentIntent(pendingIntent)
-                .setOngoing(true)
-                .setTicker("Camion " + (connected ? "connecté" : "déconnecté"))
-                .setContentText("Camion " + (connected ? "connecté" : "déconnecté"))
-                .build();
-    }
-
-    private void hideNotification() {
-        mNotificationManager.cancel(NOTIFICATION_ID);
-    }
-
-    private void showNotification(boolean connected) {
-        if (mNotificationManager == null) {
-            mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        }
-        mNotificationManager.cancel(NOTIFICATION_ID);
-        mNotificationManager.notify(NOTIFICATION_ID, createNotification(connected));
     }
 }

@@ -1,8 +1,7 @@
-package com.lafarge.truckmix;
+package com.lafarge.truckmix.decoder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.lafarge.truckmix.decoder.Decoder;
 import com.lafarge.truckmix.decoder.listeners.LoggedMessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.LoggedProgressListener;
 import com.lafarge.truckmix.common.Protocol;

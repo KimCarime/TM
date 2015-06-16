@@ -9,7 +9,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 /**
- * This is the Decoder part of the library, this Decoder is responsible of decoding each bytes received from the Wirma.
+ * This is the Decoder part of the library, this Decoder is responsible of decoding each bytes received from the calculator.
  */
 public class Decoder {
 

@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 
 public class CommunicatorTest {
 
-    private SchedulerMock scheduler;
+    private FlushedSchedulerMock scheduler;
     private Encoder encoder;
     private Communicator communicator;
     private CommunicatorBytesListener bytesListener;
@@ -39,7 +39,7 @@ public class CommunicatorTest {
         truckParameters = new TruckParameters(3.4563, 563.376, -39.844, 4.3254, 24, 15, 120, 45, 60, TruckParameters.CommandPumpMode.SEMI_AUTO, 2.5, 0.0, 2.5, 0.0, 3, 180, 10, 90, 64, 5, 6);
         deliveryParameters = new DeliveryParameters(150, 0, 6);
 
-        scheduler = new SchedulerMock();
+        scheduler = new FlushedSchedulerMock();
         encoder = new Encoder(mock(MessageSentListener.class));
         bytesListener = mock(CommunicatorBytesListener.class);
         communicatorListener = mock(CommunicatorListener.class);

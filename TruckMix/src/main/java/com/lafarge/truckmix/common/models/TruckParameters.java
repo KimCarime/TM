@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.common.models;
 
 /**
- * This class contains all information the Wirma need for calibration.
+ * This class contains all information the calculator need for calibration.
  */
 public class TruckParameters {
 

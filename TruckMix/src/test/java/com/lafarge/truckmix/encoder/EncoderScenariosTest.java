@@ -1,14 +1,12 @@
-package com.lafarge.truckmix;
+package com.lafarge.truckmix.encoder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
-import com.lafarge.truckmix.encoder.Encoder;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;

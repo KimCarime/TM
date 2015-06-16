@@ -3,7 +3,7 @@ package com.lafarge.truckmix.communicator.listeners;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 /**
- * Interface of message received from the Wirma.
+ * Interface of message received from the calculator.
  */
 public interface CommunicatorListener {
 
@@ -16,7 +16,7 @@ public interface CommunicatorListener {
     void waterAdditionEnd();
     void alarmWaterAdditionBlocked();
     void stateChanged(int step, int subStep);
-    void calibrationData(float inPressure, float outPressure, float rotationSpeed);
+    void calibrationData(float inputPressure, float outputPressure, float rotationSpeed);
     void alarmWaterMax();
     void alarmFlowageError();
     void alarmCountingError();
