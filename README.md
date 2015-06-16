@@ -14,3 +14,9 @@ business logic about the communication with the device.
 The second one, TruckMixService, is an Android service that wrap the first library. Its job is to communicate with
 the device through bluetooth and to expose an API to communicate with it.
 The last project, TruckMixDemo, is a demo project to show how to integrate TruckMixService and how use the API.
+
+# Integration
+
+Add permission:
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+        <uses-permission android:name="android.permission.BLUETOOTH" />
