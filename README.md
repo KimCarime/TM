@@ -17,6 +17,6 @@ The last project, TruckMixDemo, is a demo project to show how to integrate Truck
 
 # Integration
 
-Add permission:
-        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-        <uses-permission android:name="android.permission.BLUETOOTH" />
+Add these permissions in AndroidManifest.xml:<br>
+    `<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />`<br>
+    `<uses-permission android:name="android.permission.BLUETOOTH" />`
