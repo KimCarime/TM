@@ -26,11 +26,15 @@ import com.lafarge.truckmix.demo.utils.UserPreferences;
 import com.lafarge.truckmix.TruckMix;
 import com.lafarge.truckmix.TruckMixConnectionState;
 import com.lafarge.truckmix.TruckMixConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements TruckMixConsumer {
+
     private static final String TAG = "MainActivity";
+    protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private ViewPager mViewPager;
     private SectionsPagerAdapter mPagerAdapter;
@@ -88,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
                 getConsoleFragment().clear();
                 return true;
             case R.id.customize_parameters: {
-                Intent intent = new Intent(this, ParametersActivity.class);
+                final Intent intent = new Intent(this, ParametersActivity.class);
                 startActivity(intent);
             }
             default:
@@ -134,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
         public void log(String log) {
+            LOGGER.info(log);
             getConsoleFragment().addLog(log);
         }
     };
