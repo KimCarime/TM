@@ -50,7 +50,6 @@ public class TruckMixService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         ++mBindCount;
-        Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
         return mMessenger.getBinder();
     }
 

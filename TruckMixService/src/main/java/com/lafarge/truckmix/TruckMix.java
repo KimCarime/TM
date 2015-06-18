@@ -110,9 +110,10 @@ public class TruckMix {
     public void unbind(TruckMixConsumer consumer) {
         synchronized (mConsumers) {
             if (mConsumers.containsKey(consumer)) {
-                Log.d(TAG, "Unbinding");
+                Log.d(TAG, "Unbinding with " + consumer);
                 consumer.unbindService(mTruckMixServiceConnection);
                 mConsumers.remove(consumer);
+                Log.d(TAG, "consumer count is now " + mConsumers.size());
                 if (mConsumers.size() == 0) {
                     // If this is the last consumer to disconnect, the service will exit
                     // release the serviceMessenger.
@@ -334,8 +335,6 @@ public class TruckMix {
      * Class for interacting with the main interface of the service.
      */
     public class IncomingHandler extends Handler {
-        private static final String TAG = "IncomingHandler";
-
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -436,10 +435,10 @@ public class TruckMix {
 
         // Check permissions
         if (mContext.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
-            throw new RuntimeException("You do not have the android.permission.BLUETOOTH is not properly declared in AndroidManifest.xml");
+            throw new RuntimeException("The android.permission.BLUETOOTH is not properly declared in AndroidManifest.xml");
         }
         if (mContext.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED) {
-            throw new RuntimeException("You do not have the android.permission.BLUETOOTH_ADMIN is not properly declared in AndroidManifest.xml");
+            throw new RuntimeException("The android.permission.BLUETOOTH_ADMIN is not properly declared in AndroidManifest.xml");
         }
     }
 

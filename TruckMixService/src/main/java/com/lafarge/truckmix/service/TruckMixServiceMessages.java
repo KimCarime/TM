@@ -373,7 +373,7 @@ public class TruckMixServiceMessages {
     }
 
     public static boolean getValueFromAddWaterPermissionMessage(Message msg) {
-        return (msg.getData().getBoolean(KEY_MSG_ADD_WATER_PERMISSION_VALUE));
+        return msg.getData().getBoolean(KEY_MSG_ADD_WATER_PERMISSION_VALUE);
     }
 
     public static boolean getValueFromChangeExternalDisplayStateMessage(Message msg) {
