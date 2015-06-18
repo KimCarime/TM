@@ -2,11 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lafarge.truckmix.demo" >
 
-    <!-- Mandatory for TruckMix -->
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-
-    <!-- Only for demo -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
@@ -23,13 +18,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name="com.lafarge.truckmix.service.TruckMixService"
-            android:exported="false"
-            android:label="TruckMix Service"
-            android:process=":TruckMix">
-        </service>
 
     </application>
 

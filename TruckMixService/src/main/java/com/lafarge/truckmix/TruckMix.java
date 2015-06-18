@@ -1,10 +1,12 @@
 package com.lafarge.truckmix;
 
+import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.*;
 import android.util.Log;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
@@ -16,6 +18,7 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.service.TruckMixService;
 import com.lafarge.truckmix.service.TruckMixServiceMessages;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,6 +56,8 @@ public class TruckMix {
     private LoggerListener mLoggerListener;
     private EventListener mEventListener;
 
+    private static boolean sManifestCheckingDisabled = false;
+
     /**
      * An accessor for the singleton instance of this class. A context must be provided, but if you need to use it from a non-Activity
      * or non-Service class, you can attach it to another singleton or a subclass of the Android Application class.
@@ -67,6 +72,9 @@ public class TruckMix {
 
     protected TruckMix(Context context) {
         mContext = context;
+        if (!sManifestCheckingDisabled) {
+            checkManifest();
+        }
         mHandler = new IncomingHandler();
         mMessenger = new Messenger(this.mHandler);
         mConsumers = new ConcurrentHashMap<TruckMixConsumer, ConsumerInfo>();
@@ -249,7 +257,9 @@ public class TruckMix {
      */
     public void setWaterRequestAllowed(boolean waterRequestAllowed) throws RemoteException {
         mWaterRequestAllowed = waterRequestAllowed;
-        sendMessage(TruckMixServiceMessages.createWaterRequestAllowedMessage(waterRequestAllowed));
+        if (mBound) {
+            sendMessage(TruckMixServiceMessages.createWaterRequestAllowedMessage(waterRequestAllowed));
+        }
     }
 
     /** Return the state of the water request allowance */
@@ -266,7 +276,9 @@ public class TruckMix {
      */
     public void setQualityTrackingActivated(boolean qualityTrackingEnabled) throws RemoteException {
         mQualityTrackingEnabled = qualityTrackingEnabled;
-        sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(qualityTrackingEnabled));
+        if (mBound) {
+            sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(qualityTrackingEnabled));
+        }
     }
 
     /** Return the state of the quality tracking */
@@ -307,6 +319,9 @@ public class TruckMix {
             }
             try {
                 sendMessage(Message.obtain(null, TruckMixServiceMessages.MSG_REGISTER_CLIENT));
+                // Setup options that could be set before connection was done.
+                sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(mQualityTrackingEnabled));
+                sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(mWaterRequestAllowed));
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -414,5 +429,41 @@ public class TruckMix {
 
     private class ConsumerInfo {
         public boolean isConnected = false;
+    }
+
+    private void checkManifest() {
+        final PackageManager packageManager = mContext.getPackageManager();
+
+        // Check service declaration
+        final Intent intent = new Intent(mContext, TruckMixService.class);
+        List resolveInfo = packageManager.queryIntentServices(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (resolveInfo.size() == 0) {
+            throw new ServiceNotDeclaredException();
+        }
+
+        // Check permissions
+        if (mContext.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_DENIED) {
+            throw new RuntimeException("You do not have the android.permission.BLUETOOTH is not properly declared in AndroidManifest.xml");
+        }
+        if (mContext.checkCallingOrSelfPermission(Manifest.permission.BLUETOOTH_ADMIN) == PackageManager.PERMISSION_DENIED) {
+            throw new RuntimeException("You do not have the android.permission.BLUETOOTH_ADMIN is not properly declared in AndroidManifest.xml");
+        }
+    }
+
+    public class ServiceNotDeclaredException extends RuntimeException {
+        public ServiceNotDeclaredException() {
+            super("The TruckMixService is not properly declared in AndroidManifest.xml.  If using Eclipse," +
+                    " please verify that your project.properties has manifestmerger.enabled=true");
+        }
+    }
+
+    /**
+     * Allows disabling check of manifest for proper configuration of service.  Useful for unit
+     * testing
+     *
+     * @param disabled
+     */
+    public static void setsManifestCheckingDisabled(boolean disabled) {
+        sManifestCheckingDisabled = disabled;
     }
 }
