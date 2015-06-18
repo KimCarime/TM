@@ -257,9 +257,7 @@ public class TruckMix {
      */
     public void setWaterRequestAllowed(boolean waterRequestAllowed) throws RemoteException {
         mWaterRequestAllowed = waterRequestAllowed;
-        if (mBound) {
-            sendMessage(TruckMixServiceMessages.createWaterRequestAllowedMessage(waterRequestAllowed));
-        }
+        sendMessage(TruckMixServiceMessages.createWaterRequestAllowedMessage(waterRequestAllowed));
     }
 
     /** Return the state of the water request allowance */
@@ -276,9 +274,7 @@ public class TruckMix {
      */
     public void setQualityTrackingActivated(boolean qualityTrackingEnabled) throws RemoteException {
         mQualityTrackingEnabled = qualityTrackingEnabled;
-        if (mBound) {
-            sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(qualityTrackingEnabled));
-        }
+        sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(qualityTrackingEnabled));
     }
 
     /** Return the state of the quality tracking */
@@ -319,9 +315,6 @@ public class TruckMix {
             }
             try {
                 sendMessage(Message.obtain(null, TruckMixServiceMessages.MSG_REGISTER_CLIENT));
-                // Setup options that could be set before connection was done.
-                sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(mQualityTrackingEnabled));
-                sendMessage(TruckMixServiceMessages.createEnableQualityTrackingMessage(mWaterRequestAllowed));
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
