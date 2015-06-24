@@ -60,4 +60,31 @@ public class TruckParameters {
         this.maxFlowageError = maxFlowageError;
         this.maxCountingError = maxCountingError;
     }
+
+    @Override
+    public String toString() {
+        return "TruckParameters{" +
+                "T1=" + T1 +
+                ", A11=" + A11 +
+                ", A12=" + A12 +
+                ", A13=" + A13 +
+                ", magnetQuantity=" + magnetQuantity +
+                ", timePump=" + timePump +
+                ", timeDelayDriver=" + timeDelayDriver +
+                ", pulseNumber=" + pulseNumber +
+                ", flowmeterFrequency=" + flowmeterFrequency +
+                ", commandPumpMode=" + commandPumpMode +
+                ", calibrationInputSensorA=" + calibrationInputSensorA +
+                ", calibrationInputSensorB=" + calibrationInputSensorB +
+                ", calibrationOutputSensorA=" + calibrationOutputSensorA +
+                ", calibrationOutputSensorB=" + calibrationOutputSensorB +
+                ", openingTimeEV1=" + openingTimeEV1 +
+                ", openingTimeVA1=" + openingTimeVA1 +
+                ", toleranceCounting=" + toleranceCounting +
+                ", waitingDurationAfterWaterAddition=" + waitingDurationAfterWaterAddition +
+                ", maxDelayBeforeFlowage=" + maxDelayBeforeFlowage +
+                ", maxFlowageError=" + maxFlowageError +
+                ", maxCountingError=" + maxCountingError +
+                '}';
+    }
 }
