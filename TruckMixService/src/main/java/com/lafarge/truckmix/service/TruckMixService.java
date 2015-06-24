@@ -172,8 +172,8 @@ public class TruckMixService extends Service {
      */
     private final CommunicatorBytesListener mBytesListener = new CommunicatorBytesListener() {
         @Override
-        public void send(byte[] bytes) {
             mBluetoothChatService.write(bytes);
+        public void send(final byte[] bytes) {
         }
     };
 
@@ -268,8 +268,8 @@ public class TruckMixService extends Service {
      */
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
-        public void log(String log) {
             sendMessage(TruckMixServiceMessages.createLogMessage(log));
+        public void log(final String log) {
         }
     };
 
@@ -278,8 +278,8 @@ public class TruckMixService extends Service {
      */
     private final EventListener mEventListener = new EventListener() {
         @Override
-        public void onNewEvents(Event event) {
             sendMessage(TruckMixServiceMessages.createNewEventMessage(event));
+        public void onNewEvents(final Event event) {
         }
     };
 

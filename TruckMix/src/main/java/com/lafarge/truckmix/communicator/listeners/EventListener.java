@@ -6,5 +6,5 @@ import com.lafarge.truckmix.communicator.events.Event;
  * Interface of events received from the calculator.
  */
 public interface EventListener {
-    void onNewEvents(Event event);
+    void onNewEvents(final Event event);
 }

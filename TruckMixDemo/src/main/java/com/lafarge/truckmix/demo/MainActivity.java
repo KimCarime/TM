@@ -153,7 +153,8 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
      */
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
-        public void log(String log) {
+        public void log(final String log) {
+            Log.d(TAG, log);
             LOGGER.info(log);
             getConsoleFragment().addLog(log);
         }
