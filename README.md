@@ -61,3 +61,5 @@ Edit your `project.properties` file and add the line:
 - Test TruckMixService integration
 - Add Proguard
 - Merge TruckMix and TruckMixService into a single library (merge projects or uber jar)
+- Enhance logging strategy
+
