@@ -58,11 +58,11 @@ public class Communicator {
     private State state;
     private boolean isSync;
     private boolean isConnected;
-    private int currentSlump;
 
     // Message received state
     CommunicatorListener.RotationDirection currentRotation;
     CommunicatorListener.SpeedSensorState currentSpeedSensorState;
+    private Information information;
 
     // Other
     private final Scheduler scheduler;
@@ -98,6 +98,7 @@ public class Communicator {
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
         this.isConnected = false;
         this.scheduler = scheduler;
+        this.information = new Information();
     }
 
     //
@@ -160,7 +161,7 @@ public class Communicator {
             loggerListener.log("ACTION: end delivery");
             setState(State.WAITING_FOR_DELIVERY_NOTE);
             if (qualityTrackingActivated) {
-                eventListener.onNewEvents(EventFactory.createEndOfDeliveryEvent(currentSlump));
+                eventListener.onNewEvents(EventFactory.createEndOfDeliveryEvent(information.getSlump()));
             }
         } else {
             loggerListener.log("ACTION (IGNORED): end delivery");
@@ -307,6 +308,7 @@ public class Communicator {
                 }
                 break;
             case DELIVERY_IN_PROGRESS:
+                information.clear();
                 cancelTimer();
                 if (isConnected) {
                     bytesListener.send(encoder.fake());
@@ -348,7 +350,7 @@ public class Communicator {
             if (isConnected) {
                 if (state == State.DELIVERY_IN_PROGRESS) {
                     loggerListener.log("RECEIVED: slump updated: " + slump + " mm");
-                    currentSlump = slump;
+                    information.setSlump(slump);
                     communicatorListener.slumpUpdated(slump);
                     if (qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createNewSlumpEvent(slump));
@@ -366,6 +368,7 @@ public class Communicator {
                 if (currentRotation != CommunicatorListener.RotationDirection.MIXING) {
                     currentRotation = CommunicatorListener.RotationDirection.MIXING;
                     communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.MIXING);
+                    information.setRotationDirection(CommunicatorListener.RotationDirection.MIXING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.MIXING));
                     }
@@ -380,6 +383,7 @@ public class Communicator {
                 if (currentRotation != CommunicatorListener.RotationDirection.UNLOADING) {
                     currentRotation = CommunicatorListener.RotationDirection.UNLOADING;
                     communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.UNLOADING);
+                    information.setRotationDirection(CommunicatorListener.RotationDirection.UNLOADING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.UNLOADING));
                     }
@@ -560,6 +564,9 @@ public class Communicator {
                     loggerListener.log("RECEIVED: calibration data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", " +
                             "rotationSpeed: " + rotationSpeed + " tr/min)");
                     communicatorListener.calibrationData(inputPressure, outputPressure, rotationSpeed);
+                    information.setInputPressure(inputPressure);
+                    information.setOutputPressure(outputPressure);
+                    information.setRotationSpeed(rotationSpeed);
                     if (qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createRotationSpeedEvent(rotationSpeed));
                         eventListener.onNewEvents(EventFactory.createInputPressureEvent(inputPressure));
@@ -575,6 +582,7 @@ public class Communicator {
         public void alarmWaterMax() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water max");
+                information.setAlarm(CommunicatorListener.AlarmType.WATER_MAX);
                 communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.WATER_MAX);
             }
         }
@@ -583,6 +591,7 @@ public class Communicator {
         public void alarmFlowageError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: flowage error");
+                information.setAlarm(CommunicatorListener.AlarmType.FLOWAGE_ERROR);
                 communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.FLOWAGE_ERROR);
             }
         }
@@ -591,6 +600,7 @@ public class Communicator {
         public void alarmCountingError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: counting error");
+                information.setAlarm(CommunicatorListener.AlarmType.COUNTING_ERROR);
                 communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.COUNTING_ERROR);
             }
         }
@@ -599,6 +609,7 @@ public class Communicator {
         public void inputSensorConnectionChanged(boolean connected) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: input sensor connection changed: " + (connected ? "IS CONNECTED" : "NOT CONNECTED"));
+                information.setInputPressureSensorState(connected);
                 communicatorListener.inputSensorConnectionChanged(connected);
             }
         }
@@ -607,6 +618,7 @@ public class Communicator {
         public void outputSensorConnectionChanged(boolean connected) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: output sensor connection changed: " + (connected ? "IS CONNECTED" : "NOT CONNECTED"));
+                information.setOutputPressureSensorState(connected);
                 communicatorListener.outputSensorConnectionChanged(connected);
             }
         }
@@ -618,9 +630,11 @@ public class Communicator {
                 if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW) {
                     currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_SLOW;
                     communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_SLOW);
+                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.TOO_SLOW);
                 } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST){
                     currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
                     communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.NORMAL);
                 }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMinEvent(thresholdExceed));
@@ -635,9 +649,11 @@ public class Communicator {
                 if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST) {
                     currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_FAST;
                     communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_FAST);
+                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.TOO_FAST);
                 } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW){
                     currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
                     communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.NORMAL);
                 }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMaxEvent(thresholdExceed));
@@ -882,4 +898,158 @@ public class Communicator {
             }
         }
     };
+
+    public class Information {
+        public static final int VALUE_EXPIRATION_DELAY_IN_MILLIS = 5*1000*60;
+
+        private Value<Integer> slump;
+        private Value<CommunicatorListener.RotationDirection> rotationDirection;
+        private Value<Float> inputPressure;
+        private Value<Float> outputPressure;
+        private Value<Float> rotationSpeed;
+        private Value<Boolean> inputPressureSensorState;
+        private Value<Boolean> outputPressureSensorState;
+        private Value<CommunicatorListener.SpeedSensorState> speedSensorState;
+        private Value<CommunicatorListener.AlarmType> alarm;
+        private Value<Integer> temperature;
+
+        public Information() {
+        }
+
+        public Integer getSlump() {
+            return !isValueExpired(slump) ? slump.getData() : null;
+        }
+
+        public void setSlump(int slump) {
+            this.slump = new Value<Integer>(slump);
+        }
+
+        public CommunicatorListener.RotationDirection getRotationDirection() {
+            return !isValueExpired(rotationDirection) ? rotationDirection.getData() : null;
+        }
+
+        public void setRotationDirection(CommunicatorListener.RotationDirection rotationDirection) {
+            this.rotationDirection = new Value<CommunicatorListener.RotationDirection>(rotationDirection);
+        }
+
+        public Float getInputPressure() {
+            return !isValueExpired(inputPressure) ? inputPressure.getData() : null;
+        }
+
+        public void setInputPressure(float inputPressure) {
+            this.inputPressure = new Value<Float>(inputPressure);
+        }
+
+        public Float getOutputPressure() {
+            return !isValueExpired(outputPressure) ? outputPressure.getData() : null;
+        }
+
+        public void setOutputPressure(float outputPressure) {
+            this.outputPressure = new Value<Float>(outputPressure);
+        }
+
+        public Float getRotationSpeed() {
+            return !isValueExpired(rotationSpeed) ? rotationSpeed.getData() : null;
+        }
+
+        public void setRotationSpeed(float rotationSpeed) {
+            this.rotationSpeed = new Value<Float>(rotationSpeed);
+        }
+
+        public Boolean getInputPressureSensorState() {
+            return inputPressureSensorState != null ? inputPressureSensorState.getData() : null;
+        }
+
+        public void setInputPressureSensorState(boolean connected) {
+            this.inputPressureSensorState = new Value<Boolean>(connected);
+        }
+
+        public Boolean getOutputPressureSensorState() {
+            return outputPressureSensorState != null ? outputPressureSensorState.getData() : null;
+        }
+
+        public void setOutputPressureSensorState(boolean connected) {
+            this.outputPressureSensorState = new Value<Boolean>(connected);
+        }
+
+        public CommunicatorListener.SpeedSensorState getSpeedSensorState() {
+            return !isValueExpired(speedSensorState) ? speedSensorState.getData() : null;
+        }
+
+        public void setSpeedSensorState(CommunicatorListener.SpeedSensorState speedSensorState) {
+            this.speedSensorState = new Value<CommunicatorListener.SpeedSensorState>(speedSensorState);
+        }
+
+
+        public CommunicatorListener.AlarmType getAlarm() {
+            return alarm != null ? alarm.getData() : null;
+        }
+
+        public void setAlarm(CommunicatorListener.AlarmType alarm) {
+            this.alarm = new Value<CommunicatorListener.AlarmType>(alarm);
+        }
+
+        public void setTemperature(int temperature) {
+            this.temperature = new Value<Integer>(temperature);
+        }
+
+        public Integer getTemperature() {
+            return temperature != null ? temperature.getData() : null;
+        }
+
+        //
+        // Public
+        //
+
+        public void clear() {
+            slump = null;
+            rotationDirection = null;
+            inputPressure = null;
+            outputPressure = null;
+            rotationSpeed = null;
+            inputPressureSensorState = null;
+            outputPressureSensorState = null;
+            speedSensorState = null;
+            alarm = null;
+        }
+
+
+        //
+        // Private stuff
+        //
+
+        private boolean isValueExpired(Value value) {
+            if (value != null) {
+                return System.currentTimeMillis() - value.getTimestamp() > VALUE_EXPIRATION_DELAY_IN_MILLIS;
+            } else {
+                return true;
+            }
+        }
+
+        //
+        // Inner types
+        //
+
+        public class Value<T> {
+            private final T data;
+            private final long timestamp;
+
+            public Value(T data) {
+                this(data, System.currentTimeMillis());
+            }
+
+            public Value(T data, long timestamp) {
+                this.data = data;
+                this.timestamp = timestamp;
+            }
+
+            public T getData() {
+                return data;
+            }
+
+            public long getTimestamp() {
+                return timestamp;
+            }
+        }
+    }
 }
