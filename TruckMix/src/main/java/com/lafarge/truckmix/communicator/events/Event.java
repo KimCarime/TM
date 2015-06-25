@@ -54,6 +54,18 @@ public class Event<T> {
         this.timestamp = timestamp;
     }
 
+    public EventId getId() {
+        return id;
+    }
+
+    public T getValue() {
+        return value;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Event{")
