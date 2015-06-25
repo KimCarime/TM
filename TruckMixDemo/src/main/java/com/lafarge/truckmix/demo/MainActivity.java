@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.RemoteException;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -17,17 +16,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+
 import com.lafarge.truckmix.TruckMix;
-import com.lafarge.truckmix.TruckMixConnectionState;
-import com.lafarge.truckmix.TruckMixConsumer;
+import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
 import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.demo.fragments.ConsoleListFragment;
 import com.lafarge.truckmix.demo.fragments.OverviewFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity implements TruckMixConsumer {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
@@ -44,7 +43,7 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     private SectionsPagerAdapter mPagerAdapter;
     private boolean serviceConnected;
 
-    private TruckMix mTruckMix = TruckMix.getInstanceForApplication(this);
+    private TruckMix mTruckMix;
     private ArrayList<Event> mEvents = new ArrayList<Event>();
     private UserPreferences mPrefs;
 
@@ -63,16 +62,10 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
         mViewPager.setAdapter(mPagerAdapter);
 
         // Binding to the service
-        mTruckMix.bind(this);
+        mTruckMix = TruckMix.get(this);
 
         // Others
         mPrefs = new UserPreferences(this);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mTruckMix.unbind(this);
     }
 
     //
@@ -90,6 +83,32 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+            case R.id.connect: {
+                // This is the bluetooth mac address of the calculator.
+                final String address = "00:12:6F:35:7E:70";
+
+                mTruckMix.setCommunicatorListener(mCommunicatorListener);
+                mTruckMix.setEventListener(mEventListener);
+                mTruckMix.setLoggerListener(mLoggerListener);
+
+                mTruckMix.connect(address, new ConnectionStateListener() {
+                    @Override
+                    public void onCalculatorConnected() {
+                        Log.i(TAG, "Calculator connected");
+                    }
+
+                    @Override
+                    public void onCalculatorConnecting() {
+                        Log.i(TAG, "Calculator connecting");
+                    }
+
+                    @Override
+                    public void onCalculatorDisconnected() {
+                        Log.i(TAG, "Calculator disconnected");
+                    }
+                });
+                return true;
+            }
             case R.id.send_frame:
                 createSendFrameDialog().show();
                 return true;
@@ -107,7 +126,9 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
                 intent.putExtra(Intent.EXTRA_EMAIL, recipients);
                 intent.putExtra(Intent.EXTRA_SUBJECT, "[TruckMix] Logs");
                 intent.putExtra(Intent.EXTRA_TEXT, "Vous trouverez les logs ci-joint.\nCordialement,\nTruckMix");
-                intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, getUriListForLogs());
+                for (Uri uri : getUriListForLogs()) {
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                }
 
                 startActivity(Intent.createChooser(intent, "Envoie mail"));
             }
@@ -119,34 +140,6 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
     //
     // TruckMix interface
     //
-
-    @Override
-    public void onTruckMixServiceConnect() {
-        // This is the bluetooth mac address of the calculator.
-        final String address = "00:12:6F:35:7E:70";
-
-        try {
-            mTruckMix.connect(address, mConnectionState, mCommunicatorListener, mLoggerListener, mEventListener);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private final TruckMixConnectionState mConnectionState = new TruckMixConnectionState() {
-        @Override
-        public void onCalculatorConnected() {
-            Log.i(TAG, "Calculator connected");
-        }
-
-        public void onCalculatorConnecting() {
-            Log.i(TAG, "Calculator connecting");
-        }
-
-        @Override
-        public void onCalculatorDisconnected() {
-            Log.i(TAG, "Calculator disconnected");
-        }
-    };
 
     /**
      *
@@ -165,25 +158,29 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
      */
     private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
         @Override
-        public void slumpUpdated(int slump) {
+        public void slumpUpdated(final int slump) {
             getOverviewFragment().updateSlump(slump);
         }
 
         @Override
-        public void mixingModeActivated() {
-            getOverviewFragment().updateMixerMode("MALAXAGE");
+        public void rotationDirectionChanged(final RotationDirection rotationDirection) {
+            switch (rotationDirection) {
+                case MIXING:
+                    getOverviewFragment().updateMixerMode("MALAXAGE");
+                    break;
+                case UNLOADING:
+                    getOverviewFragment().updateMixerMode("VIDANGE");
+                    break;
+            }
         }
 
         @Override
-        public void unloadingModeActivated() {
-            getOverviewFragment().updateMixerMode("VIDANGE");
+        public void waterAdded(final int volume, final WaterAdditionMode additionMode) {
+
         }
 
         @Override
-        public void waterAdded(int volume, MessageReceivedListener.WaterAdditionMode additionMode) {}
-
-        @Override
-        public void waterAdditionRequest(int volume) {
+        public void waterAdditionRequest(final int volume) {
             createAddWaterConfirmationDialog(volume).show();
         }
 
@@ -194,55 +191,64 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
         public void waterAdditionEnd() {}
 
         @Override
-        public void alarmWaterAdditionBlocked() {
-            getOverviewFragment().updateAlarm("AJOUT D'EAU BLOQUEE");
-        }
-
-        @Override
-        public void stateChanged(int step, int subStep) {
+        public void stateChanged(final int step, final int subStep) {
             getOverviewFragment().updateStep(step, subStep);
         }
 
         @Override
-        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
+        public void internData(final boolean inputSensorConnected, final boolean outputSensorConnected, final SpeedSensorState speedSensorState) {
+
+        }
+
+        @Override
+        public void calibrationData(final float inputPressure, final float outputPressure, final float rotationSpeed) {
             getOverviewFragment().updateInputPressure(inputPressure);
             getOverviewFragment().updateOutputPressure(outputPressure);
             getOverviewFragment().updateRotationSpeed(rotationSpeed);
         }
 
         @Override
-        public void alarmWaterMax() {
-            getOverviewFragment().updateAlarm("EAU MAX");
-        }
-
-        @Override
-        public void alarmFlowageError() {
-            getOverviewFragment().updateAlarm("ERREUR ECOULEMENT");
-        }
-
-        @Override
-        public void alarmCountingError() {
-            getOverviewFragment().updateAlarm("ERROR COMPTAGE");
-        }
-
-        @Override
-        public void inputSensorConnectionChanged(boolean connected) {
+        public void inputSensorConnectionChanged(final boolean connected) {
             getOverviewFragment().updateInputPressureSensorState(connected);
         }
 
         @Override
-        public void outputSensorConnectionChanged(boolean connected) {
+        public void outputSensorConnectionChanged(final boolean connected) {
             getOverviewFragment().updateOutputPressureSensorState(connected);
         }
 
         @Override
-        public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
-            getOverviewFragment().updateMinSensorExceed(thresholdExceed);
+        public void speedSensorStateChanged(final SpeedSensorState speedSensorState) {
+            switch (speedSensorState) {
+                case NORMAL:
+                    getOverviewFragment().updateMinSensorExceed(false);
+                    getOverviewFragment().updateMaxSensorExceed(false);
+                    break;
+                case TOO_SLOW:
+                    getOverviewFragment().updateMinSensorExceed(true);
+                    break;
+                case TOO_FAST:
+                    getOverviewFragment().updateMaxSensorExceed(true);
+                    break;
+            }
         }
 
         @Override
-        public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
-            getOverviewFragment().updateMaxSensorExceed(thresholdExceed);
+        public void alarmTriggered(final AlarmType alarmType) {
+            switch (alarmType) {
+                case WATER_ADDITION_BLOCKED:
+                    getOverviewFragment().updateAlarm("AJOUT D'EAU BLOQUEE");
+                    break;
+                case WATER_MAX:
+                    getOverviewFragment().updateAlarm("EAU MAX");
+                    break;
+                case FLOWAGE_ERROR:
+                    getOverviewFragment().updateAlarm("ERREUR ECOULEMENT");
+                    break;
+                case COUNTING_ERROR:
+                    getOverviewFragment().updateAlarm("ERROR COMPTAGE");
+                    break;
+            }
         }
     };
 
@@ -251,14 +257,13 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
      */
     private final EventListener mEventListener = new EventListener() {
         @Override
-        public void onNewEvents(Event event) {
+        public void onNewEvents(final Event event) {
             String str =
                     "{" +
-                    "  id: " + event.id.getIdValue() +
-                    "  value:" + event.value +
-                    "  timestamp: " + event.timestamp +
-                    "}";
-
+                            "  id: " + event.id.getIdValue() +
+                            "  value:" + event.value +
+                            "  timestamp: " + event.timestamp +
+                            "}";
         }
     };
 
@@ -314,28 +319,24 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
         builder.setTitle("Actions");
         builder.setItems(R.array.send_frame_array, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                try {
-                    switch (which) {
-                        case 0:
-                            mTruckMix.setTruckParameters(mPrefs.getTruckParameters());
-                            break;
-                        case 1:
-                            mTruckMix.deliveryNoteReceived(mPrefs.getDeliveryParameters());
-                            break;
-                        case 2:
-                            mTruckMix.acceptDelivery(true);
-                            break;
-                        case 3:
-                            mTruckMix.endDelivery();
-                            break;
-                        case 4:
-                            mTruckMix.changeExternalDisplayState(true);
-                            break;
-                        default:
-                            break;
-                    }
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+                switch (which) {
+                    case 0:
+                        mTruckMix.setTruckParameters(mPrefs.getTruckParameters());
+                        break;
+                    case 1:
+                        mTruckMix.deliveryNoteReceived(mPrefs.getDeliveryParameters());
+                        break;
+                    case 2:
+                        mTruckMix.acceptDelivery(true);
+                        break;
+                    case 3:
+                        mTruckMix.endDelivery();
+                        break;
+                    case 4:
+                        mTruckMix.changeExternalDisplayState(true);
+                        break;
+                    default:
+                        break;
                 }
             }
         });
@@ -355,22 +356,14 @@ public class MainActivity extends AppCompatActivity implements TruckMixConsumer 
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try {
-                    mTruckMix.allowWaterAddition(true);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                mTruckMix.allowWaterAddition(true);
                 dialog.dismiss();
             }
         });
         builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                try {
-                    mTruckMix.allowWaterAddition(false);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                mTruckMix.allowWaterAddition(false);
                 dialog.dismiss();
             }
         });
