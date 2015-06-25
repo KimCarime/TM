@@ -208,7 +208,7 @@ public class Communicator {
      * @param isConnected true if the terminal is connected to the calculator, otherwise false.
      */
     public void setConnected(boolean isConnected) {
-        loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        loggerListener.log("INTERNAL: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
         this.isConnected = isConnected;
         if (!isConnected) {
             cancelTimer();
@@ -258,7 +258,7 @@ public class Communicator {
      * @param activated true to activate the quality tracking, otherwise false.
      */
     public void setQualityTrackingActivated(boolean activated) {
-        loggerListener.log("OPTION: quality tracking is " + (waterRequestAllowed ? "ENABLED" : "DISABLED"));
+        loggerListener.log("OPTION: quality tracking is " + (qualityTrackingActivated ? "ENABLED" : "DISABLED"));
         this.qualityTrackingActivated = activated;
     }
 
