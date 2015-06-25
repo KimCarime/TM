@@ -220,19 +220,11 @@ public class Communicator {
         }
     }
 
-    /** Returns the current connection state of the Communicator */
+    /**
+     * Returns the current connection state of the Communicator
+     */
     public boolean isConnected() {
         return isConnected;
-    }
-
-    /** Returns the current slump sent by the calculator */
-    public int currentSlump() {
-        return currentSlump;
-    }
-
-    /** Return the current rotation mode sent by the calculator */
-    public MessageReceivedListener.RotationDirection currentRotation() {
-        return currentRotation;
     }
 
     /**
@@ -246,7 +238,9 @@ public class Communicator {
         this.waterRequestAllowed = waterRequestAllowed;
     }
 
-    /** Return the state of the water request allowance */
+    /**
+     * Return the state of the water request allowance
+     */
     public boolean isWaterRequestAllowed() {
         return waterRequestAllowed;
     }
@@ -258,13 +252,22 @@ public class Communicator {
      * @param activated true to activate the quality tracking, otherwise false.
      */
     public void setQualityTrackingActivated(boolean activated) {
-        loggerListener.log("OPTION: quality tracking is " + (qualityTrackingActivated ? "ENABLED" : "DISABLED"));
+        loggerListener.log("OPTION: quality tracking is " + (activated ? "ENABLED" : "DISABLED"));
         this.qualityTrackingActivated = activated;
     }
 
-    /** Return the state of the quality tracking */
+    /**
+     * Return the state of the quality tracking.
+     */
     public boolean isQualityTrackingActivated() {
         return qualityTrackingActivated;
+    }
+
+    /**
+     *
+     */
+    public Information getLastInformation() {
+        return information;
     }
 
     /**
