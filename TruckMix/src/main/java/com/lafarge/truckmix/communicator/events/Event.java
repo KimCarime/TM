@@ -70,8 +70,8 @@ public class Event<T> {
     public String toString() {
         StringBuilder sb = new StringBuilder("Event{")
                 .append("id=").append(id)
-                .append("value=").append(value)
-                .append("timestamp=").append(timestamp)
+                .append(", value=").append(value)
+                .append(", timestamp=").append(timestamp)
                 .append("}");
         return sb.toString();
     }
