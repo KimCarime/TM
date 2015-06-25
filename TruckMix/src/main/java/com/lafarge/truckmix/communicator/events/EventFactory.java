@@ -1,5 +1,7 @@
 package com.lafarge.truckmix.communicator.events;
 
+import com.lafarge.truckmix.communicator.Communicator;
+import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 /**
@@ -26,13 +28,14 @@ public class EventFactory {
         return new Event<Integer>(Event.EventId.NEW_SLUMP, slump);
     }
 
-    public static Event createMixerTransitionEvent(MessageReceivedListener.RotationDirection mixing) {
-        if (mixing == MessageReceivedListener.RotationDirection.UNLOADING) {
-            return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
-        } else if (mixing == MessageReceivedListener.RotationDirection.MIXING) {
-            return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 1);
-        } else {
-            throw new IllegalArgumentException("Event for this RotationDirection is not yet supported");
+    public static Event createMixerTransitionEvent(CommunicatorListener.RotationDirection rotationDirection) {
+        switch (rotationDirection) {
+            case MIXING:
+                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
+            case UNLOADING:
+                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 1);
+            default:
+                throw new IllegalArgumentException("Event for this RotationDirection is not yet supported");
         }
     }
 

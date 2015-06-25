@@ -6,22 +6,37 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
  * Interface of message received from the calculator.
  */
 public interface CommunicatorListener {
+    //TODO: Create a common directory with all enums
 
-    void slumpUpdated(int slump);
-    void mixingModeActivated();
-    void unloadingModeActivated();
-    void waterAdded(int volume, MessageReceivedListener.WaterAdditionMode additionMode);
-    void waterAdditionRequest(int volume);
+    enum RotationDirection {
+        MIXING,
+        UNLOADING
+    }
+
+    enum SpeedSensorState {
+        NORMAL, TOO_SLOW, TOO_FAST;
+    }
+
+    enum AlarmType {
+        WATER_ADDITION_BLOCKED, WATER_MAX, FLOWAGE_ERROR, COUNTING_ERROR
+    }
+
+    enum WaterAdditionMode {
+        MANUAL,
+        AUTO
+    }
+
+    void slumpUpdated(final int slump);
+    void rotationDirectionChanged(final RotationDirection rotationDirection);
+    void waterAdded(final int volume, final WaterAdditionMode additionMode);
+    void waterAdditionRequest(final int volume);
     void waterAdditionBegan();
     void waterAdditionEnd();
-    void alarmWaterAdditionBlocked();
-    void stateChanged(int step, int subStep);
-    void calibrationData(float inputPressure, float outputPressure, float rotationSpeed);
-    void alarmWaterMax();
-    void alarmFlowageError();
-    void alarmCountingError();
-    void inputSensorConnectionChanged(boolean connected);
-    void outputSensorConnectionChanged(boolean connected);
-    void speedSensorHasExceedMinThreshold(boolean thresholdExceed);
-    void speedSensorHasExceedMaxThreshold(boolean thresholdExceed);
+    void stateChanged(final int step, final int subStep);
+    void internData(final boolean inputSensorConnected, final boolean outputSensorConnected, final SpeedSensorState speedSensorState);
+    void calibrationData(float inputPressure, float outputPressure, final float rotationSpeed);
+    void inputSensorConnectionChanged(final boolean connected);
+    void outputSensorConnectionChanged(final boolean connected);
+    void speedSensorStateChanged(final SpeedSensorState speedSensorState);
+    void alarmTriggered(final AlarmType alarmType);
 }

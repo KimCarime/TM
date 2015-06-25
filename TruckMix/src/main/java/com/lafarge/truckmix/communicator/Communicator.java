@@ -54,12 +54,15 @@ public class Communicator {
     private boolean waterRequestAllowed;
     private boolean qualityTrackingActivated;
 
-    // Current state
+    // Communicator state
     private State state;
     private boolean isSync;
     private boolean isConnected;
     private int currentSlump;
-    MessageReceivedListener.RotationDirection currentRotation;
+
+    // Message received state
+    CommunicatorListener.RotationDirection currentRotation;
+    CommunicatorListener.SpeedSensorState currentSpeedSensorState;
 
     // Other
     private final Scheduler scheduler;
@@ -357,11 +360,11 @@ public class Communicator {
         public void mixingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: mixing mode activated");
-                communicatorListener.mixingModeActivated();
-                if (currentRotation != RotationDirection.MIXING) {
-                    currentRotation = RotationDirection.MIXING;
+                if (currentRotation != CommunicatorListener.RotationDirection.MIXING) {
+                    currentRotation = CommunicatorListener.RotationDirection.MIXING;
+                    communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.MIXING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
-                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.MIXING));
+                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.MIXING));
                     }
                 }
             }
@@ -371,11 +374,11 @@ public class Communicator {
         public void unloadingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: unloadingModeActivated");
-                communicatorListener.unloadingModeActivated();
-                if (currentRotation != RotationDirection.UNLOADING) {
-                    currentRotation = RotationDirection.UNLOADING;
+                if (currentRotation != CommunicatorListener.RotationDirection.UNLOADING) {
+                    currentRotation = CommunicatorListener.RotationDirection.UNLOADING;
+                    communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.UNLOADING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
-                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.UNLOADING));
+                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.UNLOADING));
                     }
                 }
             }
@@ -386,7 +389,12 @@ public class Communicator {
             if (isConnected && waterRequestAllowed) {
                 if (state == State.DELIVERY_IN_PROGRESS && waterRequestAllowed) {
                     loggerListener.log("RECEIVED: water added: " + volume + "L, additionMode: " + additionMode.toString());
-                    communicatorListener.waterAdded(volume, additionMode);
+                    // TODO: Create common enums
+                    if (additionMode == WaterAdditionMode.AUTO) {
+                        communicatorListener.waterAdded(volume, CommunicatorListener.WaterAdditionMode.AUTO);
+                    } else if (additionMode == WaterAdditionMode.MANUAL) {
+                        communicatorListener.waterAdded(volume, CommunicatorListener.WaterAdditionMode.MANUAL);
+                    }
                 } else {
                     loggerListener.log("RECEIVED (IGNORED): water added");
                 }
@@ -425,7 +433,7 @@ public class Communicator {
         public void alarmWaterAdditionBlocked() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water addition blocked");
-                communicatorListener.alarmWaterAdditionBlocked();
+                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.WATER_ADDITION_BLOCKED);
             }
         }
 
@@ -530,20 +538,29 @@ public class Communicator {
         public void internData(boolean inSensorConnected, boolean outSensorConnected, boolean speedTooLow, boolean speedTooHigh, boolean commandEP1Activated, boolean commandVA1Activated) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: intern data (inSensorConnected: " + (inSensorConnected ? "YES" : "NO") + ", outSensorConnected: " + (outSensorConnected ? "YES" : "NO") + ", speedTooLow: " + (speedTooLow ? "YES" : "NO") + ", speedTooHigh: " + (speedTooHigh ? "YES" : "NO") + ", commandEP1Activated: " + (commandEP1Activated ? "YES" : "NO") + ", commandVA1Activated: " + (commandVA1Activated ? "YES" : "NO") + ")");
+                CommunicatorListener.SpeedSensorState speedSensorState;
+                if (speedTooLow) {
+                    speedSensorState = CommunicatorListener.SpeedSensorState.TOO_SLOW;
+                } else if (speedTooHigh) {
+                    speedSensorState = CommunicatorListener.SpeedSensorState.TOO_FAST;
+                } else {
+                    speedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
+                }
+                communicatorListener.internData(inSensorConnected, outSensorConnected, speedSensorState);
             }
         }
 
         @Override
-        public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
+        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
             if (isConnected) {
                 if (state == State.DELIVERY_IN_PROGRESS) {
-                    loggerListener.log("RECEIVED: calibration data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", " +
+                    loggerListener.log("RECEIVED: calibration data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", " +
                             "rotationSpeed: " + rotationSpeed + " tr/min)");
-                    communicatorListener.calibrationData(inPressure, outPressure, rotationSpeed);
+                    communicatorListener.calibrationData(inputPressure, outputPressure, rotationSpeed);
                     if (qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createRotationSpeedEvent(rotationSpeed));
-                        eventListener.onNewEvents(EventFactory.createInputPressureEvent(inPressure));
-                        eventListener.onNewEvents(EventFactory.createOutputPressureEvent(outPressure));
+                        eventListener.onNewEvents(EventFactory.createInputPressureEvent(inputPressure));
+                        eventListener.onNewEvents(EventFactory.createOutputPressureEvent(outputPressure));
                     }
                 } else {
                     loggerListener.log("RECEIVED (IGNORED): calibration data");
@@ -555,7 +572,7 @@ public class Communicator {
         public void alarmWaterMax() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water max");
-                communicatorListener.alarmWaterMax();
+                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.WATER_MAX);
             }
         }
 
@@ -563,7 +580,7 @@ public class Communicator {
         public void alarmFlowageError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: flowage error");
-                communicatorListener.alarmFlowageError();
+                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.FLOWAGE_ERROR);
             }
         }
 
@@ -571,7 +588,7 @@ public class Communicator {
         public void alarmCountingError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: counting error");
-                communicatorListener.alarmCountingError();
+                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.COUNTING_ERROR);
             }
         }
 
@@ -595,7 +612,13 @@ public class Communicator {
         public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed min threshold: " + (thresholdExceed ? "YES" : "NO"));
-                communicatorListener.speedSensorHasExceedMinThreshold(thresholdExceed);
+                if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW) {
+                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_SLOW;
+                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_SLOW);
+                } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST){
+                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
+                }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMinEvent(thresholdExceed));
                 }
@@ -606,7 +629,13 @@ public class Communicator {
         public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed max threshold: " + (thresholdExceed ? "YES" : "NO"));
-                communicatorListener.speedSensorHasExceedMaxThreshold(thresholdExceed);
+                if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST) {
+                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_FAST;
+                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_FAST);
+                } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW){
+                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
+                }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMaxEvent(thresholdExceed));
                 }
