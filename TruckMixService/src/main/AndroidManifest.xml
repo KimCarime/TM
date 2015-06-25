@@ -8,9 +8,7 @@
     <application>
         <service
             android:name=".service.TruckMixService"
-            android:exported="false"
-            android:label="TruckMix Service"
-            android:process=":TruckMix">
+            android:label="TruckMix Service">
         </service>
     </application>
 

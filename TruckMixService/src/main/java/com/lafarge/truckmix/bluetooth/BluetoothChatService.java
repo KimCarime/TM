@@ -23,9 +23,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
@@ -83,10 +81,7 @@ public class BluetoothChatService {
         if (mBtAdapter == null) {
             Log.e(TAG, "Bluetooth is not supported on this device");
         } else {
-            if (!mBtAdapter.isEnabled()) {
-                mBtAdapter.enable();
-            }
-            context.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+            mContext.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         }
     }
 
@@ -112,7 +107,7 @@ public class BluetoothChatService {
 
         // Convert mac address in BluetoothDevice
         BluetoothDevice device = mBtAdapter.getRemoteDevice(address);
-        Log.d(TAG, "connect to: " + device);
+        Log.d(TAG, "will connect to: " + device);
 
         // Keep address
         mDeviceAddress = address;
@@ -123,6 +118,7 @@ public class BluetoothChatService {
         mConnectionThread.start();
 
         setState(STATE_CONNECTING);
+        mHandler.sendMessage(BluetoothChatServiceMessages.createDeviceConnectingMessage(device.getName(), device.getAddress()));
     }
 
     /**
@@ -140,17 +136,25 @@ public class BluetoothChatService {
         cancelThreads();
 
         setState(STATE_CONNECTED);
+        mHandler.sendMessage(BluetoothChatServiceMessages.createDeviceConnectedMessage(device.getName(), device.getAddress()));
 
         // Start the thread to manage the connection and perform transmissions
         mConnectedThread = new ConnectedThread(socket, device);
         mConnectedThread.start();
+    }
 
-        // Send the name of the connected device back to the UI Activity
-        Message msg = mHandler.obtainMessage(BluetoothChatServiceMessages.MESSAGE_DEVICE_NAME);
-        Bundle bundle = new Bundle();
-        bundle.putString(BluetoothChatServiceMessages.DEVICE_NAME, device.getName());
-        msg.setData(bundle);
-        mHandler.sendMessage(msg);
+    /**
+     * Stop all threads
+     */
+    public synchronized void disconnect() {
+        Log.d(TAG, "disconnect");
+        mStopped = true;
+        mDeviceAddress = null;
+
+        cancelTimer();
+        cancelThreads();
+
+        setState(STATE_NONE);
     }
 
     /**
@@ -158,13 +162,10 @@ public class BluetoothChatService {
      */
     public synchronized void stop() {
         Log.d(TAG, "stop");
-        mStopped = true;
-        mContext.unregisterReceiver(mReceiver);
-
-        cancelTimer();
-        cancelThreads();
-
-        setState(STATE_NONE);
+        disconnect();
+        if (mBtAdapter != null) {
+            mContext.unregisterReceiver(mReceiver);
+        }
     }
 
     /**
@@ -258,7 +259,9 @@ public class BluetoothChatService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        if (state == STATE_NONE) {
+            mHandler.obtainMessage(BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        }
     }
 
     /**
@@ -417,7 +420,7 @@ public class BluetoothChatService {
 
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 if (mBtAdapter.getState() == BluetoothAdapter.STATE_OFF) {
-                    Log.i(TAG, "Bluetooth is disabled -> Enabling it");
+                    mHandler.sendMessage(BluetoothChatServiceMessages.createBluetoothStateOffMessage());
 
                     // Cancel any thread and timer
                     cancelTimer();
@@ -427,7 +430,7 @@ public class BluetoothChatService {
                     mBtAdapter.enable();
 
                 } else if (mBtAdapter.getState() == BluetoothAdapter.STATE_ON) {
-                    Log.i(TAG, "Bluetooth is on");
+                    mHandler.sendMessage(BluetoothChatServiceMessages.createBluetoothStateOnMessage());
                     if (mDeviceAddress != null) {
                         connect(mDeviceAddress);
                     }
