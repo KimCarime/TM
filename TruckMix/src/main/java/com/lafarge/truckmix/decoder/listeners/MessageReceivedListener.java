@@ -16,6 +16,7 @@ public interface MessageReceivedListener {
     }
 
     void slumpUpdated(int slump);
+    void temperatureUpdated(float temperature);
     void mixingModeActivated();
     void unloadingModeActivated();
     void waterAdded(int volume, WaterAdditionMode additionMode);

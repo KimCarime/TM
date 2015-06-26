@@ -362,6 +362,22 @@ public class Communicator {
         }
 
         @Override
+        public void temperatureUpdated(float temperature) {
+            if (isConnected) {
+                if (state == State.DELIVERY_IN_PROGRESS) {
+                    loggerListener.log("RECEIVED: temperature updated: " + temperature + " °C");
+                    information.setTemperature(temperature);
+                    communicatorListener.temperatureUpdated(temperature);
+                    if (qualityTrackingActivated) {
+                        eventListener.onNewEvents(EventFactory.createNewTemperatureEvent(temperature));
+                    }
+                } else {
+                    loggerListener.log("RECEIVED (IGNORED): temperature updated");
+                }
+            }
+        }
+
+        @Override
         public void mixingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: mixing mode activated");
@@ -903,6 +919,7 @@ public class Communicator {
         public static final int VALUE_EXPIRATION_DELAY_IN_MILLIS = 5*1000*60;
 
         private Value<Integer> slump;
+        private Value<Float> temperature;
         private Value<CommunicatorListener.RotationDirection> rotationDirection;
         private Value<Float> inputPressure;
         private Value<Float> outputPressure;
@@ -911,7 +928,6 @@ public class Communicator {
         private Value<Boolean> outputPressureSensorState;
         private Value<CommunicatorListener.SpeedSensorState> speedSensorState;
         private Value<CommunicatorListener.AlarmType> alarm;
-        private Value<Integer> temperature;
 
         public Information() {
         }
@@ -922,6 +938,14 @@ public class Communicator {
 
         public void setSlump(int slump) {
             this.slump = new Value<Integer>(slump);
+        }
+
+        public void setTemperature(float temperature) {
+            this.temperature = new Value<Float>(temperature);
+        }
+
+        public Float getTemperature() {
+            return temperature != null ? temperature.getData() : null;
         }
 
         public CommunicatorListener.RotationDirection getRotationDirection() {
@@ -989,20 +1013,13 @@ public class Communicator {
             this.alarm = new Value<CommunicatorListener.AlarmType>(alarm);
         }
 
-        public void setTemperature(int temperature) {
-            this.temperature = new Value<Integer>(temperature);
-        }
-
-        public Integer getTemperature() {
-            return temperature != null ? temperature.getData() : null;
-        }
-
         //
         // Public
         //
 
         public void clear() {
             slump = null;
+            temperature = null;
             rotationDirection = null;
             inputPressure = null;
             outputPressure = null;

@@ -28,6 +28,10 @@ public class EventFactory {
         return new Event<Integer>(Event.EventId.NEW_SLUMP, slump);
     }
 
+    public static Event createNewTemperatureEvent(float temperature) {
+        return new Event<Float>(Event.EventId.NEW_TEMPERATURE, temperature);
+    }
+
     public static Event createMixerTransitionEvent(CommunicatorListener.RotationDirection rotationDirection) {
         switch (rotationDirection) {
             case MIXING:

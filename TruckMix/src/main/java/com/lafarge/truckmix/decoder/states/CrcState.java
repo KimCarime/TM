@@ -5,6 +5,7 @@ import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
 import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.utils.CRC16Modbus;
+import com.lafarge.truckmix.utils.Convert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -97,6 +98,8 @@ public final class CrcState extends State {
             return new SlumpUpdated(messageListener);
         } else if (s.equals(Protocol.TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE)) {
             return new WaterAdded(messageListener);
+        } else if (s.equals(Protocol.TRAME_TEMPERATURE_COURANTE)) {
+            return new TemperatureUpdated(messageListener);
         } else if (s.equals(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE)) {
             return new MixingModeActivated(messageListener);
         } else if (s.equals(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE)) {

@@ -27,6 +27,7 @@ public interface CommunicatorListener {
     }
 
     void slumpUpdated(final int slump);
+    void temperatureUpdated(final float temperature);
     void rotationDirectionChanged(final RotationDirection rotationDirection);
     void waterAdded(final int volume, final WaterAdditionMode additionMode);
     void waterAdditionRequest(final int volume);

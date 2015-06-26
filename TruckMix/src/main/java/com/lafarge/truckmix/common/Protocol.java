@@ -56,6 +56,7 @@ public class Protocol {
 
     public static final String TRAME_SLUMP_COURANT = "TRAME_SLUMP_COURANT";
     public static final String TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE = "TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE";
+    public static final String TRAME_TEMPERATURE_COURANTE = "TRAME_TEMPERATURE_COURANTE";
     public static final String TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE = "TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE";
     public static final String TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE = "TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE";
     public static final String TRAME_NOTIFICATION_DEBUT_AJOUT_EAU = "TRAME_NOTIFICATION_DEBUT_AJOUT_EAU";
@@ -160,6 +161,7 @@ public class Protocol {
         // List of messages received from the calculator.
         constants.put(TRAME_SLUMP_COURANT, new Spec(0x1001, 2));
         constants.put(TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE, new Spec(0x1002, 2, new int[]{1}));
+        constants.put(TRAME_TEMPERATURE_COURANTE, new Spec(0x1003, 4));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE, new Spec(0x3001, 0));
         constants.put(TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE, new Spec(0x3002, 0));
         constants.put(TRAME_NOTIFICATION_DEBUT_AJOUT_EAU, new Spec(0x3003, 0));

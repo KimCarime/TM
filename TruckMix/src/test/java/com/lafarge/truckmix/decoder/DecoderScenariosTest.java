@@ -193,6 +193,9 @@ public class DecoderScenariosTest {
         } else if (result.message.equals(Protocol.TRAME_SLUMP_COURANT)) {
             verify(messageListener).slumpUpdated(((Double) result.data.get(0)).intValue());
 
+        } else if (result.message.equals(Protocol.TRAME_TEMPERATURE_COURANTE)) {
+            verify(messageListener).temperatureUpdated(((Double) result.data.get(0)).floatValue());
+
         } else if (result.message.equals(Protocol.TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX)) {
             verify(messageListener).speedSensorHasExceedMaxThreshold((Boolean) result.data.get(0));
 

@@ -201,6 +201,17 @@ public class TruckMixService extends Service {
             }
         }
 
+        public void temperatureUpdated(final float temperature) {
+            if (mClientCommunicatorListener != null) {
+                mMainThreadHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mClientCommunicatorListener.temperatureUpdated(temperature);
+                    }
+                });
+            }
+        }
+
         @Override
         public void rotationDirectionChanged(final RotationDirection rotationDirection) {
             if (mClientCommunicatorListener != null) {

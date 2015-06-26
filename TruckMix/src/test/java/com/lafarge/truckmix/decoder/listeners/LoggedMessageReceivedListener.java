@@ -9,6 +9,11 @@ public class LoggedMessageReceivedListener implements MessageReceivedListener {
     }
 
     @Override
+    public void temperatureUpdated(float temperature) {
+        System.out.println("  -> temperature updated: " + temperature);
+    }
+
+    @Override
     public void mixingModeActivated() {
         System.out.println("  -> mixing mode activated");
     }
