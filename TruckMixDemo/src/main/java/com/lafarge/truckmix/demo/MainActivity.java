@@ -163,6 +163,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public void temperatureUpdated(final float temperature) {
+            getOverviewFragment().updateTemperature(temperature);
+        }
+
+        @Override
         public void rotationDirectionChanged(final RotationDirection rotationDirection) {
             switch (rotationDirection) {
                 case MIXING:

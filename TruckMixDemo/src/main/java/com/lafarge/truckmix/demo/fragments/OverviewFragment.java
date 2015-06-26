@@ -18,6 +18,7 @@ public class OverviewFragment extends Fragment {
     private static final String TAG = "OverviewFragment";
 
     @InjectView(R.id.textView) TextView mSlump;
+    @InjectView(R.id.textView14) TextView mTemperature;
     @InjectView(R.id.textView1) TextView mAlarm;
     @InjectView(R.id.textView2) TextView mMixerMode;
     @InjectView(R.id.textView12) TextView mInputPressure;
@@ -57,6 +58,11 @@ public class OverviewFragment extends Fragment {
     public void updateSlump(int slump) {
         mSlump.startAnimation(getBlinkAnimation());
         mSlump.setText(String.format("%d mm", slump));
+    }
+
+    public void updateTemperature(float temperature) {
+        mTemperature.startAnimation(getBlinkAnimation());
+        mTemperature.setText(String.format("%f °C", temperature));
     }
 
     public void updateAlarm(String alarm) {
