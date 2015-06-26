@@ -39,12 +39,12 @@ public class EventFactory {
         }
     }
 
-    public static Event createInputPressureEvent(float inPressure) {
-        return new Event<Float>(Event.EventId.INPUT_PRESSURE, inPressure);
+    public static Event createInputPressureEvent(float inputPressure) {
+        return new Event<Float>(Event.EventId.INPUT_PRESSURE, inputPressure);
     }
 
-    public static Event createOutputPressureEvent(float outPressure) {
-        return new Event<Float>(Event.EventId.OUTPUT_PRESSURE, outPressure);
+    public static Event createOutputPressureEvent(float outputPressure) {
+        return new Event<Float>(Event.EventId.OUTPUT_PRESSURE, outputPressure);
     }
 
     public static Event createRotationSpeedEvent(float rotationSpeed) {
