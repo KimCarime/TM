@@ -294,7 +294,7 @@ public class Communicator {
     //
 
     private void setState(State state) {
-        loggerListener.log("STATE: state changed: " + state.toString());
+        loggerListener.log("INTERNAL: state changed: " + state.toString());
         switch (state) {
             case WAITING_FOR_DELIVERY_NOTE:
                 isSync = false;
