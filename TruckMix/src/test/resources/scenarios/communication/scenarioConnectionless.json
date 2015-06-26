@@ -79,7 +79,7 @@
 	{
       "description": "end of delivery",
       "id": 2,
-      "value": 0
+      "value": null
     }
   ]
 }

@@ -16,7 +16,7 @@ public class EventFactory {
         return new Event<Integer>(Event.EventId.START_DELIVERY, accepted ? 1 : 0);
     }
 
-    public static Event createEndOfDeliveryEvent(int currentSlump) {
+    public static Event createEndOfDeliveryEvent(Integer currentSlump) {
         return new Event<Integer>(Event.EventId.END_DELIVERY, currentSlump);
     }
 

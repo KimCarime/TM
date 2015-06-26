@@ -139,7 +139,7 @@ public class CommunicatorScenariosTest {
                         .OUTPUT_PRESSURE) {
                     event = new Event<Float>(eventId, value.floatValue());
                 } else {
-                    event = new Event<Integer>(eventId, value.intValue());
+                    event = new Event<Integer>(eventId, value != null ? value.intValue() : null);
                 }
                 eventResults.add(event);
             }
