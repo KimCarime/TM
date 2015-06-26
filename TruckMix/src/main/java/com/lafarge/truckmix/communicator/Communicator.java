@@ -528,9 +528,9 @@ public class Communicator {
         }
 
         @Override
-        public void rawData(int inPressure, int outPressure, int interval, boolean buttonHold) {
+        public void rawData(int inputPressure, int outputPressure, int interval, boolean buttonHold) {
             if (isConnected) {
-                loggerListener.log("RECEIVED: raw data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO") + ")");
+                loggerListener.log("RECEIVED: raw data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO") + ")");
             }
         }
 
