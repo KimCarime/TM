@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(mPagerAdapter);
 
         // Binding to the service
-        mTruckMix = TruckMix.get(this);
+        mTruckMix = TruckMix.getInstance(this);
 
         // Others
         mPrefs = new UserPreferences(this);
