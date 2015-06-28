@@ -1,290 +1,274 @@
 package com.lafarge.truckmix;
 
+import android.content.ComponentName;
 import android.content.Context;
-import android.util.Log;
-
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
+import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
+import com.lafarge.truckmix.service.ITruckMixService;
+import com.lafarge.truckmix.service.TruckMixService;
 
-/**
- * A class used to set up interaction with the calculator from an <code>Activity</code> or <code>Service</code>.
- * This class is used in conjunction with <code>TruckMixConsumer</code> interface, which provides a callback
- * when the <code>TruckMixService</code> is ready to use. Until this callback is made, no interaction will be possible
- * with the calculator.
- */
-public abstract class TruckMix {
-    static protected final String TAG = "TruckMix";
-
-    // Singleton
-    protected static TruckMix sInstance;
+public class TruckMix implements ITruckMixService {
 
     // Listeners
-    protected static CommunicatorListener mCommunicatorListener;
-    protected static LoggerListener mLoggerListener;
-    protected static EventListener mEventListener;
+    private CommunicatorListener mCommunicatorListener;
+    private LoggerListener mLoggerListener;
+    private EventListener mEventListener;
+    private ConnectionStateListener mConnectionStateListener;
 
     // Options
-    protected static boolean sWaterRequestAllowed;
-    protected static boolean sQualityTrackingEnabled;
+    private boolean mWaterRequestAllowed;
+    private boolean mQualityTrackingEnabled;
 
     // Others
-    private static boolean sTruckMixDisabled = false;
-    private static boolean sManifestCheckingDisabled = false;
+    private boolean mTruckMixDisabled = false;
+    private boolean mManifestCheckingDisabled = false;
 
-    //
-    // Singleton
-    //
+    private Context mContext;
+    private TruckMixService mBoundService;
+    private boolean mIsBound;
 
-    protected TruckMix() {}
+    private String mAddress;
 
-    /**
-     * An accessor for the singleton instance of this class. A context must be provided, but if
-     * you need to use it from a non-Activity or non-Service class, you can attach it to another
-     * singleton or a subclass of the Android Application class.
-     */
-    public static TruckMix getInstance(final Context context) {
-        synchronized(TruckMix.class) {
-            if (sInstance == null) {
-                Log.d(TAG, "TruckMix instance creation");
-                sInstance = create(context);
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            mBoundService = ((TruckMixService.TruckMixBinder)service).getService();
+            mBoundService.start(mAddress, TruckMix.this);
+            mIsBound = true;
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            mBoundService = null;
+            mIsBound = false;
+        }
+    };
+
+    private TruckMix(
+            Context context,
+            CommunicatorListener communicatorListener,
+            EventListener eventListener,
+            LoggerListener loggerListener,
+            ConnectionStateListener connectionStateListener) {
+        this.mContext = context;
+        this.mCommunicatorListener = communicatorListener;
+        this.mEventListener = eventListener;
+        this.mLoggerListener = loggerListener;
+        this.mConnectionStateListener = connectionStateListener;
+
+    }
+
+    public void start(String address) {
+        this.mAddress = address;
+        mContext.bindService(new Intent(mContext, TruckMixService.class), mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    public void stop() {
+        if (mIsBound) {
+            mContext.unbindService(mConnection);
+            mIsBound = false;
+            mBoundService = null;
+        }
+    }
+
+    public CommunicatorListener getCommunicatorListener() {
+        return mCommunicatorListener;
+    }
+
+    public LoggerListener getLoggerListener() {
+        return mLoggerListener;
+    }
+
+    public EventListener getEventListener() {
+        return mEventListener;
+    }
+
+    public ConnectionStateListener getConnectionStateListener() {
+        return mConnectionStateListener;
+    }
+
+
+    @Override
+    public boolean isConnected() {
+        return mBoundService.isConnected();
+    }
+
+    @Override
+    public void setTruckParameters(TruckParameters parameters) {
+        mBoundService.setTruckParameters(parameters);
+    }
+
+    @Override
+    public void deliveryNoteReceived(DeliveryParameters parameters) {
+        mBoundService.deliveryNoteReceived(parameters);
+    }
+
+    @Override
+    public void acceptDelivery(boolean accepted) {
+        mBoundService.acceptDelivery(accepted);
+    }
+
+    @Override
+    public void endDelivery() {
+        mBoundService.endDelivery();
+    }
+
+    @Override
+    public void allowWaterAddition(boolean allowWaterAddition) {
+        mBoundService.allowWaterAddition(allowWaterAddition);
+    }
+
+    @Override
+    public void changeExternalDisplayState(boolean activated) {
+        mBoundService.changeExternalDisplayState(activated);
+    }
+
+    @Override
+    public Communicator.Information getLastInformation() {
+        return mBoundService.getLastInformation();
+    }
+
+    @Override
+    public void setWaterRequestAllowed(boolean waterRequestAllowed) {
+        mBoundService.setWaterRequestAllowed(waterRequestAllowed);
+    }
+
+    @Override
+    public boolean isWaterRequestAllowed() {
+        return mBoundService.isWaterRequestAllowed();
+    }
+
+    @Override
+    public void setQualityTrackingActivated(boolean qualityTrackingEnabled) {
+        mBoundService.setQualityTrackingActivated(qualityTrackingEnabled);
+    }
+
+    @Override
+    public boolean isQualityTrackingActivated() {
+        return mBoundService.isQualityTrackingActivated();
+    }
+
+    public static class Builder {
+        private final Context context;
+        private CommunicatorListener mCommunicatorListener;
+        private LoggerListener mLoggerListener;
+        private EventListener mEventListener;
+        private ConnectionStateListener mConnectionStateListener;
+
+        public Builder(Context context) {
+            if (context == null) {
+                throw new IllegalArgumentException("Context must not be null.");
             }
+            this.context = context.getApplicationContext();
         }
-        return sInstance;
-    }
 
-    private static TruckMix create(final Context context) {
-        if (!sTruckMixDisabled) {
-            Log.i(TAG, "TruckMix enable");
-            return new TruckMixImpl(context);
-        } else {
-            Log.i(TAG, "TruckMix disable: shutting down...");
-            return new TruckMixNull();
+        public Builder CommunicatorListener(CommunicatorListener value) {
+            this.mCommunicatorListener = value;
+            return this;
         }
-    }
 
-    //
-    // Setters
-    //
-
-    /**
-     * Use this listener to be aware of TruckMix events.
-     *
-     * @param communicatorListener The implementation of the listener.
-     */
-    public void setCommunicatorListener(final CommunicatorListener communicatorListener) {
-        mCommunicatorListener = communicatorListener;
-    }
-
-    /**
-     * Use this listener to have logs.
-     *
-     * @param loggerListener The implementation of the listener.
-     */
-    public void setLoggerListener(final LoggerListener loggerListener) {
-        mLoggerListener = loggerListener;
-    }
-
-    /**
-     * Use this listener to have logs.
-     * Note that if <code>TruckMix#isQualityTrackingActivated()</code> return <code>false</code>
-     * then no events will be send.
-     *
-     * @param eventListener The implementation of the listener.
-     * @see TruckMix#setQualityTrackingActivated(boolean)
-     */
-    public void setEventListener(final EventListener eventListener) {
-        mEventListener = eventListener;
-    }
-
-    //
-    // API
-    //
-
-    /**
-     * Enable or disable TruckMix. Use with caution because if you disable TruckMix, all feature
-     * will be disable.
-     *
-     * @param context You application package context.
-     * @param truckMixDisabled True to disable TruckMix, false to enable it again.
-     */
-    public static void setTruckMixDisabled(final Context context, final boolean truckMixDisabled) {
-        if (sTruckMixDisabled != truckMixDisabled) {
-            sTruckMixDisabled = truckMixDisabled;
-            sInstance.shutdown();
-            sInstance = create(context);
+        public Builder loggerListener(LoggerListener value) {
+            this.mLoggerListener = value;
+            return this;
         }
-    }
 
-    /**
-     * Allows you to retrieve the state of the TruckMix status.
-     *
-     * @return True if the TruckMix is disabled, otherwise false.
-     * @see TruckMix#setTruckMixDisabled(Context, boolean)
-     */
-    public static boolean isTruckMixDisabled() {
-        return sTruckMixDisabled;
-    }
+        public Builder eventListener(EventListener value) {
+            this.mEventListener = value;
+            return this;
+        }
 
-    /**
-     * Tell the service to try to connect to a remote bluetooth device.
-     * If the remote device isn't found, the service will retry to make a connection every 10 sec
-     * until it successes.
-     *
-     * @param address The address of the remote bluetooth device.
-     * @param connectionStateListener The state of the connection
-     * @throws IllegalArgumentException If address isn't a valid Bluetooth mac-address, such as "00:43:A8:23:10:F0".
-     */
-    public abstract void connect(final String address, final ConnectionStateListener connectionStateListener);
+        public Builder loggerListener(ConnectionStateListener value) {
+            this.mConnectionStateListener = value;
+            return this;
+        }
 
-    /**
-     * Disconnect from the calculator
-     */
-    public abstract void disconnect();
+        public TruckMix build() {
+            Context context = this.context;
 
-    /**
-     * Return the state of the connection of the calculator.
-     *
-     * @return true if the device is connected to the calculator, false otherwise
-     */
-    public abstract boolean isConnected();
+            if (mCommunicatorListener == null) {
+                mCommunicatorListener = new CommunicatorListener() {
+                    @Override
+                    public void slumpUpdated(int slump) {}
 
-    /**
-     * Set Truck parameters to the service, will be send next time the calculator will request them.
-     *
-     * @param parameters The truck parameters
-     * @throws IllegalArgumentException If parameters is null
-     */
-    public abstract void setTruckParameters(final TruckParameters parameters);
+                    @Override
+                    public void temperatureUpdated(float temperature) {}
 
-    /**
-     * Set Delivery parameters to the service, will be send next time the calculator will request
-     * them.
-     *
-     * @param parameters The delivery parameters
-     * @throws IllegalArgumentException If parameters is null
-     */
-    public abstract void deliveryNoteReceived(final DeliveryParameters parameters);
+                    @Override
+                    public void rotationDirectionChanged(RotationDirection rotationDirection) {}
 
-    /**
-     * Tell the calculator to pass in "delivery in progress" or not, you should not call this
-     * method without having called <code>setTruckParameters</code> and
-     * <code>deliveryNoteReceived</code> before.
-     *
-     * @param accepted Pass true to start a delivery or false, to reset the state of the calculator
-     */
-    public abstract void acceptDelivery(final boolean accepted);
+                    @Override
+                    public void waterAdded(int volume, WaterAdditionMode additionMode) {}
 
-    /**
-     * Tell the calculator to end a delivery in progress.
-     */
-    public abstract void endDelivery();
+                    @Override
+                    public void waterAdditionRequest(int volume) {}
 
-    /**
-     * Tell the calculator to allow or disallow a water addition request, you should have received
-     * a request from the calculator before use this method.
-     * Also, if you have <code>TruckMix#setWaterRequestAllowed(boolean)</code> to <code>true</code>,
-     * this method will have no effect.
-     *
-     * @param allowWaterAddition true to accept the water addition request, otherwise false.
-     */
-    public abstract void allowWaterAddition(final boolean allowWaterAddition);
+                    @Override
+                    public void waterAdditionBegan() {}
 
-    /**
-     * Change the external display state on the truck.
-     * Note that if the external display state is for example currently activated, passing true will
-     * have no effect on it.
-     *
-     * @param activated true to activate the external display, or false to shutdown it
-     */
-    public abstract void changeExternalDisplayState(final boolean activated);
+                    @Override
+                    public void waterAdditionEnd() {}
 
-    /**
-     * Return last information that was sent by the calculator.
-     * If a value has expired, then it will be null.
-     * The object is reset each time a new delivery is started.
-     *
-     * @return The Information.
-     * @see com.lafarge.truckmix.communicator.Communicator.Information
-     */
-    public abstract Communicator.Information getLastInformation();
+                    @Override
+                    public void stateChanged(int step, int subStep) {}
 
-    //
-    // Options
-    //
+                    @Override
+                    public void internData(boolean inputSensorConnected, boolean outputSensorConnected, SpeedSensorState speedSensorState) {}
 
-    /**
-     * Allow water actions, useful for countries that doesn't allow water addition in the concrete.
-     * By default, water request is not allowed.
-     *
-     * @param waterRequestAllowed true if you want to interact with the water, otherwise false to disable it.
-     */
-    public static void setWaterRequestAllowed(final boolean waterRequestAllowed) {
-        if (sWaterRequestAllowed != waterRequestAllowed) {
-            sWaterRequestAllowed = waterRequestAllowed;
-            if (sInstance != null) {
-                sInstance.setWaterAdditionAllowed(waterRequestAllowed);
+                    @Override
+                    public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {}
+
+                    @Override
+                    public void inputSensorConnectionChanged(boolean connected) {}
+
+                    @Override
+                    public void outputSensorConnectionChanged(boolean connected) {}
+
+                    @Override
+                    public void speedSensorStateChanged(SpeedSensorState speedSensorState) {}
+
+                    @Override
+                    public void alarmTriggered(AlarmType alarmType) {}
+                };
             }
-        }
-    }
 
-    /**
-     * Return the state of the water request allowance
-     */
-    public static boolean isWaterRequestAllowed() {
-        return sWaterRequestAllowed;
-    }
-
-    /**
-     * Activate the quality tracking, if true, events will be send to the EventListener passed
-     * in constructor.
-     * By default, quality tracking is not enabled.
-     *
-     * @param qualityTrackingEnabled true to activate the quality tracking, otherwise false to disable it.
-     */
-    public static void setQualityTrackingActivated(final boolean qualityTrackingEnabled) {
-        if (sQualityTrackingEnabled != qualityTrackingEnabled) {
-            sQualityTrackingEnabled = qualityTrackingEnabled;
-            if (sInstance != null) {
-                sInstance.setQualityTrackingEnabled(qualityTrackingEnabled);
+            if (mLoggerListener == null) {
+                mLoggerListener = new LoggerListener() {
+                    @Override
+                    public void log(String log) {
+                    }
+                };
             }
+
+            if (mConnectionStateListener == null) {
+                mConnectionStateListener = new ConnectionStateListener() {
+                    @Override
+                    public void onCalculatorConnected() {}
+
+                    @Override
+                    public void onCalculatorConnecting() {}
+
+                    @Override
+                    public void onCalculatorDisconnected() {}
+                };
+            }
+
+            if (mEventListener == null) {
+                mEventListener = new EventListener() {
+                    @Override
+                    public void onNewEvents(Event event) {}
+                };
+            }
+
+            return new TruckMix(context, mCommunicatorListener, mEventListener, mLoggerListener, mConnectionStateListener);
         }
+
+
     }
-
-    /**
-     * Return the state of the quality tracking
-     */
-    public static boolean isQualityTrackingActivated() {
-        return sQualityTrackingEnabled;
-    }
-
-    //
-    // Utils
-    //
-
-    /**
-     * Allows disabling check of manifest for proper configuration of service.  Useful for unit
-     * testing
-     *
-     * @param disabled
-     */
-    public static void setManifestCheckingDisabled(final boolean disabled) {
-        sManifestCheckingDisabled = disabled;
-    }
-
-    public static boolean isManifestCheckingDisabled() {
-        return sManifestCheckingDisabled;
-    }
-
-    //
-    // Private API
-    //
-
-    protected abstract void setWaterAdditionAllowed(final boolean waterAdditionAllowed);
-    protected abstract void setQualityTrackingEnabled(final boolean qualityTrackingEnabled);
-    protected abstract void shutdown();
 }

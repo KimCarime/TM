@@ -1,29 +1,14 @@
 package com.lafarge.truckmix.service;
 
-import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
-import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
-import com.lafarge.truckmix.communicator.listeners.EventListener;
-import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 
 public interface ITruckMixService {
 
     //
-    // Client listeners
-    //
-
-    void setCommunicatorListener(CommunicatorListener communicatorListener);
-    void setLoggerListener(LoggerListener loggerListener);
-    void setEventListener(EventListener eventListener);
-
-    //
     // Bluetooth specific
     //
-
-    void connect(final String address, final ConnectionStateListener connectionStateListener);
-    void disconnect();
     boolean isConnected();
 
     //
