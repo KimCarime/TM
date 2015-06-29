@@ -17,12 +17,13 @@ public interface ITruckMixService {
     void setCommunicatorListener(CommunicatorListener communicatorListener);
     void setLoggerListener(LoggerListener loggerListener);
     void setEventListener(EventListener eventListener);
+    void setConnectionStateListener(ConnectionStateListener connectionStateListener);
 
     //
     // Bluetooth specific
     //
 
-    void connect(final String address, final ConnectionStateListener connectionStateListener);
+    void connect(final String address);
     void disconnect();
     boolean isConnected();
 

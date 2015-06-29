@@ -72,17 +72,24 @@ public final class TruckMixImpl extends TruckMix {
         }
     }
 
+    public void setConnectionStateListener(final ConnectionStateListener connectionStateListener) {
+        super.setConnectionStateListener(connectionStateListener);
+        if (mServiceConnector.isBound()) {
+            mServiceConnector.getServiceBinder().setConnectionStateListener(connectionStateListener);
+        }
+    }
+
     //
     // API
     //
 
     @Override
-    public void connect(final String address, final ConnectionStateListener connectionStateListenerListener) {
+    public void connect(final String address) {
         if (!BluetoothAdapter.checkBluetoothAddress(address)) {
             throw new IllegalArgumentException("Address " + address + " isn't a valid address");
         }
         if (mServiceConnector.isBound()) {
-            mServiceConnector.getServiceBinder().connect(address, connectionStateListenerListener);
+            mServiceConnector.getServiceBinder().connect(address);
         }
     }
 
@@ -203,6 +210,7 @@ public final class TruckMixImpl extends TruckMix {
             mmBinder.setCommunicatorListener(mCommunicatorListener);
             mmBinder.setLoggerListener(mLoggerListener);
             mmBinder.setEventListener(mEventListener);
+            mmBinder.setConnectionStateListener(mConnectionStateListener);
         }
 
         @Override

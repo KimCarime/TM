@@ -24,9 +24,10 @@ public abstract class TruckMix {
     protected static TruckMix sInstance;
 
     // Listeners
-    protected static CommunicatorListener mCommunicatorListener;
-    protected static LoggerListener mLoggerListener;
-    protected static EventListener mEventListener;
+    protected CommunicatorListener mCommunicatorListener;
+    protected LoggerListener mLoggerListener;
+    protected EventListener mEventListener;
+    protected ConnectionStateListener mConnectionStateListener;
 
     // Options
     protected static boolean sWaterRequestAllowed;
@@ -101,6 +102,15 @@ public abstract class TruckMix {
         mEventListener = eventListener;
     }
 
+    /**
+     * Use this listener to have the state of the connection between the device and the calculator
+     *
+     * @param connectionStateListener
+     */
+    public void setConnectionStateListener(final ConnectionStateListener connectionStateListener) {
+        mConnectionStateListener = connectionStateListener;
+    }
+
     //
     // API
     //
@@ -136,10 +146,9 @@ public abstract class TruckMix {
      * until it successes.
      *
      * @param address The address of the remote bluetooth device.
-     * @param connectionStateListener The state of the connection
      * @throws IllegalArgumentException If address isn't a valid Bluetooth mac-address, such as "00:43:A8:23:10:F0".
      */
-    public abstract void connect(final String address, final ConnectionStateListener connectionStateListener);
+    public abstract void connect(final String address);
 
     /**
      * Disconnect from the calculator

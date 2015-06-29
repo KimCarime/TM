@@ -1,6 +1,5 @@
 package com.lafarge.truckmix;
 
-import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
@@ -12,7 +11,7 @@ public final class TruckMixNull extends TruckMix {
     }
 
     @Override
-    public void connect(final String address, final ConnectionStateListener connectionStateListener) {}
+    public void connect(final String address) {}
 
     @Override
     public void disconnect() {}

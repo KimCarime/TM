@@ -42,13 +42,16 @@ public final class TruckMixServiceBinder extends Binder implements ITruckMixServ
         mContext.getServiceInstance().setEventListener(eventListener);
     }
 
+    public void setConnectionStateListener(ConnectionStateListener connectionStateListener) {
+        mContext.getServiceInstance().setConnectionStateListener(connectionStateListener);
+    }
+
     //
     // Bluetooth connection specific
     //
 
     @Override
-    public void connect(String address, ConnectionStateListener connectionStateListener) {
-        mContext.getServiceInstance().setConnectionStateListener(connectionStateListener);
+    public void connect(String address) {
         mContext.getBluetoothChatInstance().connect(address);
     }
 
@@ -59,7 +62,7 @@ public final class TruckMixServiceBinder extends Binder implements ITruckMixServ
 
     @Override
     public boolean isConnected() {
-        return mContext.getBluetoothChatInstance() == null;
+        return mContext.getBluetoothChatInstance() == null; // TODO
     }
 
     //
