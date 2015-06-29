@@ -81,6 +81,9 @@ public class BluetoothChatService {
         if (mBtAdapter == null) {
             Log.e(TAG, "Bluetooth is not supported on this device");
         } else {
+            if (!mBtAdapter.isEnabled()) {
+                mBtAdapter.enable();
+            }
             mContext.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         }
     }
