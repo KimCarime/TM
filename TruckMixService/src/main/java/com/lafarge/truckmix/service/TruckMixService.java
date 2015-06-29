@@ -6,14 +6,11 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
 
 import com.lafarge.truckmix.BuildConfig;
 import com.lafarge.truckmix.TruckMix;
 import com.lafarge.truckmix.bluetooth.BluetoothChatService;
-import com.lafarge.truckmix.bluetooth.BluetoothChatServiceMessages;
 import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
@@ -22,9 +19,6 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-
-import java.lang.ref.WeakReference;
-import java.util.Arrays;
 
 public class TruckMixService extends Service implements ITruckMixService {
 
@@ -43,10 +37,30 @@ public class TruckMixService extends Service implements ITruckMixService {
     // Private listeners
     private CommunicatorBytesListener mCommunicatorBytesListener;
 
-    //
+    // Thread management
     private HandlerThread mHandlerThread;
     private Handler mHandler;
+
+    // Service
     private final IBinder mBinder = new TruckMixBinder();
+
+    //
+    // Inner types
+    //
+
+    public class TruckMixBinder extends Binder {
+        public TruckMixService getService() {
+            return TruckMixService.this;
+        }
+    }
+
+    public interface TruckMixContext {
+        void post(final Runnable runnable);
+
+        TruckMixService getServiceInstance();
+        Communicator getCommunicatorInstance();
+        BluetoothChatService getBluetoothChatInstance();
+    }
 
     //
     // Service overrides
@@ -71,14 +85,22 @@ public class TruckMixService extends Service implements ITruckMixService {
     }
 
     //
-    // Public
+    // API
     //
 
     public void start(String address, TruckMix truc) {
+        // Client
         mCommunicatorListener = truc.getCommunicatorListener();
         mLoggerListener = truc.getLoggerListener();
         mEventListener = truc.getEventListener();
         mConnectionStateListener = truc.getConnectionStateListener();
+
+        // Thread
+        mHandlerThread = new HandlerThread("TruckMixServiceThread");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
+
+        // Internal
         mCommunicatorBytesListener = new CommunicatorBytesListener() {
             @Override
             public void send(final byte[] bytes) {
@@ -86,15 +108,10 @@ public class TruckMixService extends Service implements ITruckMixService {
             }
         };
 
-        mHandlerThread = new HandlerThread("TruckMixServiceThread");
-        mHandlerThread.start();
-
-        mHandler = new Handler(mHandlerThread.getLooper());
-
-        // Module instanciation
-        mBluetoothChat = new BluetoothChatService(this, new BluetoothChatServiceHandler(this, mHandlerThread.getLooper()));
-        mBluetoothChat.connect(address);
+        // Module instantiation
         mCommunicator = new Communicator(mCommunicatorBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
+        mBluetoothChat = new BluetoothChatService(mContext, mConnectionStateListener, mLoggerListener);
+        mBluetoothChat.connect(address);
     }
 
     //
@@ -198,76 +215,26 @@ public class TruckMixService extends Service implements ITruckMixService {
     // Private stuff
     //
 
-    /**
-     * Handler of incoming bluetooth messages.
-     */
-    private static class BluetoothChatServiceHandler extends Handler {
-        private final WeakReference<TruckMixService> mmService;
+    private final TruckMixContext mContext = new TruckMixContext() {
 
-        public BluetoothChatServiceHandler(TruckMixService service, Looper looper) {
-            super(looper);
-            mmService = new WeakReference<TruckMixService>(service);
+        @Override
+        public void post(final Runnable runnable) {
+            mHandler.post(runnable);
         }
 
         @Override
-        public void handleMessage(Message msg) {
-            TruckMixService service = mmService.get();
-            if (service == null) {
-                return;
-            }
-
-            switch (msg.what) {
-                case BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED: {
-                            BluetoothChatServiceMessages.BluetoothDeviceInfo deviceInfo = BluetoothChatServiceMessages.getDeviceFromDeviceConnectedMessage(msg);
-                            service.mLoggerListener.log("BLUETOOTH: connected to :" + deviceInfo.getName() + " - " + deviceInfo.getAddress());
-                            service.mCommunicator.setConnected(true);
-                            if (service.mConnectionStateListener != null) {
-                                service.mConnectionStateListener.onCalculatorConnected();
-                            }
-                            break;
-                        }
-                        case BluetoothChatService.STATE_CONNECTING:
-                            BluetoothChatServiceMessages.BluetoothDeviceInfo deviceInfo = BluetoothChatServiceMessages.getDeviceFromDeviceConnectedMessage(msg);
-                            service.mLoggerListener.log("BLUETOOTH: connecting to: " + deviceInfo.getName() + " - " + deviceInfo.getAddress());
-                            if (service.mConnectionStateListener != null) {
-                                service.mConnectionStateListener.onCalculatorConnecting();
-                            }
-                            break;
-                        case BluetoothChatService.STATE_NONE:
-                            service.mLoggerListener.log("BLUETOOTH: disconnected");
-                            if (service.mCommunicator != null) {
-                                service.mCommunicator.setConnected(false);
-                            }
-                            if (service.mConnectionStateListener != null) {
-                                service.mConnectionStateListener.onCalculatorDisconnected();
-                            }
-                            break;
-                    }
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_WRITE:
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_READ:
-                    service.mCommunicator.received(Arrays.copyOf((byte[]) msg.obj, msg.arg1));
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_BLUETOOTH_STATE_OFF:
-                    if (service.mLoggerListener != null) {
-                        service.mLoggerListener.log("BLUETOOTH: bluetooth is off -> turning on");
-                    }
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_BLUETOOTH_STATE_ON:
-                    if (service.mLoggerListener != null) {
-                        service.mLoggerListener.log("BLUETOOTH: bluetooth is on");
-                    }
-                    break;
-            }
-        }
-    }
-
-    public class TruckMixBinder extends Binder {
-        public TruckMixService getService() {
+        public TruckMixService getServiceInstance() {
             return TruckMixService.this;
         }
-    }
+
+        @Override
+        public Communicator getCommunicatorInstance() {
+            return mCommunicator;
+        }
+
+        @Override
+        public BluetoothChatService getBluetoothChatInstance() {
+            return mBluetoothChat;
+        }
+    };
 }
