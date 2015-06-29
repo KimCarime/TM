@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.decoder.actions;
 
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 public class DeliveryValidationReceived extends ReadAction {
     public DeliveryValidationReceived(MessageReceivedListener listener) {

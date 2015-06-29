@@ -2,8 +2,14 @@ package com.lafarge.truckmix.service;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.*;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
 import android.util.Log;
+
 import com.lafarge.truckmix.BuildConfig;
 import com.lafarge.truckmix.TruckMix;
 import com.lafarge.truckmix.bluetooth.BluetoothChatService;

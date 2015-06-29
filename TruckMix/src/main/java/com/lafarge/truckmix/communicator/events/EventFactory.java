@@ -1,8 +1,6 @@
 package com.lafarge.truckmix.communicator.events;
 
-import com.lafarge.truckmix.communicator.Communicator;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 /**
  * Factory of Event, used by the Communicator to send events to EventListener.
