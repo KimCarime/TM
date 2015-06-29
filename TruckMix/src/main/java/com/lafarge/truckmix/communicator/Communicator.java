@@ -210,6 +210,7 @@ public class Communicator {
      */
     public void setConnected(boolean isConnected) {
         loggerListener.log("INTERNAL: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        loggerListener.log("INTERNAL: current state: " + state.name());
         this.isConnected = isConnected;
         if (!isConnected) {
             cancelTimer();
@@ -685,203 +686,203 @@ public class Communicator {
         @Override
         public void targetSlump(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: target slump: " + value + " mm\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: target slump: " + value + " mm");
             }
         }
 
         @Override
         public void maximumWater(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: maximum water: " + value + " L\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: maximum water: " + value + " L");
             }
         }
 
         @Override
         public void waterAdditionPermission(boolean isAllowed, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: water addition allowed: " + (isAllowed ? "YES" : "NO") + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: water addition allowed: " + (isAllowed ? "YES" : "NO") + "");
             }
         }
 
         @Override
         public void changeExternalDisplayState(boolean isActivated, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED") + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED") + "");
             }
         }
 
         @Override
         public void endOfDelivery(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: end of delivery\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: end of delivery");
             }
         }
 
         @Override
         public void beginningOfDelivery(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: beginning of delivery\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: beginning of delivery");
             }
         }
 
         @Override
         public void loadVolume(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: load volume: " + value + " m3" + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: load volume: " + value + " m3" + "");
             }
         }
 
         @Override
         public void parameterT1(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter T1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter T1: " + value + "");
             }
         }
 
         @Override
         public void parameterA11(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A11: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A11: " + value + "");
             }
         }
 
         @Override
         public void parameterA12(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A12: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A12: " + value + "");
             }
         }
 
         @Override
         public void parameterA13(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A13: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A13: " + value + "");
             }
         }
 
         @Override
         public void magnetQuantity(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: magnet quantity: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: magnet quantity: " + value + "");
             }
         }
 
         @Override
         public void timePump(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: time pump: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: time pump: " + value + "");
             }
         }
 
         @Override
         public void timeDelayDriver(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: time delay driver: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: time delay driver: " + value + "");
             }
         }
 
         @Override
         public void pulseNumber(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: pulse number: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: pulse number: " + value + "");
             }
         }
 
         @Override
         public void flowmeterFrequency(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: flowmeter frequency: " + value + "Hz\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: flowmeter frequency: " + value + "Hz");
             }
         }
 
         @Override
         public void commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: command pump mode: " + commandPumpMode.toString() + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: command pump mode: " + commandPumpMode.toString() + "");
             }
         }
 
         @Override
         public void calibrationInputSensorA(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration input sensor A: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration input sensor A: " + value + "");
             }
         }
 
         @Override
         public void calibrationOutputSensorA(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration output sensor A: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration output sensor A: " + value + "");
             }
         }
 
         @Override
         public void calibrationInputSensorB(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration input  sensor B: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration input  sensor B: " + value + "");
             }
         }
 
         @Override
         public void calibrationOutputSensorB(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration output sensor B: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration output sensor B: " + value + "");
             }
         }
 
         @Override
         public void openingTimeEV1(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: opening time EV1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: opening time EV1: " + value + "");
             }
         }
 
         @Override
         public void openingTimeVA1(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: opening time VA1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: opening time VA1: " + value + "");
             }
         }
 
         @Override
         public void countingTolerance(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: counting tolerance: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: counting tolerance: " + value + "");
             }
         }
 
         @Override
         public void waitingDurationAfterWaterAddition(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: waiting duration after water addition: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: waiting duration after water addition: " + value + "");
             }
         }
 
         @Override
         public void maxDelayBeforeFlowage(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max delay before flowage: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max delay before flowage: " + value + "");
             }
         }
 
         @Override
         public void maxFlowageError(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max flowage error: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max flowage error: " + value + "");
             }
         }
 
         @Override
         public void maxCountingError(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max couting error: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max couting error: " + value + "");
             }
         }
 
         @Override
         public void fake(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: trame bidon\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: trame bidon");
             }
         }
     };
@@ -889,7 +890,7 @@ public class Communicator {
     /**
      * Progression of the Decoder
      */
-    private final ProgressListener progressListener= new ProgressListener() {
+    private final ProgressListener progressListener = new ProgressListener() {
         @Override
         public void timeout() {
             if (isConnected) {
@@ -898,11 +899,7 @@ public class Communicator {
         }
 
         @Override
-        public void willDecode(byte[] buff) {
-            if (isConnected) {
-                loggerListener.log("PROCESS: will decode:\n    " + Convert.bytesToHex(buff));
-            }
-        }
+        public void willDecode(byte[] buff) {}
 
         @Override
         public void willProcessByte(ProgressState state, byte b) {}
