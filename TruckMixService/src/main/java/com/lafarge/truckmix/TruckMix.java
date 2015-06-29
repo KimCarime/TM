@@ -45,11 +45,11 @@ public class TruckMix implements ITruckMixService {
             EventListener eventListener,
             LoggerListener loggerListener,
             ConnectionStateListener connectionStateListener) {
-        this.mContext = context;
-        this.mCommunicatorListener = communicatorListener;
-        this.mEventListener = eventListener;
-        this.mLoggerListener = loggerListener;
-        this.mConnectionStateListener = connectionStateListener;
+        mContext = context;
+        mCommunicatorListener = communicatorListener;
+        mEventListener = eventListener;
+        mLoggerListener = loggerListener;
+        mConnectionStateListener = connectionStateListener;
     }
 
     //
@@ -57,7 +57,7 @@ public class TruckMix implements ITruckMixService {
     //
 
     public void start(final String address) {
-        this.mAddress = address;
+        mAddress = address;
         mContext.bindService(new Intent(mContext, TruckMixService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -186,44 +186,42 @@ public class TruckMix implements ITruckMixService {
      * Builder for creating a TruckMix instance with its options.
      */
     public static class Builder {
-        private final Context context;
-        private CommunicatorListener mCommunicatorListener;
-        private LoggerListener mLoggerListener;
-        private EventListener mEventListener;
-        private ConnectionStateListener mConnectionStateListener;
+        private final Context mmContext;
+        private CommunicatorListener mmCommunicatorListener;
+        private LoggerListener mmLoggerListener;
+        private EventListener mmEventListener;
+        private ConnectionStateListener mmConnectionStateListener;
 
         public Builder(Context context) {
             if (context == null) {
                 throw new IllegalArgumentException("Context must not be null.");
             }
-            this.context = context.getApplicationContext();
+            mmContext = context.getApplicationContext();
         }
 
-        public Builder communicatorListener(CommunicatorListener value) {
-            this.mCommunicatorListener = value;
+        public Builder setCommunicatorListener(CommunicatorListener communicatorListener) {
+            mmCommunicatorListener = communicatorListener;
             return this;
         }
 
-        public Builder loggerListener(LoggerListener value) {
-            this.mLoggerListener = value;
+        public Builder setLoggerListener(LoggerListener loggerListener) {
+            mmLoggerListener = loggerListener;
             return this;
         }
 
-        public Builder eventListener(EventListener value) {
-            this.mEventListener = value;
+        public Builder setEventListener(EventListener eventListener) {
+            mmEventListener = eventListener;
             return this;
         }
 
-        public Builder connectionStateListener(ConnectionStateListener value) {
-            this.mConnectionStateListener = value;
+        public Builder setConnectionStateListener(ConnectionStateListener connectionStateListener) {
+            mmConnectionStateListener = connectionStateListener;
             return this;
         }
 
         public TruckMix build() {
-            Context context = this.context;
-
-            if (mCommunicatorListener == null) {
-                mCommunicatorListener = new CommunicatorListener() {
+            if (mmCommunicatorListener == null) {
+                mmCommunicatorListener = new CommunicatorListener() {
                     @Override
                     public void slumpUpdated(int slump) {}
 
@@ -267,17 +265,15 @@ public class TruckMix implements ITruckMixService {
                     public void alarmTriggered(AlarmType alarmType) {}
                 };
             }
-
-            if (mLoggerListener == null) {
-                mLoggerListener = new LoggerListener() {
+            if (mmLoggerListener == null) {
+                mmLoggerListener = new LoggerListener() {
                     @Override
                     public void log(String log) {
                     }
                 };
             }
-
-            if (mConnectionStateListener == null) {
-                mConnectionStateListener = new ConnectionStateListener() {
+            if (mmConnectionStateListener == null) {
+                mmConnectionStateListener = new ConnectionStateListener() {
                     @Override
                     public void onCalculatorConnected() {}
 
@@ -288,15 +284,25 @@ public class TruckMix implements ITruckMixService {
                     public void onCalculatorDisconnected() {}
                 };
             }
-
-            if (mEventListener == null) {
-                mEventListener = new EventListener() {
+            if (mmEventListener == null) {
+                mmEventListener = new EventListener() {
                     @Override
                     public void onNewEvents(Event event) {}
                 };
             }
+            if (mmConnectionStateListener == null) {
+                mmConnectionStateListener = new ConnectionStateListener() {
+                    @Override
+                    public void onCalculatorConnected() {}
 
-            return new TruckMix(context, mCommunicatorListener, mEventListener, mLoggerListener, mConnectionStateListener);
+                    @Override
+                    public void onCalculatorConnecting() {}
+
+                    @Override
+                    public void onCalculatorDisconnected() {}
+                };
+            }
+            return new TruckMix(mmContext, mmCommunicatorListener, mmEventListener, mmLoggerListener, mmConnectionStateListener);
         }
     }
 }

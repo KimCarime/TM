@@ -74,10 +74,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Service
         mTruckMix = new TruckMix.Builder(this)
-                .communicatorListener(mCommunicatorListener)
-                .loggerListener(mLoggerListener)
-                .eventListener(mEventListener)
-                .connectionStateListener(mConnectionStateListener)
+                .setCommunicatorListener(mCommunicatorListener)
+                .setLoggerListener(mLoggerListener)
+                .setEventListener(mEventListener)
+                .setConnectionStateListener(mConnectionStateListener)
                 .build();
 
         // Others
