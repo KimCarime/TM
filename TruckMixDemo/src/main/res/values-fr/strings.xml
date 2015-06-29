@@ -1,4 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Démo TruckMix</string>
+
+    <string name="action_settings">Paramètres</string>
+
+    <!-- MainActivity -->
+    <string name="title_main_section1">Console</string>
+    <string name="title_main_section2">Vue d\'ensemble</string>
+
+    <!-- ParametersActivity -->
+    <string name="title_customize_parameters_section1">Paramètres camion</string>
+    <string name="title_customize_parameters_section2">Paramètre de livraison</string>
+
+    <!-- OverviewFragment -->
     <string name="overview_current_slump">Slump courant:</string>
+    <string name="overview_current_temperature">Temperature :</string>
+    <string name="overview_alarm">Alarme :</string>
+    <string name="overview_mixing_mode">Mode toupie :</string>
+    <string name="overview_input_pressure">Pression entree :</string>
+    <string name="overview_output_pressure">Pression sortie :</string>
+    <string name="overview_rotation_speed">Vitesse de rotation :</string>
+    <string name="overview_input_pressure_sensor_state">Etat capteur Pe :</string>
+    <string name="overview_output_pressure_sensor_state">Etat capteur Ps :</string>
+    <string name="overview_speed_sensor_state">Etat capteur vitesse :</string>
+    <string name="overview_acquisition_mode">Mode acquisition :</string>
+    <string name="overview_regulation_mode">Mode régulation :</string>
+    <string name="overview_pump_mode">Mode pompe :</string>
+    <string name="overview_slump_mode">Mode slump :</string>
+
 </resources>

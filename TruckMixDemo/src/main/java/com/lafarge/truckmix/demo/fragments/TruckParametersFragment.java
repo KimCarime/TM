@@ -8,11 +8,13 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import butterknife.ButterKnife;
-import butterknife.InjectView;
+
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.demo.R;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class TruckParametersFragment extends Fragment {
 
@@ -40,17 +42,22 @@ public class TruckParametersFragment extends Fragment {
 
     private UserPreferences mPrefs;
 
+    //
+    // Constructor
+    //
+
+    public TruckParametersFragment() {
+        // Required empty public constructor
+    }
+
     public static TruckParametersFragment newInstance() {
         TruckParametersFragment fragment = new TruckParametersFragment();
         return fragment;
     }
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public TruckParametersFragment() {
-    }
+    //
+    // Fragment lifecycle
+    //
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +75,10 @@ public class TruckParametersFragment extends Fragment {
         updateParameters();
         return view;
     }
+
+    //
+    // Public
+    //
 
     public void updateParameters() {
         TruckParameters parameters = mPrefs.getTruckParameters();

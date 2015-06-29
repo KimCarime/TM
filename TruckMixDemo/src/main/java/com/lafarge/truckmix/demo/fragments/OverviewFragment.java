@@ -9,9 +9,12 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
+
+import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.demo.R;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import com.lafarge.truckmix.demo.R;
 
 public class OverviewFragment extends Fragment {
 
@@ -26,21 +29,27 @@ public class OverviewFragment extends Fragment {
     @InjectView(R.id.textView3) TextView mRotationSpeed;
     @InjectView(R.id.textView4) TextView mInputPressureSensorState;
     @InjectView(R.id.textView5) TextView mOutputPressureSensorState;
-    @InjectView(R.id.textView6) TextView mMinSensorExceed;
-    @InjectView(R.id.textView7) TextView mMaxSensorExceed;
+    @InjectView(R.id.textView7) TextView mSpeedSensorState;
     @InjectView(R.id.textView8) TextView mAcquisitionSubstep;
     @InjectView(R.id.textView9) TextView mRegulationSubstep;
     @InjectView(R.id.textView10) TextView mPumpSubstep;
     @InjectView(R.id.textView11) TextView mSlumpSubstep;
+
+    //
+    // Constructor
+    //
 
     public OverviewFragment() {
         // Required empty public constructor
     }
 
     public static OverviewFragment newInstance() {
-        OverviewFragment fragment = new OverviewFragment();
-        return fragment;
+        return new OverviewFragment();
     }
+
+    //
+    // Fragment lifecycle
+    //
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +64,10 @@ public class OverviewFragment extends Fragment {
         return view;
     }
 
+    //
+    // Public
+    //
+
     public void updateSlump(int slump) {
         mSlump.startAnimation(getBlinkAnimation());
         mSlump.setText(String.format("%d mm", slump));
@@ -65,14 +78,35 @@ public class OverviewFragment extends Fragment {
         mTemperature.setText(String.format("%f °C", temperature));
     }
 
-    public void updateAlarm(String alarm) {
+    public void updateAlarm(CommunicatorListener.AlarmType alarmType) {
         mAlarm.startAnimation(getBlinkAnimation());
-        mAlarm.setText(alarm);
+
+        switch (alarmType) {
+            case WATER_ADDITION_BLOCKED:
+                mAlarm.setText("AJOUT D'EAU BLOQUEE");
+                break;
+            case WATER_MAX:
+                mAlarm.setText("EAU MAX");
+                break;
+            case FLOWAGE_ERROR:
+                mAlarm.setText("ERREUR ECOULEMENT");
+                break;
+            case COUNTING_ERROR:
+                mAlarm.setText("ERROR COMPTAGE");
+                break;
+        }
     }
 
-    public void updateMixerMode(String mode) {
+    public void updateRotationDirection(CommunicatorListener.RotationDirection rotationDirection) {
         mMixerMode.startAnimation(getBlinkAnimation());
-        mMixerMode.setText(mode);
+        switch (rotationDirection) {
+            case MIXING:
+                mMixerMode.setText("MALAXAGE");
+                break;
+            case UNLOADING:
+                mMixerMode.setText("VIDANGE");
+                break;
+        }
     }
 
     public void updateInputPressure(float inPressure) {
@@ -100,14 +134,19 @@ public class OverviewFragment extends Fragment {
         mOutputPressureSensorState.setText(activated ? "CONNECTÉ" : "DÉCONNECTÉ");
     }
 
-    public void updateMinSensorExceed(boolean thresholdExceed) {
-        mMinSensorExceed.startAnimation(getBlinkAnimation());
-        mMinSensorExceed.setText(thresholdExceed ? "OUI" : "NON");
-    }
-
-    public void updateMaxSensorExceed(boolean thresholdExceed) {
-        mMaxSensorExceed.startAnimation(getBlinkAnimation());
-        mMaxSensorExceed.setText(thresholdExceed ? "OUI" : "NON");
+    public void updateSpeedSensorState(CommunicatorListener.SpeedSensorState speedSensorState) {
+        mSpeedSensorState.startAnimation(getBlinkAnimation());
+        switch (speedSensorState) {
+            case NORMAL:
+                mSpeedSensorState.setText("NORMAL");
+                break;
+            case TOO_SLOW:
+                mSpeedSensorState.setText("TROP LENT");
+                break;
+            case TOO_FAST:
+                mSpeedSensorState.setText("TROP RAPIDE");
+                break;
+        }
     }
 
     public void updateStep(int step, int subStep) {
@@ -130,6 +169,10 @@ public class OverviewFragment extends Fragment {
                 break;
         }
     }
+
+    //
+    // Private stuff
+    //
 
     private String captionForStep(int step, int subStep) {
         switch (step) {

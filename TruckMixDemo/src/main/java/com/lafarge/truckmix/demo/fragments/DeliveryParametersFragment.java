@@ -6,11 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import butterknife.ButterKnife;
-import butterknife.InjectView;
+
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.demo.R;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class DeliveryParametersFragment extends Fragment {
 
@@ -20,14 +22,21 @@ public class DeliveryParametersFragment extends Fragment {
 
     UserPreferences mPrefs;
 
+    //
+    // Constructor
+    //
+
     public static DeliveryParametersFragment newInstance() {
-        DeliveryParametersFragment fragment = new DeliveryParametersFragment();
-        return fragment;
+        return new DeliveryParametersFragment();
     }
 
     public DeliveryParametersFragment() {
         // Required empty public constructor
     }
+
+    //
+    // View lifecycle
+    //
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -45,6 +54,10 @@ public class DeliveryParametersFragment extends Fragment {
         updateParameters();
         return view;
     }
+
+    //
+    // Public
+    //
 
     public void updateParameters() {
         DeliveryParameters paramers = mPrefs.getDeliveryParameters();

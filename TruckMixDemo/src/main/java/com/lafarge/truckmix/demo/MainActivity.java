@@ -6,13 +6,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,16 +37,23 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
+    // View management
     private ViewPager mViewPager;
     private SectionsPagerAdapter mPagerAdapter;
-    private boolean serviceConnected;
 
+    // Dialog
+    private Dialog mAddWaterConfirmationDialog;
+
+    // Service
     private TruckMix mTruckMix;
+
     private ArrayList<Event> mEvents = new ArrayList<Event>();
+
     private UserPreferences mPrefs;
+
+    private Handler mMainThreadHandler;
 
     //
     // Life cycle
@@ -61,8 +69,16 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mPagerAdapter);
 
-        // Binding to the service
-        mTruckMix = TruckMix.getInstance(this);
+        // Thread
+        mMainThreadHandler = new Handler(Looper.getMainLooper());
+
+        // Service
+        mTruckMix = new TruckMix.Builder(this)
+                .communicatorListener(mCommunicatorListener)
+                .loggerListener(mLoggerListener)
+                .eventListener(mEventListener)
+                .connectionStateListener(mConnectionStateListener)
+                .build();
 
         // Others
         mPrefs = new UserPreferences(this);
@@ -85,28 +101,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.connect: {
                 // This is the bluetooth mac address of the calculator.
-                final String address = "00:12:6F:35:7E:70";
-
-                mTruckMix.setCommunicatorListener(mCommunicatorListener);
-                mTruckMix.setEventListener(mEventListener);
-                mTruckMix.setLoggerListener(mLoggerListener);
-
-                mTruckMix.connect(address, new ConnectionStateListener() {
-                    @Override
-                    public void onCalculatorConnected() {
-                        Log.i(TAG, "Calculator connected");
-                    }
-
-                    @Override
-                    public void onCalculatorConnecting() {
-                        Log.i(TAG, "Calculator connecting");
-                    }
-
-                    @Override
-                    public void onCalculatorDisconnected() {
-                        Log.i(TAG, "Calculator disconnected");
-                    }
-                });
+                mTruckMix.start("00:12:6F:35:7E:70");
                 return true;
             }
             case R.id.send_frame:
@@ -115,12 +110,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.clear:
                 getConsoleFragment().clear();
                 return true;
-            case R.id.customize_parameters: {
-                final Intent intent = new Intent(this, ParametersActivity.class);
-                startActivity(intent);
-            }
+            case R.id.customize_parameters:
+                startActivity(new Intent(this, ParametersActivity.class));
+                return true;
             case R.id.send_logs: {
-                final Intent intent=new Intent(Intent.ACTION_SEND);
+                final Intent intent= new Intent(Intent.ACTION_SEND);
                 String[] recipients = {"kim.abdoul-carime@lafarge.com"};
                 intent.setType("text/plain");
                 intent.putExtra(Intent.EXTRA_EMAIL, recipients);
@@ -129,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
                 for (Uri uri : getUriListForLogs()) {
                     intent.putExtra(Intent.EXTRA_STREAM, uri);
                 }
-
                 startActivity(Intent.createChooser(intent, "Envoie mail"));
             }
             default:
@@ -141,15 +134,36 @@ public class MainActivity extends AppCompatActivity {
     // TruckMix interface
     //
 
+    private final ConnectionStateListener mConnectionStateListener = new ConnectionStateListener() {
+        @Override
+        public void onCalculatorConnected() {
+
+        }
+
+        @Override
+        public void onCalculatorConnecting() {
+
+        }
+
+        @Override
+        public void onCalculatorDisconnected() {
+
+        }
+    };
+
     /**
      *
      */
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
         public void log(final String log) {
-            Log.d(TAG, log);
             LOGGER.info(log);
-            getConsoleFragment().addLog(log);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getConsoleFragment().addLog(log);
+                }
+            });
         }
     };
 
@@ -159,24 +173,32 @@ public class MainActivity extends AppCompatActivity {
     private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
         @Override
         public void slumpUpdated(final int slump) {
-            getOverviewFragment().updateSlump(slump);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateSlump(slump);
+                }
+            });
         }
 
         @Override
         public void temperatureUpdated(final float temperature) {
-            getOverviewFragment().updateTemperature(temperature);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateTemperature(temperature);
+                }
+            });
         }
 
         @Override
         public void rotationDirectionChanged(final RotationDirection rotationDirection) {
-            switch (rotationDirection) {
-                case MIXING:
-                    getOverviewFragment().updateMixerMode("MALAXAGE");
-                    break;
-                case UNLOADING:
-                    getOverviewFragment().updateMixerMode("VIDANGE");
-                    break;
-            }
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateRotationDirection(rotationDirection);
+                }
+            });
         }
 
         @Override
@@ -186,18 +208,34 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void waterAdditionRequest(final int volume) {
-            createAddWaterConfirmationDialog(volume).show();
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mAddWaterConfirmationDialog.isShowing()) {
+                        mAddWaterConfirmationDialog.dismiss();
+                    }
+                    mAddWaterConfirmationDialog = createAddWaterConfirmationDialog(volume);
+                    mAddWaterConfirmationDialog.show();
+                }
+            });
         }
 
         @Override
-        public void waterAdditionBegan() {}
+        public void waterAdditionBegan() {
+        }
 
         @Override
-        public void waterAdditionEnd() {}
+        public void waterAdditionEnd() {
+        }
 
         @Override
         public void stateChanged(final int step, final int subStep) {
-            getOverviewFragment().updateStep(step, subStep);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateStep(step, subStep);
+                }
+            });
         }
 
         @Override
@@ -207,53 +245,54 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void calibrationData(final float inputPressure, final float outputPressure, final float rotationSpeed) {
-            getOverviewFragment().updateInputPressure(inputPressure);
-            getOverviewFragment().updateOutputPressure(outputPressure);
-            getOverviewFragment().updateRotationSpeed(rotationSpeed);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateInputPressure(inputPressure);
+                    getOverviewFragment().updateOutputPressure(outputPressure);
+                    getOverviewFragment().updateRotationSpeed(rotationSpeed);
+                }
+            });
         }
 
         @Override
         public void inputSensorConnectionChanged(final boolean connected) {
-            getOverviewFragment().updateInputPressureSensorState(connected);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateInputPressureSensorState(connected);
+                }
+            });
         }
 
         @Override
         public void outputSensorConnectionChanged(final boolean connected) {
-            getOverviewFragment().updateOutputPressureSensorState(connected);
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateOutputPressureSensorState(connected);
+                }
+            });
         }
 
         @Override
         public void speedSensorStateChanged(final SpeedSensorState speedSensorState) {
-            switch (speedSensorState) {
-                case NORMAL:
-                    getOverviewFragment().updateMinSensorExceed(false);
-                    getOverviewFragment().updateMaxSensorExceed(false);
-                    break;
-                case TOO_SLOW:
-                    getOverviewFragment().updateMinSensorExceed(true);
-                    break;
-                case TOO_FAST:
-                    getOverviewFragment().updateMaxSensorExceed(true);
-                    break;
-            }
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateSpeedSensorState(speedSensorState);
+                }
+            });
         }
 
         @Override
         public void alarmTriggered(final AlarmType alarmType) {
-            switch (alarmType) {
-                case WATER_ADDITION_BLOCKED:
-                    getOverviewFragment().updateAlarm("AJOUT D'EAU BLOQUEE");
-                    break;
-                case WATER_MAX:
-                    getOverviewFragment().updateAlarm("EAU MAX");
-                    break;
-                case FLOWAGE_ERROR:
-                    getOverviewFragment().updateAlarm("ERREUR ECOULEMENT");
-                    break;
-                case COUNTING_ERROR:
-                    getOverviewFragment().updateAlarm("ERROR COMPTAGE");
-                    break;
-            }
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateAlarm(alarmType);
+                }
+            });
         }
     };
 
@@ -263,12 +302,7 @@ public class MainActivity extends AppCompatActivity {
     private final EventListener mEventListener = new EventListener() {
         @Override
         public void onNewEvents(final Event event) {
-            String str =
-                    "{" +
-                            "  id: " + event.id.getIdValue() +
-                            "  value:" + event.value +
-                            "  timestamp: " + event.timestamp +
-                            "}";
+            LOGGER.info("new event triggered: " + event);
         }
     };
 
@@ -400,12 +434,9 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<Uri> uris = new ArrayList<Uri>();
 
         String path = Environment.getExternalStorageDirectory().toString()+"/Android/data/com.lafarge.truckmix.demo/logs";
-        Log.d("Files", "Path: " + path);
         File f = new File(path);
         File files[] = f.listFiles();
-        Log.d("Files", "Size: "+ files.length);
         for (File file : files) {
-            Log.d("Files", "FileName:" + file.getName());
             uris.add(Uri.fromFile(file));
         }
         return uris;

@@ -2,6 +2,7 @@ package com.lafarge.truckmix.demo.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 
