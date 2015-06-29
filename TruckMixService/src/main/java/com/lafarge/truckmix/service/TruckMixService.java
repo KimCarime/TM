@@ -120,7 +120,7 @@ public class TruckMixService extends Service implements ITruckMixService {
 
     @Override
     public boolean isConnected() {
-        return false;
+        return mBluetoothChat.getState() == BluetoothChatService.STATE_CONNECTED;
     }
 
     @Override
