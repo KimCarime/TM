@@ -1,8 +1,9 @@
 package com.lafarge.truckmix.decoder.states;
 
+import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
-import com.lafarge.truckmix.common.Protocol;
+
 import org.junit.Before;
 import org.junit.Test;
 

@@ -7,6 +7,10 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;

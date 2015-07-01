@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.encoder;
 
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
+
 import org.junit.Before;
 import org.junit.Test;
 

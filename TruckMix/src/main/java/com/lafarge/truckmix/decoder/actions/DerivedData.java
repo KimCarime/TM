@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.decoder.actions;
 
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.RotationDirection;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.utils.Convert;
 
@@ -25,7 +26,7 @@ public class DerivedData extends ReadAction {
         checkIfBooleanByteIsValid(isSlumpFrameStableByte, "L'octet correspondant à la stabilité de la trame dans la trame donnees derivees est d'une valeur invalide : " + Convert.byteToHex(isSlumpFrameStableByte));
 
         // Decode parameters
-        MessageReceivedListener.RotationDirection rotationDirection = (rotationDirectionByte == 0x00) ? MessageReceivedListener.RotationDirection.MIXING : MessageReceivedListener.RotationDirection.UNLOADING;
+        RotationDirection rotationDirection = (rotationDirectionByte == 0x00) ? RotationDirection.MIXING : RotationDirection.UNLOADING;
         boolean isSlumpFrameStable = (isSlumpFrameStableByte == 0x00);
         int currentFrameSize = Convert.bytesToInt(currentFrameSizeBytes);
         int expectedFrameSize = Convert.bytesToInt(expectedFrameSizeBytes);

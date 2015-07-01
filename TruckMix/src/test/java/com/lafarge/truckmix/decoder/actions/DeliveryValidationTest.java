@@ -2,7 +2,9 @@ package com.lafarge.truckmix.decoder.actions;
 
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 
 public class DeliveryValidationTest extends ReadActionTest {
 

@@ -1,7 +1,5 @@
 package com.lafarge.truckmix.decoder.listeners;
 
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-
 public class LoggedMessageReceivedListener implements MessageReceivedListener {
     @Override
     public void slumpUpdated(int slump) {

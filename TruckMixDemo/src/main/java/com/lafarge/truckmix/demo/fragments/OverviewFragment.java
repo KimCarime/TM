@@ -10,7 +10,9 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.TextView;
 
-import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
 import com.lafarge.truckmix.demo.R;
 
 import butterknife.ButterKnife;
@@ -78,7 +80,7 @@ public class OverviewFragment extends Fragment {
         mTemperature.setText(String.format("%f °C", temperature));
     }
 
-    public void updateAlarm(CommunicatorListener.AlarmType alarmType) {
+    public void updateAlarm(AlarmType alarmType) {
         mAlarm.startAnimation(getBlinkAnimation());
 
         switch (alarmType) {
@@ -97,7 +99,7 @@ public class OverviewFragment extends Fragment {
         }
     }
 
-    public void updateRotationDirection(CommunicatorListener.RotationDirection rotationDirection) {
+    public void updateRotationDirection(RotationDirection rotationDirection) {
         mMixerMode.startAnimation(getBlinkAnimation());
         switch (rotationDirection) {
             case MIXING:
@@ -134,7 +136,7 @@ public class OverviewFragment extends Fragment {
         mOutputPressureSensorState.setText(activated ? "CONNECTÉ" : "DÉCONNECTÉ");
     }
 
-    public void updateSpeedSensorState(CommunicatorListener.SpeedSensorState speedSensorState) {
+    public void updateSpeedSensorState(SpeedSensorState speedSensorState) {
         mSpeedSensorState.startAnimation(getBlinkAnimation());
         switch (speedSensorState) {
             case NORMAL:

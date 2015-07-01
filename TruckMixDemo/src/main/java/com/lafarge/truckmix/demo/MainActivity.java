@@ -20,6 +20,10 @@ import android.view.MenuItem;
 
 import com.lafarge.truckmix.TruckMix;
 import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
@@ -99,11 +103,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.connect: {
-                // This is the bluetooth mac address of the calculator.
+            case R.id.connect:
                 mTruckMix.start("00:12:6F:35:7E:70");
                 return true;
-            }
             case R.id.send_frame:
                 createSendFrameDialog().show();
                 return true;

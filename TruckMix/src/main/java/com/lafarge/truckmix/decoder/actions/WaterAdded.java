@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.decoder.actions;
 
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.utils.Convert;
 
@@ -23,7 +24,7 @@ public class WaterAdded extends ReadAction {
 
         // Decode parameters
         int volume = volumeByte;
-        MessageReceivedListener.WaterAdditionMode additionMode = (additionModeByte == 0x00) ? MessageReceivedListener.WaterAdditionMode.MANUAL : MessageReceivedListener.WaterAdditionMode.AUTO;
+        WaterAdditionMode additionMode = (additionModeByte == 0x00) ? WaterAdditionMode.MANUAL : WaterAdditionMode.AUTO;
 
         // Inform listener
         listener.waterAdded(volume, additionMode);

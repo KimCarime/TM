@@ -1,5 +1,9 @@
 package com.lafarge.truckmix.communicator;
 
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.EventFactory;
@@ -60,8 +64,8 @@ public class Communicator {
     private boolean isConnected;
 
     // Message received state
-    CommunicatorListener.RotationDirection currentRotation;
-    CommunicatorListener.SpeedSensorState currentSpeedSensorState;
+    RotationDirection currentRotation;
+    SpeedSensorState currentSpeedSensorState;
     private Information information;
 
     // Other
@@ -382,12 +386,12 @@ public class Communicator {
         public void mixingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: mixing mode activated");
-                if (currentRotation != CommunicatorListener.RotationDirection.MIXING) {
-                    currentRotation = CommunicatorListener.RotationDirection.MIXING;
-                    communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.MIXING);
-                    information.setRotationDirection(CommunicatorListener.RotationDirection.MIXING);
+                if (currentRotation != RotationDirection.MIXING) {
+                    currentRotation = RotationDirection.MIXING;
+                    communicatorListener.rotationDirectionChanged(RotationDirection.MIXING);
+                    information.setRotationDirection(RotationDirection.MIXING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
-                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.MIXING));
+                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.MIXING));
                     }
                 }
             }
@@ -397,12 +401,12 @@ public class Communicator {
         public void unloadingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: unloadingModeActivated");
-                if (currentRotation != CommunicatorListener.RotationDirection.UNLOADING) {
-                    currentRotation = CommunicatorListener.RotationDirection.UNLOADING;
-                    communicatorListener.rotationDirectionChanged(CommunicatorListener.RotationDirection.UNLOADING);
-                    information.setRotationDirection(CommunicatorListener.RotationDirection.UNLOADING);
+                if (currentRotation != RotationDirection.UNLOADING) {
+                    currentRotation = RotationDirection.UNLOADING;
+                    communicatorListener.rotationDirectionChanged(RotationDirection.UNLOADING);
+                    information.setRotationDirection(RotationDirection.UNLOADING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
-                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(CommunicatorListener.RotationDirection.UNLOADING));
+                        eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.UNLOADING));
                     }
                 }
             }
@@ -411,14 +415,9 @@ public class Communicator {
         @Override
         public void waterAdded(int volume, WaterAdditionMode additionMode) {
             if (isConnected && waterRequestAllowed) {
-                if (state == State.DELIVERY_IN_PROGRESS && waterRequestAllowed) {
+                if (state == State.DELIVERY_IN_PROGRESS) {
                     loggerListener.log("RECEIVED: water added: " + volume + "L, additionMode: " + additionMode.toString());
-                    // TODO: Create common enums
-                    if (additionMode == WaterAdditionMode.AUTO) {
-                        communicatorListener.waterAdded(volume, CommunicatorListener.WaterAdditionMode.AUTO);
-                    } else if (additionMode == WaterAdditionMode.MANUAL) {
-                        communicatorListener.waterAdded(volume, CommunicatorListener.WaterAdditionMode.MANUAL);
-                    }
+                    communicatorListener.waterAdded(volume, WaterAdditionMode.AUTO);
                 } else {
                     loggerListener.log("RECEIVED (IGNORED): water added");
                 }
@@ -457,7 +456,7 @@ public class Communicator {
         public void alarmWaterAdditionBlocked() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water addition blocked");
-                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.WATER_ADDITION_BLOCKED);
+                communicatorListener.alarmTriggered(AlarmType.WATER_ADDITION_BLOCKED);
             }
         }
 
@@ -562,13 +561,13 @@ public class Communicator {
         public void internData(boolean inSensorConnected, boolean outSensorConnected, boolean speedTooLow, boolean speedTooHigh, boolean commandEP1Activated, boolean commandVA1Activated) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: intern data (inSensorConnected: " + (inSensorConnected ? "YES" : "NO") + ", outSensorConnected: " + (outSensorConnected ? "YES" : "NO") + ", speedTooLow: " + (speedTooLow ? "YES" : "NO") + ", speedTooHigh: " + (speedTooHigh ? "YES" : "NO") + ", commandEP1Activated: " + (commandEP1Activated ? "YES" : "NO") + ", commandVA1Activated: " + (commandVA1Activated ? "YES" : "NO") + ")");
-                CommunicatorListener.SpeedSensorState speedSensorState;
+                SpeedSensorState speedSensorState;
                 if (speedTooLow) {
-                    speedSensorState = CommunicatorListener.SpeedSensorState.TOO_SLOW;
+                    speedSensorState = SpeedSensorState.TOO_SLOW;
                 } else if (speedTooHigh) {
-                    speedSensorState = CommunicatorListener.SpeedSensorState.TOO_FAST;
+                    speedSensorState = SpeedSensorState.TOO_FAST;
                 } else {
-                    speedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
+                    speedSensorState = SpeedSensorState.NORMAL;
                 }
                 communicatorListener.internData(inSensorConnected, outSensorConnected, speedSensorState);
             }
@@ -599,8 +598,8 @@ public class Communicator {
         public void alarmWaterMax() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water max");
-                information.setAlarm(CommunicatorListener.AlarmType.WATER_MAX);
-                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.WATER_MAX);
+                information.setAlarm(AlarmType.WATER_MAX);
+                communicatorListener.alarmTriggered(AlarmType.WATER_MAX);
             }
         }
 
@@ -608,8 +607,8 @@ public class Communicator {
         public void alarmFlowageError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: flowage error");
-                information.setAlarm(CommunicatorListener.AlarmType.FLOWAGE_ERROR);
-                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.FLOWAGE_ERROR);
+                information.setAlarm(AlarmType.FLOWAGE_ERROR);
+                communicatorListener.alarmTriggered(AlarmType.FLOWAGE_ERROR);
             }
         }
 
@@ -617,8 +616,8 @@ public class Communicator {
         public void alarmCountingError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: counting error");
-                information.setAlarm(CommunicatorListener.AlarmType.COUNTING_ERROR);
-                communicatorListener.alarmTriggered(CommunicatorListener.AlarmType.COUNTING_ERROR);
+                information.setAlarm(AlarmType.COUNTING_ERROR);
+                communicatorListener.alarmTriggered(AlarmType.COUNTING_ERROR);
             }
         }
 
@@ -644,14 +643,14 @@ public class Communicator {
         public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed min threshold: " + (thresholdExceed ? "YES" : "NO"));
-                if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW) {
-                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_SLOW;
-                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_SLOW);
-                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.TOO_SLOW);
-                } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST){
-                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
-                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
-                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.NORMAL);
+                if (thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_SLOW) {
+                    currentSpeedSensorState = SpeedSensorState.TOO_SLOW;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.TOO_SLOW);
+                    information.setSpeedSensorState(SpeedSensorState.TOO_SLOW);
+                } else if (!thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_FAST){
+                    currentSpeedSensorState = SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(SpeedSensorState.NORMAL);
                 }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMinEvent(thresholdExceed));
@@ -663,14 +662,14 @@ public class Communicator {
         public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed max threshold: " + (thresholdExceed ? "YES" : "NO"));
-                if (thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_FAST) {
-                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.TOO_FAST;
-                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.TOO_FAST);
-                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.TOO_FAST);
-                } else if (!thresholdExceed && currentSpeedSensorState != CommunicatorListener.SpeedSensorState.TOO_SLOW){
-                    currentSpeedSensorState = CommunicatorListener.SpeedSensorState.NORMAL;
-                    communicatorListener.speedSensorStateChanged(CommunicatorListener.SpeedSensorState.NORMAL);
-                    information.setSpeedSensorState(CommunicatorListener.SpeedSensorState.NORMAL);
+                if (thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_FAST) {
+                    currentSpeedSensorState = SpeedSensorState.TOO_FAST;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.TOO_FAST);
+                    information.setSpeedSensorState(SpeedSensorState.TOO_FAST);
+                } else if (!thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_SLOW){
+                    currentSpeedSensorState = SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(SpeedSensorState.NORMAL);
                 }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMaxEvent(thresholdExceed));
@@ -917,14 +916,14 @@ public class Communicator {
 
         private Value<Integer> slump;
         private Value<Float> temperature;
-        private Value<CommunicatorListener.RotationDirection> rotationDirection;
+        private Value<RotationDirection> rotationDirection;
         private Value<Float> inputPressure;
         private Value<Float> outputPressure;
         private Value<Float> rotationSpeed;
         private Value<Boolean> inputPressureSensorState;
         private Value<Boolean> outputPressureSensorState;
-        private Value<CommunicatorListener.SpeedSensorState> speedSensorState;
-        private Value<CommunicatorListener.AlarmType> alarm;
+        private Value<SpeedSensorState> speedSensorState;
+        private Value<AlarmType> alarm;
 
         public Information() {
         }
@@ -945,12 +944,12 @@ public class Communicator {
             return temperature != null ? temperature.getData() : null;
         }
 
-        public CommunicatorListener.RotationDirection getRotationDirection() {
+        public RotationDirection getRotationDirection() {
             return !isValueExpired(rotationDirection) ? rotationDirection.getData() : null;
         }
 
-        public void setRotationDirection(CommunicatorListener.RotationDirection rotationDirection) {
-            this.rotationDirection = new Value<CommunicatorListener.RotationDirection>(rotationDirection);
+        public void setRotationDirection(RotationDirection rotationDirection) {
+            this.rotationDirection = new Value<RotationDirection>(rotationDirection);
         }
 
         public Float getInputPressure() {
@@ -993,21 +992,21 @@ public class Communicator {
             this.outputPressureSensorState = new Value<Boolean>(connected);
         }
 
-        public CommunicatorListener.SpeedSensorState getSpeedSensorState() {
+        public SpeedSensorState getSpeedSensorState() {
             return !isValueExpired(speedSensorState) ? speedSensorState.getData() : null;
         }
 
-        public void setSpeedSensorState(CommunicatorListener.SpeedSensorState speedSensorState) {
-            this.speedSensorState = new Value<CommunicatorListener.SpeedSensorState>(speedSensorState);
+        public void setSpeedSensorState(SpeedSensorState speedSensorState) {
+            this.speedSensorState = new Value<SpeedSensorState>(speedSensorState);
         }
 
 
-        public CommunicatorListener.AlarmType getAlarm() {
+        public AlarmType getAlarm() {
             return alarm != null ? alarm.getData() : null;
         }
 
-        public void setAlarm(CommunicatorListener.AlarmType alarm) {
-            this.alarm = new Value<CommunicatorListener.AlarmType>(alarm);
+        public void setAlarm(AlarmType alarm) {
+            this.alarm = new Value<AlarmType>(alarm);
         }
 
         //

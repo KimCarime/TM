@@ -1,6 +1,6 @@
 package com.lafarge.truckmix.communicator.events;
 
-import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.common.enums.RotationDirection;
 
 /**
  * Factory of Event, used by the Communicator to send events to EventListener.
@@ -30,7 +30,7 @@ public class EventFactory {
         return new Event<Float>(Event.EventId.NEW_TEMPERATURE, temperature);
     }
 
-    public static Event createMixerTransitionEvent(CommunicatorListener.RotationDirection rotationDirection) {
+    public static Event createMixerTransitionEvent(RotationDirection rotationDirection) {
         switch (rotationDirection) {
             case MIXING:
                 return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);

@@ -1,19 +1,12 @@
 package com.lafarge.truckmix.decoder.listeners;
 
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
+
 /**
  * This interface list all message decoded received from the calculator.
  */
 public interface MessageReceivedListener {
-
-    enum WaterAdditionMode {
-        MANUAL,
-        AUTO
-    }
-
-    enum RotationDirection {
-        MIXING,
-        UNLOADING
-    }
 
     void slumpUpdated(int slump);
     void temperatureUpdated(float temperature);

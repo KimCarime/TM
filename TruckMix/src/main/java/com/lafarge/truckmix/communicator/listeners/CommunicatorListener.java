@@ -1,28 +1,14 @@
 package com.lafarge.truckmix.communicator.listeners;
 
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
+
 /**
  * Interface of message received from the calculator.
  */
 public interface CommunicatorListener {
-    //TODO: Create a common directory with all enums
-
-    enum RotationDirection {
-        MIXING,
-        UNLOADING
-    }
-
-    enum SpeedSensorState {
-        NORMAL, TOO_SLOW, TOO_FAST;
-    }
-
-    enum AlarmType {
-        WATER_ADDITION_BLOCKED, WATER_MAX, FLOWAGE_ERROR, COUNTING_ERROR
-    }
-
-    enum WaterAdditionMode {
-        MANUAL,
-        AUTO
-    }
 
     void slumpUpdated(final int slump);
     void temperatureUpdated(final float temperature);

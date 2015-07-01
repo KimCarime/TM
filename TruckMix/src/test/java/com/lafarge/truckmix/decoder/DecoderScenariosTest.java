@@ -2,11 +2,12 @@ package com.lafarge.truckmix.decoder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.decoder.listeners.LoggedMessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.LoggedProgressListener;
-import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -17,10 +18,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyByte;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(value = Parameterized.class)
 public class DecoderScenariosTest {
