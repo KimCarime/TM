@@ -25,12 +25,10 @@ public class DeliveryParameters {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DeliveryParameters{")
-                .append("targetSlump=").append(targetSlump)
-                .append(", maxWater=").append(maxWater)
-                .append(", loadVolume=").append(loadVolume)
-                .append("}");
-        return sb.toString();
+        return "DeliveryParameters{"
+                + "targetSlump=" + targetSlump
+                + ", maxWater=" + maxWater
+                + ", loadVolume=" + loadVolume
+                + "}";
     }
-
 }

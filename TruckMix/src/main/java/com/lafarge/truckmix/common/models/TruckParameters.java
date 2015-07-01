@@ -63,29 +63,28 @@ public class TruckParameters {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("TruckParameters{")
-                .append("T1=").append(T1)
-                .append(", A11=").append(A11)
-                .append(", A12=").append(A12)
-                .append(", A13=").append(A13)
-                .append(", magnetQuantity=").append(magnetQuantity)
-                .append(", timePump=").append(timePump)
-                .append(", timeDelayDriver=").append(timeDelayDriver)
-                .append(", pulseNumber=").append(pulseNumber)
-                .append(", flowmeterFrequency=").append(flowmeterFrequency)
-                .append(", commandPumpMode=").append(commandPumpMode)
-                .append(", calibrationInputSensorA=").append(calibrationInputSensorA)
-                .append(", calibrationInputSensorB=").append(calibrationInputSensorB)
-                .append(", calibrationOutputSensorA=").append(calibrationOutputSensorA)
-                .append(", calibrationOutputSensorB=").append(calibrationOutputSensorB)
-                .append(", openingTimeEV1=").append(openingTimeEV1)
-                .append(", openingTimeVA1=").append(openingTimeVA1)
-                .append(", toleranceCounting=").append(toleranceCounting)
-                .append(", waitingDurationAfterWaterAddition=").append(waitingDurationAfterWaterAddition)
-                .append(", maxDelayBeforeFlowage=").append(maxDelayBeforeFlowage)
-                .append(", maxFlowageError=").append(maxFlowageError)
-                .append(", maxCountingError=").append(maxCountingError)
-                .append('}');
-        return sb.toString();
+        return "TruckParameters{"
+                + "T1=" + T1
+                + ",A11=" + A11
+                + ",A12=" + A12
+                + ",A13=" + A13
+                + ",magnetQuantity=" + magnetQuantity
+                + ",timePump=" + timePump
+                + ",timeDelayDriver=" + timeDelayDriver
+                + ",pulseNumber=" + pulseNumber
+                + ",flowmeterFrequency=" + flowmeterFrequency
+                + ",commandPumpMode=" + commandPumpMode
+                + ",calibrationInputSensorA=" + calibrationInputSensorA
+                + ",calibrationInputSensorB=" + calibrationInputSensorB
+                + ",calibrationOutputSensorA=" + calibrationOutputSensorA
+                + ",calibrationOutputSensorB=" + calibrationOutputSensorB
+                + ",openingTimeEV1=" + openingTimeEV1
+                + ",openingTimeVA1=" + openingTimeVA1
+                + ",toleranceCounting=" + toleranceCounting
+                + ",waitingDurationAfterWaterAddition=" + waitingDurationAfterWaterAddition
+                + ",maxDelayBeforeFlowage=" + maxDelayBeforeFlowage
+                + ",maxFlowageError=" + maxFlowageError
+                + ",maxCountingError=" + maxCountingError
+                + '}';
     }
 }
