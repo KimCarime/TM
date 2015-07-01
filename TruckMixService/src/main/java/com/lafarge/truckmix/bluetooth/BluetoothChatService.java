@@ -23,6 +23,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
 import android.util.Log;
 
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
@@ -99,6 +100,10 @@ public class BluetoothChatService {
         }
     }
 
+    //
+    // API
+    //
+
     /**
      * Start the ConnectionThread to initiate a connection to a remote device.
      *
@@ -133,27 +138,6 @@ public class BluetoothChatService {
         mConnectionThread.start();
 
         setState(STATE_CONNECTING);
-    }
-
-    /**
-     * Start the ConnectedThread to begin managing a Bluetooth connection
-     *
-     * @param socket The BluetoothSocket on which the connection was made
-     * @param device The BluetoothDevice that has been connected
-     */
-    public synchronized void connected(BluetoothSocket socket, BluetoothDevice device) {
-        Log.d(TAG, "connected");
-        mStopped = false;
-
-        // Cancel the thread that completed the connection and any thread currently running a connection
-        cancelTimer();
-        cancelThreads();
-
-        // Start the thread to manage the connection and perform transmissions
-        mConnectedThread = new ConnectedThread(socket, device);
-        mConnectedThread.start();
-
-        setState(STATE_CONNECTED);
     }
 
     /**
@@ -201,94 +185,9 @@ public class BluetoothChatService {
         r.write(out);
     }
 
-    private void cancelThreads() {
-        // Cancel any thread attempting to make a connection
-        if (mConnectionThread != null) {
-            mConnectionThread.cancel();
-            mConnectionThread = null;
-        }
-
-        // Cancel any thread currently running a connection
-        if (mConnectedThread != null) {
-            mConnectedThread.cancel();
-            mConnectedThread = null;
-        }
-    }
-
-    private void cancelTimer() {
-        if (mTimer != null) {
-            mTimer.cancel();
-            mTimer.purge();
-        }
-    }
-
-
-    /**
-     * Reinitialize threads and retry a connection.
-     *
-     * @param device The device to reconnect
-     */
-    private void retryConnection(final BluetoothDevice device) {
-        if (mStopped) return;
-
-        Log.i(TAG, "Retry connection with device " + device);
-
-        // Cancel threads and timer, just to be sure...
-        cancelTimer();
-        cancelThreads();
-
-        // Schedule a connection retry
-        final TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                // Cancel any connection that could be established during the delay of retry
-                cancelTimer();
-                cancelThreads();
-
-                mConnectionThread = new ConnectionThread(device);
-                mConnectionThread.start();
-            }
-        };
-        mTimer = new Timer();
-        mTimer.schedule(task, RETRY_CONNECTION_DELAY_IN_MILLIS);
-    }
-
-    /**
-     * Indicate that the connection was lost.
-     */
-    private void connectionLost() {
-        cancelThreads();
-
-        setState(STATE_NONE);
-    }
-
-    /**
-     * Set the current state of the chat connection
-     *
-     * @param state An integer defining the current connection state
-     */
-    private synchronized void setState(int state) {
-        Log.d(TAG, "setState() " + mState + " -> " + state);
-        mState = state;
-
-        // Give the new state to the Handler so the UI Activity can update
-        switch (state) {
-            case STATE_NONE:
-                mLoggerListener.log("BLUETOOTH: disconnected");
-                mConnectionStateListener.onCalculatorDisconnected();
-                mContext.getCommunicatorInstance().setConnected(false);
-                break;
-            case STATE_CONNECTING:
-                mLoggerListener.log("BLUETOOTH: connecting to " + mDeviceAddress);
-                mConnectionStateListener.onCalculatorConnecting();
-                break;
-            case STATE_CONNECTED:
-                mLoggerListener.log("BLUETOOTH: connected");
-                mContext.getCommunicatorInstance().setConnected(true);
-                mConnectionStateListener.onCalculatorConnected();
-                break;
-        }
-    }
+    //
+    // Getter
+    //
 
     /**
      * Return the current connection state.
@@ -296,6 +195,10 @@ public class BluetoothChatService {
     public synchronized int getState() {
         return mState;
     }
+
+    //
+    // Private stuff
+    //
 
     /**
      * This thread runs while attempting to make an outgoing connection
@@ -326,12 +229,10 @@ public class BluetoothChatService {
 
             // Make a connection to the BluetoothSocket
             try {
-                // This is a blocking call and will only return on a
-                // successful connection or an exception
+                // This is a blocking call and will only return on a successful connection or an exception
                 mmSocket.connect();
             } catch (IOException e) {
                 Log.e(TAG, "unable to connect() with device " + mmDevice);
-                // Close the socket
                 retryConnection(mmDevice);
                 return;
             }
@@ -395,11 +296,17 @@ public class BluetoothChatService {
                     final byte[] finalBuff = Arrays.copyOf(buffer, bytes);
 
                     mLoggerListener.log("BLUETOOTH: received " + Convert.bytesToHex(finalBuff));
-                    mContext.getCommunicatorInstance().received(finalBuff);
+                    mContext.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mContext.getCommunicatorInstance().received(finalBuff);
+                        }
+                    });
                 } catch (IOException e) {
                     Log.e(TAG, "disconnected", e);
                     connectionLost();
                     retryConnection(mmDevice);
+                    break;
                 }
             }
         }
@@ -433,6 +340,129 @@ public class BluetoothChatService {
             }
         }
     }
+
+    /**
+     * Start the ConnectedThread to begin managing a Bluetooth connection
+     *
+     * @param socket The BluetoothSocket on which the connection was made
+     * @param device The BluetoothDevice that has been connected
+     */
+    private synchronized void connected(BluetoothSocket socket, BluetoothDevice device) {
+        Log.d(TAG, "connected");
+        mStopped = false;
+
+        // Cancel the thread that completed the connection and any thread currently running a connection
+        cancelTimer();
+        cancelThreads();
+
+        // Start the thread to manage the connection and perform transmissions
+        mConnectedThread = new ConnectedThread(socket, device);
+        mConnectedThread.start();
+
+        setState(STATE_CONNECTED);
+    }
+
+    /**
+     * Reinitialize threads and retry a connection.
+     *
+     * @param device The device to reconnect
+     */
+    private void retryConnection(final BluetoothDevice device) {
+        if (mStopped) return;
+
+        Log.i(TAG, "Retry connection with device " + device + " in " + (RETRY_CONNECTION_DELAY_IN_MILLIS / 1000) + "s");
+
+        // Cancel threads and timer, just to be sure...
+        cancelTimer();
+        cancelThreads();
+
+        // Schedule a connection retry
+        final TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                // Cancel any connection that could be established during the delay of retry
+                cancelTimer();
+                cancelThreads();
+
+                mConnectionThread = new ConnectionThread(device);
+                mConnectionThread.start();
+            }
+        };
+        mTimer = new Timer();
+        mTimer.schedule(task, RETRY_CONNECTION_DELAY_IN_MILLIS);
+    }
+
+    /**
+     * Indicate that the connection was lost.
+     */
+    private void connectionLost() {
+        cancelThreads();
+
+        setState(STATE_NONE);
+    }
+
+    /**
+     * Set the current state of the chat connection
+     *
+     * @param state An integer defining the current connection state
+     */
+    private synchronized void setState(int state) {
+        Log.d(TAG, "setState() " + mState + " -> " + state);
+        mState = state;
+
+        // Give the new state to the Handler so the UI Activity can update
+        switch (state) {
+            case STATE_NONE:
+                mLoggerListener.log("BLUETOOTH: disconnected");
+                mConnectionStateListener.onCalculatorDisconnected();
+                mContext.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mContext.getCommunicatorInstance().setConnected(false);
+                    }
+                });
+                break;
+            case STATE_CONNECTING:
+                mLoggerListener.log("BLUETOOTH: connecting to " + mDeviceAddress);
+                mConnectionStateListener.onCalculatorConnecting();
+                break;
+            case STATE_CONNECTED:
+                mLoggerListener.log("BLUETOOTH: connected");
+                mConnectionStateListener.onCalculatorConnected();
+                mContext.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mContext.getCommunicatorInstance().setConnected(true);
+                    }
+                });
+                break;
+        }
+    }
+
+    private void cancelThreads() {
+        // Cancel any thread attempting to make a connection
+        if (mConnectionThread != null) {
+            mConnectionThread.cancel();
+            mConnectionThread = null;
+        }
+
+        // Cancel any thread currently running a connection
+        if (mConnectedThread != null) {
+            mConnectedThread.cancel();
+            mConnectedThread = null;
+        }
+    }
+
+    private void cancelTimer() {
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer.purge();
+        }
+    }
+
+    //
+    // Bluetooth state management
+    //
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
