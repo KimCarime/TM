@@ -3,6 +3,8 @@ package com.lafarge.truckmix.decoder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.decoder.listeners.LoggedMessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.LoggedProgressListener;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
@@ -158,7 +160,7 @@ public class DecoderScenariosTest {
 
         } else if (result.message.equals(Protocol.TRAME_DONNEES_DERIVEES)) {
             verify(messageListener).derivedData(
-                    MessageReceivedListener.RotationDirection.valueOf((String) result.data.get(0)),
+                    RotationDirection.valueOf((String) result.data.get(0)),
                     (Boolean) result.data.get(1),
                     ((Double) result.data.get(2)).intValue(),
                     ((Double) result.data.get(3)).intValue());
@@ -226,7 +228,7 @@ public class DecoderScenariosTest {
         } else if (result.message.equals(Protocol.TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE)) {
             verify(messageListener).waterAdded(
                     ((Double) result.data.get(0)).intValue(),
-                    MessageReceivedListener.WaterAdditionMode.valueOf((String) result.data.get(1)));
+                    WaterAdditionMode.valueOf((String) result.data.get(1)));
 
         } else if (result.message.equals(Protocol.TRAME_DEMANDE_AUTORISATION_AJOUT_EAU)) {
             verify(messageListener).waterAdditionRequest(((Double) result.data.get(0)).intValue());

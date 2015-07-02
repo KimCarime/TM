@@ -1,5 +1,6 @@
 package com.lafarge.truckmix.decoder.actions;
 
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class WaterAddedTest extends ReadActionTest {
         ReadAction message = new WaterAdded(callback);
 
         message.decode(new byte[]{0x2A, 0x00});
-        verify(callback, only()).waterAdded(42, MessageReceivedListener.WaterAdditionMode.MANUAL);
+        verify(callback, only()).waterAdded(42, WaterAdditionMode.MANUAL);
     }
 
     @Override

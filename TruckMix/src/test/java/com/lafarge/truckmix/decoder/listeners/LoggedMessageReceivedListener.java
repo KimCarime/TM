@@ -1,5 +1,8 @@
 package com.lafarge.truckmix.decoder.listeners;
 
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
+
 public class LoggedMessageReceivedListener implements MessageReceivedListener {
     @Override
     public void slumpUpdated(int slump) {
