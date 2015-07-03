@@ -7,6 +7,7 @@
     <!-- MainActivity -->
     <string name="title_main_section1">Console</string>
     <string name="title_main_section2">Vue d\'ensemble</string>
+    <string name="title_main_section3">Slumpomètre</string>
 
     <!-- ParametersActivity -->
     <string name="title_customize_parameters_section1">Paramètres camion</string>

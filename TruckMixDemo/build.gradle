@@ -47,4 +47,5 @@ dependencies {
         exclude group: 'org.apache.directory.studio', module: 'org.dom4j.dom4j'
     }
     compile project(':TruckMixService')
+    compile project(':TruckMixControls')
 }

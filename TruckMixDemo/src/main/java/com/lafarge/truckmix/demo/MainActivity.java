@@ -30,6 +30,7 @@ import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.demo.fragments.ConsoleListFragment;
 import com.lafarge.truckmix.demo.fragments.OverviewFragment;
+import com.lafarge.truckmix.demo.fragments.SlumpometerFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
 
 import org.slf4j.Logger;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         // Views
         mPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager = (ViewPager) findViewById(R.id.pager);
+        mViewPager.setOffscreenPageLimit(2);
         mViewPager.setAdapter(mPagerAdapter);
 
         // Thread
@@ -315,6 +317,7 @@ public class MainActivity extends AppCompatActivity {
 
         public static final int TAB_CONSOLE = 0;
         public static final int TAB_OVERVIEW = 1;
+        public static final int TAB_SLUMPOMETER = 2;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -327,6 +330,8 @@ public class MainActivity extends AppCompatActivity {
                     return ConsoleListFragment.newInstance();
                 case TAB_OVERVIEW:
                     return OverviewFragment.newInstance();
+                case TAB_SLUMPOMETER:
+                    return SlumpometerFragment.newInstance();
                 default:
                     return null;
             }
@@ -334,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
         @Override
@@ -345,6 +350,8 @@ public class MainActivity extends AppCompatActivity {
                     return getString(R.string.title_main_section1).toUpperCase(l);
                 case TAB_OVERVIEW:
                     return getString(R.string.title_main_section2).toUpperCase(l);
+                case TAB_SLUMPOMETER:
+                    return getString(R.string.title_main_section3).toUpperCase(l);
                 default:
                     return null;
             }
@@ -421,6 +428,10 @@ public class MainActivity extends AppCompatActivity {
 
     private OverviewFragment getOverviewFragment() {
         return ((OverviewFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_OVERVIEW));
+    }
+
+    private SlumpometerFragment getSlumpometerFragment() {
+        return ((SlumpometerFragment) findFragmentByPosition(SectionsPagerAdapter.TAB_SLUMPOMETER));
     }
 
     private Fragment findFragmentByPosition(int position) {

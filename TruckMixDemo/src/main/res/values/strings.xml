@@ -7,6 +7,7 @@
     <!-- MainActivity -->
     <string name="title_main_section1">Console</string>
     <string name="title_main_section2">Overview</string>
+    <string name="title_main_section3">Slumpometer</string>
 
     <!-- ParametersActivity -->
     <string name="title_customize_parameters_section1">Truck parameters</string>
