@@ -83,4 +83,137 @@ public class TruckParameters {
                 + ",maxCountingError=" + maxCountingError
                 + '}';
     }
+
+    public static class Builder {
+        private double T1;
+        private double A11;
+        private double A12;
+        private double A13;
+        private int magnetQuantity;
+        private int timePump;
+        private int timeDelayDriver;
+        private int pulseNumber;
+        private int flowmeterFrequency;
+        private CommandPumpMode commandPumpMode;
+        private double calibrationInputSensorA;
+        private double calibrationInputSensorB;
+        private double calibrationOutputSensorA;
+        private double calibrationOutputSensorB;
+        private int openingTimeEV1;
+        private int openingTimeVA1;
+        private int toleranceCounting;
+        private int waitingDurationAfterWaterAddition;
+        private int maxDelayBeforeFlowage;
+        private int maxFlowageError;
+        private int maxCountingError;
+
+        public Builder setT1(double T1) {
+            this.T1 = T1;
+            return this;
+        }
+
+        public Builder setA11(double A11) {
+            this.A11 = A11;
+            return this;
+        }
+
+        public Builder setA12(double A12) {
+            this.A12 = A12;
+            return this;
+        }
+
+        public Builder setA13(double A13) {
+            this.A13 = A13;
+            return this;
+        }
+
+        public Builder setMagnetQuantity(int magnetQuantity) {
+            this.magnetQuantity = magnetQuantity;
+            return this;
+        }
+
+        public Builder setTimePump(int timePump) {
+            this.timePump = timePump;
+            return this;
+        }
+
+        public Builder setTimeDelayDriver(int timeDelayDriver) {
+            this.timeDelayDriver = timeDelayDriver;
+            return this;
+        }
+
+        public Builder setPulseNumber(int pulseNumber) {
+            this.pulseNumber = pulseNumber;
+            return this;
+        }
+
+        public Builder setFlowmeterFrequency(int flowmeterFrequency) {
+            this.flowmeterFrequency = flowmeterFrequency;
+            return this;
+        }
+
+        public Builder setCommandPumpMode(CommandPumpMode commandPumpMode) {
+            this.commandPumpMode = commandPumpMode;
+            return this;
+        }
+
+        public Builder setCalibrationInputSensorA(double calibrationInputSensorA) {
+            this.calibrationInputSensorA = calibrationInputSensorA;
+            return this;
+        }
+
+        public Builder setCalibrationInputSensorB(double calibrationInputSensorB) {
+            this.calibrationInputSensorB = calibrationInputSensorB;
+            return this;
+        }
+
+        public Builder setCalibrationOutputSensorA(double calibrationOutputSensorA) {
+            this.calibrationOutputSensorA = calibrationOutputSensorA;
+            return this;
+        }
+
+        public Builder setCalibrationOutputSensorB(double calibrationOutputSensorB) {
+            this.calibrationOutputSensorB = calibrationOutputSensorB;
+            return this;
+        }
+
+        public Builder setOpeningTimeEV1(int openingTimeEV1) {
+            this.openingTimeEV1 = openingTimeEV1;
+            return this;
+        }
+
+        public Builder setOpeningTimeVA1(int openingTimeVA1) {
+            this.openingTimeVA1 = openingTimeVA1;
+            return this;
+        }
+
+        public Builder setToleranceCounting(int toleranceCounting) {
+            this.toleranceCounting = toleranceCounting;
+            return this;
+        }
+
+        public Builder setWaitingDurationAfterWaterAddition(int waitingDurationAfterWaterAddition) {
+            this.waitingDurationAfterWaterAddition = waitingDurationAfterWaterAddition;
+            return this;
+        }
+
+        public Builder setMaxDelayBeforeFlowage(int maxDelayBeforeFlowage) {
+            this.maxDelayBeforeFlowage = maxDelayBeforeFlowage;
+            return this;
+        }
+
+        public Builder setMaxFlowageError(int maxFlowageError) {
+            this.maxFlowageError = maxFlowageError;
+            return this;
+        }
+
+        public Builder setMaxCountingError(int maxCountingError) {
+            this.maxCountingError = maxCountingError;
+            return this;
+        }
+
+        public TruckParameters build() {
+            return new TruckParameters(T1, A11, A12, A13, magnetQuantity, timePump, timeDelayDriver, pulseNumber, flowmeterFrequency, commandPumpMode, calibrationInputSensorA, calibrationInputSensorB, calibrationOutputSensorA, calibrationOutputSensorB, openingTimeEV1, openingTimeVA1, toleranceCounting, waitingDurationAfterWaterAddition, maxDelayBeforeFlowage, maxFlowageError, maxCountingError);
+        }
+    }
 }
