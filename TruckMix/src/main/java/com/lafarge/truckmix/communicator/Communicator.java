@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.communicator;
 
 import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.enums.RotationDirection;
 import com.lafarge.truckmix.common.enums.SpeedSensorState;
 import com.lafarge.truckmix.common.enums.WaterAdditionMode;
@@ -795,7 +796,7 @@ public class Communicator {
         }
 
         @Override
-        public void commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode, byte[] bytes) {
+        public void commandPumpMode(CommandPumpMode commandPumpMode, byte[] bytes) {
             if (isConnected) {
                 loggerListener.log("SENT: command pump mode: " + commandPumpMode.toString() + "");
             }

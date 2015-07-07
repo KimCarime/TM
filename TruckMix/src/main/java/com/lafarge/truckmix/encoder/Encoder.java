@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.encoder;
 
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
@@ -171,8 +172,8 @@ public class Encoder {
         return result;
     }
 
-    public byte[] commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode) {
-        byte[] result = encode(Protocol.TRAME_MODE_DE_COMMANDE_POMPE, (byte) (commandPumpMode == TruckParameters.CommandPumpMode.SEMI_AUTO ? 0x00 : 0xFF));
+    public byte[] commandPumpMode(CommandPumpMode commandPumpMode) {
+        byte[] result = encode(Protocol.TRAME_MODE_DE_COMMANDE_POMPE, (byte) (commandPumpMode == CommandPumpMode.SEMI_AUTO ? 0x00 : 0xFF));
         messageSentListener.commandPumpMode(commandPumpMode, result);
         return result;
     }

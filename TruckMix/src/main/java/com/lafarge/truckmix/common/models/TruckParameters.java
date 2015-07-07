@@ -1,15 +1,11 @@
 package com.lafarge.truckmix.common.models;
 
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
+
 /**
  * This class contains all information the calculator need for calibration.
  */
 public class TruckParameters {
-
-    /** Represent the command pump mode */
-    public enum CommandPumpMode {
-        AUTO,
-        SEMI_AUTO
-    }
 
     // Member fields
     public final double T1;
