@@ -1,6 +1,5 @@
 package com.lafarge.truckmix.demo.fragments;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -61,19 +60,11 @@ public class SlumpometerFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        slumpometer.setMaxSpeed(300);
-        slumpometer.setLabelConverter(new SlumpometerGauge.LabelConverter() {
-            @Override
-            public String getLabelFor(double progress, double maxProgress) {
-                return String.valueOf((int) Math.round(progress));
-            }
-        });
-        slumpometer.setMaxSpeed(300);
+        slumpometer.setConcreteRange(90, 150);
+        slumpometer.setTolerance(10);
+        slumpometer.setConcreteCode("S3");
         slumpometer.setMajorTickStep(30);
         slumpometer.setMinorTicks(2);
-        slumpometer.addColoredRange(30, 140, Color.GREEN);
-        slumpometer.addColoredRange(140, 180, Color.YELLOW);
-        slumpometer.addColoredRange(180, 400, Color.RED);
     }
 
     @Override

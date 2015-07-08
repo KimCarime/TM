@@ -7,72 +7,114 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class SlumpometerGauge extends View {
 
-    private static final String TAG = SlumpometerGauge.class.getSimpleName();
-
-    public static final double DEFAULT_MAX_SPEED = 100.0;
+    public static final double MAX_SLUMP = 300.0;
     public static final double DEFAULT_MAJOR_TICK_STEP = 20.0;
     public static final int DEFAULT_MINOR_TICKS = 1;
-    public static final int DEFAULT_LABEL_TEXT_SIZE_DP = 12;
+    public static final int CONCRETE_RANGE_LABEL_TEXT_DIZE_DP = 12;
+    public static final int CONCRETE_CODE_LABEL_TEXT_DIZE_DP = 18;
+    public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 24;
 
-    private double maxSpeed = DEFAULT_MAX_SPEED;
     private double speed = 0;
-    private int defaultColor = Color.rgb(0, 0, 0);//Color.rgb(180, 180, 180);
     private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
     private int minorTicks = DEFAULT_MINOR_TICKS;
-    private LabelConverter labelConverter;
 
-    private List<ColoredRange> ranges = new ArrayList<ColoredRange>();
+    private int concreteRangeMin;
+    private int concreteRangeMax;
+    private int tolerance;
+    private String concreteCode;
 
     private Paint backgroundPaint;
     private Paint backgroundMaskPaint;
     private Paint backgroundConcretPaint;
     private Paint backgroundTolerancePaint;
-    private Paint maskPaint;
     private Paint needlePaint;
-//    private Paint ticksPaint;
-    private Paint txtPaint;
-//    private Paint colorLinePaint;
-    private int labelTextSize;
+    private Paint needleBottomPaint;
+    private Paint concreteRangeTextPaint;
+    private Paint concreteCodeTextPaint;
+    private Paint currentSlumpPaint;
 
-//    private Bitmap mMask;
+    //
+    // Constructor
+    //
 
     public SlumpometerGauge(Context context) {
         super(context);
         init();
-
-        float density = getResources().getDisplayMetrics().density;
-        setLabelTextSize(Math.round(DEFAULT_LABEL_TEXT_SIZE_DP * density));
     }
 
     public SlumpometerGauge(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
-
-        float density = getResources().getDisplayMetrics().density;
-        setLabelTextSize(Math.round(DEFAULT_LABEL_TEXT_SIZE_DP * density));
     }
 
-    public double getMaxSpeed() {
-        return maxSpeed;
+    //
+    // Configuration
+    //
+
+    public void setConcreteCode(String concreteCode) {
+        this.concreteCode = concreteCode;
     }
 
-    public void setMaxSpeed(double maxSpeed) {
-        if (maxSpeed <= 0)
-            throw new IllegalArgumentException("Non-positive value specified as max speed.");
-        this.maxSpeed = maxSpeed;
+    public void setConcreteRange(int min, int max) {
+        if (min < 0 || max < 0)
+            throw new IllegalArgumentException("Non-positive value for min or max concrete range.");
+        if (min > MAX_SLUMP || max > MAX_SLUMP)
+            throw new IllegalArgumentException("Value greater than MAX_SLUMP specified for min or max range.");
+        if (min > max)
+            throw new IllegalArgumentException("Min range value cannot be greater than Max range value.");
+        this.concreteRangeMin = min;
+        this.concreteRangeMax = max;
+    }
+
+    public void setTolerance(int tolerance) {
+        if (tolerance < 0)
+            throw new IllegalArgumentException("Non-positive value specified for tolerance.");
+        this.tolerance = tolerance;
+    }
+
+
+    public double getMajorTickStep() {
+        return majorTickStep;
+    }
+
+    public void setMajorTickStep(double majorTickStep) {
+        if (majorTickStep <= 0)
+            throw new IllegalArgumentException("Non-positive value specified as a major tick step.");
+        this.majorTickStep = majorTickStep;
         invalidate();
+    }
+
+    public int getMinorTicks() {
+        return minorTicks;
+    }
+
+    public void setMinorTicks(int minorTicks) {
+        this.minorTicks = minorTicks;
+        invalidate();
+    }
+
+    //
+    // Animation
+    //
+
+    public double getSlump() {
+        return getSpeed();
+    }
+
+    public void setSlump(double slump) {
+        setSpeed(slump);
     }
 
     public double getSpeed() {
@@ -81,9 +123,9 @@ public class SlumpometerGauge extends View {
 
     public void setSpeed(double speed) {
         if (speed < 0)
-            throw new IllegalArgumentException("Non-positive value specified as a speed.");
-        if (speed > maxSpeed)
-            speed = maxSpeed;
+            throw new IllegalArgumentException("Non-positive value specified as a slump.");
+        if (speed > MAX_SLUMP)
+            speed = MAX_SLUMP;
         this.speed = speed;
         invalidate();
     }
@@ -91,10 +133,10 @@ public class SlumpometerGauge extends View {
     @TargetApi(11)
     public ValueAnimator setSpeed(double speed, long duration, long startDelay) {
         if (speed < 0)
-            throw new IllegalArgumentException("Negative value specified as a speed.");
+            throw new IllegalArgumentException("Negative value specified as a slump.");
 
-        if (speed > maxSpeed)
-            speed = maxSpeed;
+        if (speed > MAX_SLUMP)
+            speed = MAX_SLUMP;
 
         ValueAnimator va = ValueAnimator.ofObject(new TypeEvaluator<Double>() {
             @Override
@@ -121,71 +163,9 @@ public class SlumpometerGauge extends View {
         return setSpeed(progress, 1500, 200);
     }
 
-    public int getDefaultColor() {
-        return defaultColor;
-    }
-
-    public void setDefaultColor(int defaultColor) {
-        this.defaultColor = defaultColor;
-        invalidate();
-    }
-
-    public double getMajorTickStep() {
-        return majorTickStep;
-    }
-
-    public void setMajorTickStep(double majorTickStep) {
-        if (majorTickStep <= 0)
-            throw new IllegalArgumentException("Non-positive value specified as a major tick step.");
-        this.majorTickStep = majorTickStep;
-        invalidate();
-    }
-
-    public int getMinorTicks() {
-        return minorTicks;
-    }
-
-    public void setMinorTicks(int minorTicks) {
-        this.minorTicks = minorTicks;
-        invalidate();
-    }
-
-    public LabelConverter getLabelConverter() {
-        return labelConverter;
-    }
-
-    public void setLabelConverter(LabelConverter labelConverter) {
-        this.labelConverter = labelConverter;
-        invalidate();
-    }
-
-    public void clearColoredRanges() {
-        ranges.clear();
-        invalidate();
-    }
-
-    public void addColoredRange(double begin, double end, int color) {
-        if (begin >= end)
-            throw new IllegalArgumentException("Incorrect number range specified!");
-        if (begin < - 5.0/160* maxSpeed)
-            begin = - 5.0/160* maxSpeed;
-        if (end > maxSpeed * (5.0/160 + 1))
-            end = maxSpeed * (5.0/160 + 1);
-        ranges.add(new ColoredRange(color, begin, end));
-        invalidate();
-    }
-
-    public int getLabelTextSize() {
-        return labelTextSize;
-    }
-
-    public void setLabelTextSize(int labelTextSize) {
-        this.labelTextSize = labelTextSize;
-        if (txtPaint != null) {
-            txtPaint.setTextSize(labelTextSize);
-            invalidate();
-        }
-    }
+    //
+    // Canvas
+    //
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -194,13 +174,13 @@ public class SlumpometerGauge extends View {
         // Clear canvas
         canvas.drawColor(Color.TRANSPARENT);
 
-        // Draw Metallic Arc and background
+        // Draw background arc with concrete range and tolerance
         drawBackground(canvas);
 
-        // Draw Ticks and colored arc
+        // Draw static text with concrete range and tolerance
         drawTicks(canvas);
 
-        // Draw Needle
+        // Draw Needle and current slump
         drawNeedle(canvas);
     }
 
@@ -247,82 +227,74 @@ public class SlumpometerGauge extends View {
     }
 
     private void drawNeedle(Canvas canvas) {
-        RectF oval = getOval(canvas, 1);
-        float radius = oval.width()*0.35f + 10;
-        RectF smallOval = getOval(canvas, 0.2f);
+        RectF oval = getOval(canvas, 1.0f);
+        float radius = oval.width()*0.33f;
+        RectF smallOval = getOval(canvas, 0.35f);
+        RectF smallOvalMask = getOval(canvas, 0.33f);
+        smallOvalMask.left = smallOval.left;
+        smallOvalMask.right = smallOval.right;
+        smallOvalMask.inset(-1, 0);
+        final float triangleOffset = 3;
 
-        float angle = 10 + (float) (getSpeed()/ getMaxSpeed()*160);
-        canvas.drawLine(
-                (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * smallOval.width()*0.5f),
-                (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * smallOval.width()*0.5f),
-                (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * (radius)),
-                (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * (radius)),
-                needlePaint
-        );
+        double slump = getSpeed();
 
-//        canvas.drawArc(smallOval, 180, 180, true, backgroundPaint);
+        float angle = 10 + (float) (slump / MAX_SLUMP * 160);
+
+        // Sorry future me or whoever you are...
+        float startLeftX = (float) (oval.centerX() + Math.cos((180 - angle - triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float startRightX = (float) (oval.centerX() + Math.cos((180 - angle + triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float startLeftY = (float) (oval.centerY() + 10.f - Math.sin((angle + triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float startRightY = (float) (oval.centerY() + 10.f - Math.sin((angle - triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float endX = (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * (radius));
+        float endY = (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * (radius));
+
+        Point point1_draw = new Point(Math.round(startLeftX), Math.round(startLeftY));
+        Point point2_draw = new Point(Math.round(endX), Math.round(endY));
+        Point point3_draw = new Point(Math.round(startRightX), Math.round(startRightY));
+
+        Path path = new Path();
+        path.setFillType(Path.FillType.EVEN_ODD);
+        path.moveTo(point1_draw.x, point1_draw.y);
+        path.lineTo(point2_draw.x, point2_draw.y);
+        path.lineTo(point3_draw.x, point3_draw.y);
+        path.lineTo(point1_draw.x, point1_draw.y);
+        path.close();
+
+        canvas.drawPath(path, needlePaint);
+        canvas.drawOval(smallOval, needleBottomPaint);
+        canvas.drawOval(smallOvalMask, backgroundMaskPaint);
     }
 
     private void drawTicks(Canvas canvas) {
-        float availableAngle = 160;
-        float majorStep = (float) (majorTickStep/ maxSpeed *availableAngle);
-        float minorStep = majorStep / (1 + minorTicks);
-
         float majorTicksLength = 30;
-        float minorTicksLength = majorTicksLength/2;
 
-        RectF oval = getOval(canvas, 1);
+        RectF oval = getOval(canvas, 1.f);
         float radius = oval.width()*0.35f;
 
-        float currentAngle = 10;
-        double curProgress = 0;
-        while (currentAngle <= 170) {
+        final float startConcreteAngle = 180 * concreteRangeMin / (float)MAX_SLUMP;
+        final float endConcreteAngle = 180 * concreteRangeMax / (float)MAX_SLUMP;
 
-//            canvas.drawLine(
-//                    (float) (oval.centerX() + Math.cos((180 - currentAngle) / 180 * Math.PI)*(radius-majorTicksLength/2)),
-//                    (float) (oval.centerY() - Math.sin(currentAngle / 180 * Math.PI)*(radius-majorTicksLength/2)),
-//                    (float) (oval.centerX() + Math.cos((180 - currentAngle) / 180 * Math.PI)*(radius+majorTicksLength/2)),
-//                    (float) (oval.centerY() - Math.sin(currentAngle / 180 * Math.PI)*(radius+majorTicksLength/2)),
-//                    ticksPaint
-//            );
+        float txtX = oval.centerX() + radius + majorTicksLength/2 + 8;
+        float txtY = oval.centerY();
+        float offset = 115.f;
 
-            for (int i=1; i<=minorTicks; i++) {
-                float angle = currentAngle + i*minorStep;
-                if (angle >= 170 + minorStep/2) {
-                    break;
-                }
-//                canvas.drawLine(
-//                        (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * radius),
-//                        (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * radius),
-//                        (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * (radius + minorTicksLength)),
-//                        (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * (radius + minorTicksLength)),
-//                        ticksPaint
-//                );
-            }
+        canvas.save();
+        canvas.rotate(180 + startConcreteAngle, oval.centerX(), oval.centerY());
+        canvas.rotate(+90, txtX, txtY);
+        canvas.drawText(String.format("%d", concreteRangeMin), txtX, txtY - offset, concreteRangeTextPaint);
+        canvas.restore();
 
-            if (labelConverter != null) {
+        canvas.save();
+        canvas.rotate(180 + endConcreteAngle, oval.centerX(), oval.centerY());
+        canvas.rotate(+90, txtX, txtY);
+        canvas.drawText(String.format("%d", concreteRangeMax), txtX, txtY - offset, concreteRangeTextPaint);
+        canvas.restore();
 
-                canvas.save();
-                canvas.rotate(180 + currentAngle, oval.centerX(), oval.centerY());
-                float txtX = oval.centerX() + radius + majorTicksLength/2 + 8;
-                float txtY = oval.centerY();
-                canvas.rotate(+90, txtX, txtY);
-                canvas.drawText(labelConverter.getLabelFor(curProgress, maxSpeed), txtX, txtY, txtPaint);
-                canvas.restore();
-            }
-
-            currentAngle += majorStep;
-            curProgress += majorTickStep;
-        }
-
-//        RectF smallOval = getOval(canvas, 0.7f);
-//        colorLinePaint.setColor(defaultColor);
-//        canvas.drawArc(smallOval, 185, 170, false, colorLinePaint);
-//
-//        for (ColoredRange range: ranges) {
-//            colorLinePaint.setColor(range.getColor());
-//            canvas.drawArc(smallOval, (float) (190 + range.getBegin()/ maxSpeed *160), (float) ((range.getEnd() - range.getBegin())/ maxSpeed *160), false, colorLinePaint);
-//        }
+        canvas.save();
+        canvas.rotate(180 + (startConcreteAngle + endConcreteAngle) * 0.5f, oval.centerX(), oval.centerY());
+        canvas.rotate(+90, txtX, txtY);
+        canvas.drawText(concreteCode, txtX, txtY, concreteCodeTextPaint);
+        canvas.restore();
     }
 
     private RectF getOval(Canvas canvas, float factor) {
@@ -331,9 +303,9 @@ public class SlumpometerGauge extends View {
         final int canvasHeight = canvas.getHeight() - getPaddingTop() - getPaddingBottom();
 
         if (canvasHeight*2 >= canvasWidth) {
-            oval = new RectF(0, 0, canvasWidth*factor, canvasWidth*factor);
+            oval = new RectF(0, 15, canvasWidth*factor, canvasWidth*factor);
         } else {
-            oval = new RectF(0, 0, canvasHeight*2*factor, canvasHeight*2*factor);
+            oval = new RectF(0, 15, canvasHeight*2*factor, canvasHeight*2*factor);
         }
 
         oval.offset((canvasWidth-oval.width())/2 + getPaddingLeft(), (canvasHeight*2-oval.height())/2 + getPaddingTop());
@@ -342,36 +314,36 @@ public class SlumpometerGauge extends View {
     }
 
     private void drawBackground(Canvas canvas) {
-        final int concreteTypeNb = 5;
-
-        final int concreteType = 4;
-        final int tolerance = 10;
-        // TODO: Check 1 >= concreteType <= 5
-
-        final float toleranceAngle = (tolerance * 180) / 300;
-        final float concreteAngle = 180 / concreteTypeNb;
+        final float startConcreteAngle = 180 * concreteRangeMin / (float)MAX_SLUMP;
+        final float endConcreteAngle = (180 * concreteRangeMax / (float)MAX_SLUMP) - startConcreteAngle;
 
         RectF oval = getOval(canvas, 1.0f);
         canvas.drawArc(oval, 180, 180, true, backgroundPaint);
 
-        RectF toleranceOval = getOval(canvas, 1.0f);
-        canvas.drawArc(toleranceOval, 180 + ((concreteType - 1) * (concreteAngle)), concreteAngle + (2 * toleranceAngle), true, backgroundTolerancePaint);
+        if (tolerance > 0) {
+            final float toleranceAngle = (180 * tolerance) / (float)MAX_SLUMP;
+            RectF toleranceOval = getOval(canvas, 1.0f);
+            canvas.drawArc(toleranceOval, 180 + startConcreteAngle - toleranceAngle, endConcreteAngle + 2*toleranceAngle, true, backgroundTolerancePaint);
+        }
 
         RectF concreteOval = getOval(canvas, 1.0f);
-        canvas.drawArc(concreteOval, 180 + ((concreteType - 1) * concreteAngle) + toleranceAngle, concreteAngle, true, backgroundConcretPaint);
+        canvas.drawArc(concreteOval, 180 + startConcreteAngle, endConcreteAngle, true, backgroundConcretPaint);
 
         RectF maskOval = getOval(canvas, 0.6f);
         canvas.drawArc(maskOval , 180, 180, true, backgroundMaskPaint);
-
-//        Bitmap mask = Bitmap.createScaledBitmap(mMask, (int) (oval.width() * 1.1), (int) (oval.height() * 1.1) / 2, true);
-//        canvas.drawBitmap(mask, oval.centerX() - oval.width()*1.1f/2, oval.centerY()-oval.width()*1.1f/2, maskPaint);
     }
+
+    //
+    // Private stuff
+    //
 
     @SuppressWarnings("NewApi")
     private void init() {
         if (Build.VERSION.SDK_INT >= 11 && !isInEditMode()) {
             setLayerType(View.LAYER_TYPE_HARDWARE, null);
         }
+
+        final float density = getResources().getDisplayMetrics().density;
 
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setStyle(Paint.Style.FILL);
@@ -380,7 +352,6 @@ public class SlumpometerGauge extends View {
         backgroundMaskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundMaskPaint.setStyle(Paint.Style.FILL);
         backgroundMaskPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-//        backgroundMaskPaint.setColor(Color.rgb(255, 255, 255));
 
         backgroundConcretPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundConcretPaint.setStyle(Paint.Style.FILL);
@@ -390,76 +361,32 @@ public class SlumpometerGauge extends View {
         backgroundTolerancePaint.setStyle(Paint.Style.FILL);
         backgroundTolerancePaint.setColor(Color.rgb(255, 220, 32));
 
-        txtPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        txtPaint.setColor(Color.WHITE);
-        txtPaint.setTextSize(labelTextSize);
-        txtPaint.setTextAlign(Paint.Align.CENTER);
-        txtPaint.setLinearText(true);
+        needleBottomPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        needleBottomPaint.setStyle(Paint.Style.FILL);
+        needleBottomPaint.setColor(Color.BLACK);
 
-//        mMask = BitmapFactory.decodeResource(getResources(), R.drawable.m);
-//        mMask = Bitmap.createBitmap(mMask, 0, 0, mMask.getWidth(), mMask.getHeight() / 2);
+        concreteRangeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        concreteRangeTextPaint.setColor(Color.BLACK);
+        concreteRangeTextPaint.setTextSize(Math.round(CONCRETE_RANGE_LABEL_TEXT_DIZE_DP * density));
+        concreteRangeTextPaint.setTextAlign(Paint.Align.CENTER);
+        concreteRangeTextPaint.setLinearText(true);
 
-//        maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//        maskPaint.setDither(true);
+        concreteCodeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        concreteCodeTextPaint.setColor(Color.WHITE);
+        concreteCodeTextPaint.setTypeface(Typeface.create("Helvetica", Typeface.BOLD));
+        concreteCodeTextPaint.setTextSize(Math.round(CONCRETE_CODE_LABEL_TEXT_DIZE_DP * density));
+        concreteCodeTextPaint.setTextAlign(Paint.Align.CENTER);
+        concreteCodeTextPaint.setLinearText(true);
 
-//        ticksPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//        ticksPaint.setStrokeWidth(3.0f);
-//        ticksPaint.setStyle(Paint.Style.STROKE);
-//        ticksPaint.setColor(defaultColor);
-
-//        colorLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-//        colorLinePaint.setStyle(Paint.Style.STROKE);
-//        colorLinePaint.setStrokeWidth(5);
-//        colorLinePaint.setColor(defaultColor);
+        currentSlumpPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        currentSlumpPaint.setColor(Color.BLACK);
+        currentSlumpPaint.setTypeface(Typeface.create("Helvetica", Typeface.BOLD));
+        currentSlumpPaint.setTextSize(Math.round(CURRENT_SLUMP_LABEL_TEXT_DIZE_DP  * density));
+        currentSlumpPaint.setTextAlign(Paint.Align.CENTER);
+        currentSlumpPaint.setLinearText(true);
 
         needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        needlePaint.setStrokeWidth(5);
-        needlePaint.setStyle(Paint.Style.STROKE);
-        needlePaint.setColor(Color.argb(200, 255, 0, 0));
+        needlePaint.setStyle(Paint.Style.FILL);
+        needlePaint.setColor(Color.BLACK);
     }
-
-
-    public static interface LabelConverter {
-
-        String getLabelFor(double progress, double maxProgress);
-
-    }
-
-    public static class ColoredRange {
-
-        private int color;
-        private double begin;
-        private double end;
-
-        public ColoredRange(int color, double begin, double end) {
-            this.color = color;
-            this.begin = begin;
-            this.end = end;
-        }
-
-        public int getColor() {
-            return color;
-        }
-
-        public void setColor(int color) {
-            this.color = color;
-        }
-
-        public double getBegin() {
-            return begin;
-        }
-
-        public void setBegin(double begin) {
-            this.begin = begin;
-        }
-
-        public double getEnd() {
-            return end;
-        }
-
-        public void setEnd(double end) {
-            this.end = end;
-        }
-    }
-
 }
