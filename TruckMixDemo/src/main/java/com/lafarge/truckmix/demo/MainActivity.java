@@ -3,9 +3,7 @@ package com.lafarge.truckmix.demo;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -14,6 +12,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,16 +32,11 @@ import com.lafarge.truckmix.demo.fragments.OverviewFragment;
 import com.lafarge.truckmix.demo.fragments.SlumpometerFragment;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(getClass());
+    private static final String TAG = "MainActivity";
 
     // View management
     private ViewPager mViewPager;
@@ -54,10 +48,7 @@ public class MainActivity extends AppCompatActivity {
     // Service
     private TruckMix mTruckMix;
 
-    private ArrayList<Event> mEvents = new ArrayList<Event>();
-
     private UserPreferences mPrefs;
-
     private Handler mMainThreadHandler;
 
     //
@@ -117,18 +108,6 @@ public class MainActivity extends AppCompatActivity {
             case R.id.customize_parameters:
                 startActivity(new Intent(this, ParametersActivity.class));
                 return true;
-            case R.id.send_logs: {
-                final Intent intent= new Intent(Intent.ACTION_SEND);
-                String[] recipients = {"kim.abdoul-carime@lafarge.com"};
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_EMAIL, recipients);
-                intent.putExtra(Intent.EXTRA_SUBJECT, "[TruckMix] Logs");
-                intent.putExtra(Intent.EXTRA_TEXT, "Vous trouverez les logs ci-joint.\nCordialement,\nTruckMix");
-                for (Uri uri : getUriListForLogs()) {
-                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                }
-                startActivity(Intent.createChooser(intent, "Envoie mail"));
-            }
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -161,7 +140,7 @@ public class MainActivity extends AppCompatActivity {
     private final LoggerListener mLoggerListener = new LoggerListener() {
         @Override
         public void log(final String log) {
-            LOGGER.info(log);
+            Log.d(TAG, log);
             mMainThreadHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -306,7 +285,7 @@ public class MainActivity extends AppCompatActivity {
     private final EventListener mEventListener = new EventListener() {
         @Override
         public void onNewEvents(final Event event) {
-            LOGGER.info("new event triggered: " + event);
+            Log.i(TAG, "new quality tracking event triggered: " + event);
         }
     };
 
@@ -437,21 +416,5 @@ public class MainActivity extends AppCompatActivity {
     private Fragment findFragmentByPosition(int position) {
         return getSupportFragmentManager().findFragmentByTag(
                 "android:switcher:" + mViewPager.getId() + ":" + mPagerAdapter.getItemId(position));
-    }
-
-    //
-    // Other
-    //
-
-    private ArrayList<Uri> getUriListForLogs() {
-        ArrayList<Uri> uris = new ArrayList<Uri>();
-
-        String path = Environment.getExternalStorageDirectory().toString()+"/Android/data/com.lafarge.truckmix.demo/logs";
-        File f = new File(path);
-        File files[] = f.listFiles();
-        for (File file : files) {
-            uris.add(Uri.fromFile(file));
-        }
-        return uris;
     }
 }
