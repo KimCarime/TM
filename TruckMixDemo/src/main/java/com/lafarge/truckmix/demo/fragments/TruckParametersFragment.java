@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.demo.R;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
@@ -117,8 +118,7 @@ public class TruckParametersFragment extends Fragment {
         int timeDelayDriver = Integer.parseInt(mTimeDelayDriver.getText().toString());
         int pulseNumber = Integer.parseInt(mPulseNumber.getText().toString());
         int flowmeterFrequency = Integer.parseInt(mFlowmeterFrequency.getText().toString());
-        TruckParameters.CommandPumpMode commandPumpMode = TruckParameters.CommandPumpMode.valueOf(mCommandPumpMode
-                .getSelectedItem().toString());
+        CommandPumpMode commandPumpMode = CommandPumpMode.valueOf(mCommandPumpMode.getSelectedItem().toString());
         double calibrationInputSensorA = Double.parseDouble(mCalibrationInputSensorA.getText().toString().replace(",", "."));
         double calibrationInputSensorB = Double.parseDouble(mCalibrationInputSensorB.getText().toString().replace(",", "."));
         double calibrationOutputSensorA = Double.parseDouble(mCalibrationOutputSensorA.getText().toString().replace(",", "."));

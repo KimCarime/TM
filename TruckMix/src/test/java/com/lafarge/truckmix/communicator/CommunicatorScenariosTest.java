@@ -2,6 +2,7 @@ package com.lafarge.truckmix.communicator;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.Event;
@@ -205,7 +206,7 @@ public class CommunicatorScenariosTest {
                             ((Double) ((Action) step).values.get("timeDelayDriver")).intValue(),
                             ((Double) ((Action) step).values.get("pulseNumber")).intValue(),
                             ((Double) ((Action) step).values.get("flowmeterFrequency")).intValue(),
-                            TruckParameters.CommandPumpMode.valueOf(((String) ((Action) step).values.get("commandPumpMode"))),
+                            CommandPumpMode.valueOf(((String) ((Action) step).values.get("commandPumpMode"))),
                             ((Double) ((Action) step).values.get("calibrationInputSensorA")),
                             ((Double) ((Action) step).values.get("calibrationInputSensorB")),
                             ((Double) ((Action) step).values.get("calibrationOutputSensorA")),

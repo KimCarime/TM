@@ -1,5 +1,6 @@
 package com.lafarge.truckmix.communicator;
 
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.Event;
@@ -43,7 +44,7 @@ public class CommunicatorTest {
 
     @Before
     public void setup() {
-        truckParameters = new TruckParameters(3.4563, 563.376, -39.844, 4.3254, 24, 15, 120, 45, 60, TruckParameters.CommandPumpMode.SEMI_AUTO, 2.5, 0.0, 2.5, 0.0, 3, 180, 10, 90, 64, 5, 6);
+        truckParameters = new TruckParameters(3.4563, 563.376, -39.844, 4.3254, 24, 15, 120, 45, 60, CommandPumpMode.SEMI_AUTO, 2.5, 0.0, 2.5, 0.0, 3, 180, 10, 90, 64, 5, 6);
         deliveryParameters = new DeliveryParameters(150, 0, 6);
 
         scheduler = new FlushedSchedulerMock();
