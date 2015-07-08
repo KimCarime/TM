@@ -33,6 +33,14 @@ public class TruckMix implements ITruckMixService {
     private EventListener mEventListener;
     private ConnectionStateListener mConnectionStateListener;
 
+    // Properties stored in case of service not bounds
+    private TruckParameters mTruckParameters;
+    private DeliveryParameters mDeliveryParameters;
+    private boolean mChangeExternalDisplayState;
+    private boolean mWaterRequestAllowed;
+    private boolean mQualityTrackingEnabled;
+    private boolean mAcceptDelivery;
+
     // Api
     private String mAddress;
 
@@ -80,6 +88,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void setTruckParameters(TruckParameters parameters) {
+        mTruckParameters = parameters;
         if (mIsBound) {
             mBoundService.setTruckParameters(parameters);
         }
@@ -87,6 +96,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void deliveryNoteReceived(DeliveryParameters parameters) {
+        mDeliveryParameters = parameters;
         if (mIsBound) {
             mBoundService.deliveryNoteReceived(parameters);
         }
@@ -94,6 +104,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void acceptDelivery(boolean accepted) {
+        mAcceptDelivery = accepted;
         if (mIsBound) {
             mBoundService.acceptDelivery(accepted);
         }
@@ -115,6 +126,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void changeExternalDisplayState(boolean activated) {
+        mChangeExternalDisplayState = activated;
         if (mIsBound) {
             mBoundService.changeExternalDisplayState(activated);
         }
@@ -127,6 +139,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void setWaterRequestAllowed(boolean waterRequestAllowed) {
+        mWaterRequestAllowed = waterRequestAllowed;
         if (mIsBound) {
             mBoundService.setWaterRequestAllowed(waterRequestAllowed);
         }
@@ -139,6 +152,7 @@ public class TruckMix implements ITruckMixService {
 
     @Override
     public void setQualityTrackingActivated(boolean qualityTrackingEnabled) {
+        mQualityTrackingEnabled = qualityTrackingEnabled;
         if (mIsBound) {
             mBoundService.setQualityTrackingActivated(qualityTrackingEnabled);
         }
@@ -178,6 +192,19 @@ public class TruckMix implements ITruckMixService {
             mBoundService = ((TruckMixService.TruckMixBinder)service).getService();
             mBoundService.start(mAddress, TruckMix.this);
             mIsBound = true;
+
+            if (mTruckParameters != null) {
+                setTruckParameters(mTruckParameters);
+            }
+            if (mDeliveryParameters != null) {
+                deliveryNoteReceived(mDeliveryParameters);
+            }
+            setWaterRequestAllowed(mWaterRequestAllowed);
+            setQualityTrackingActivated(mQualityTrackingEnabled);
+            if (mAcceptDelivery) {
+                acceptDelivery(true);
+            }
+            changeExternalDisplayState(mChangeExternalDisplayState);
         }
 
         public void onServiceDisconnected(ComponentName className) {
