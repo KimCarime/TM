@@ -20,8 +20,6 @@ import android.view.View;
 public class SlumpometerGauge extends View {
 
     public static final double MAX_SLUMP = 300.0;
-    public static final double DEFAULT_MAJOR_TICK_STEP = 20.0;
-    public static final int DEFAULT_MINOR_TICKS = 1;
     public static final int CONCRETE_RANGE_LABEL_TEXT_DIZE_DP = 12;
     public static final int CONCRETE_CODE_LABEL_TEXT_DIZE_DP = 18;
     public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 28;
@@ -31,8 +29,6 @@ public class SlumpometerGauge extends View {
     private static final int SLUMP_OUTOFBOUND_COLOR = Color.rgb(206, 37, 32);
 
     private double speed = 0;
-    private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
-    private int minorTicks = DEFAULT_MINOR_TICKS;
 
     private int concreteRangeMin;
     private int concreteRangeMax;
@@ -87,27 +83,6 @@ public class SlumpometerGauge extends View {
         if (tolerance < 0)
             throw new IllegalArgumentException("Non-positive value specified for tolerance.");
         this.tolerance = tolerance;
-    }
-
-
-    public double getMajorTickStep() {
-        return majorTickStep;
-    }
-
-    public void setMajorTickStep(double majorTickStep) {
-        if (majorTickStep <= 0)
-            throw new IllegalArgumentException("Non-positive value specified as a major tick step.");
-        this.majorTickStep = majorTickStep;
-        invalidate();
-    }
-
-    public int getMinorTicks() {
-        return minorTicks;
-    }
-
-    public void setMinorTicks(int minorTicks) {
-        this.minorTicks = minorTicks;
-        invalidate();
     }
 
     //
