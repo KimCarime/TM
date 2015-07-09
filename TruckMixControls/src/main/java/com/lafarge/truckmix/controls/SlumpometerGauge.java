@@ -32,7 +32,7 @@ public class SlumpometerGauge extends View {
     private static final int BACKGROUND_CONTRETE = Color.rgb(0, 168, 110);
     private static final int BACKGROUND_TOLERANCE = Color.rgb(255, 220, 32);
 
-    private double slump = 0;
+    private double slump = -1;
 
     private int concreteRangeMin;
     private int concreteRangeMax;
@@ -121,7 +121,7 @@ public class SlumpometerGauge extends View {
             public Double evaluate(float fraction, Double startValue, Double endValue) {
                 return startValue + fraction * (endValue - startValue);
             }
-        }, getSlump(), slump);
+        }, getSlump() < 0 ? 0 : getSlump(), slump);
 
         va.setDuration(duration);
         va.setStartDelay(startDelay);
@@ -210,6 +210,7 @@ public class SlumpometerGauge extends View {
         final float triangleOffset = 3;
 
         double slump = getSlump();
+        boolean noSlumpReceivedYet = (slump < 0);
 
         float angle = (float) (slump / MAX_SLUMP * 180);
 
@@ -237,14 +238,21 @@ public class SlumpometerGauge extends View {
         canvas.drawOval(smallOval, needleBottomPaint);
         canvas.drawOval(smallOvalMask, backgroundMaskPaint);
 
-        if (slump < concreteRangeMin - tolerance || slump > concreteRangeMax + tolerance) {
-            currentSlumpPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
-            currentSlumpUnitPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
+        String slumpString;
+        if (noSlumpReceivedYet) {
+            slumpString = "--";
         } else {
-            currentSlumpPaint.setColor(SLUMP_NORMAL_COLOR);
-            currentSlumpUnitPaint.setColor(SLUMP_NORMAL_COLOR);
+            slumpString = String.format("%.0f", slump);
+            if (slump < concreteRangeMin - tolerance || slump > concreteRangeMax + tolerance) {
+                currentSlumpPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
+                currentSlumpUnitPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
+            } else {
+                currentSlumpPaint.setColor(SLUMP_NORMAL_COLOR);
+                currentSlumpUnitPaint.setColor(SLUMP_NORMAL_COLOR);
+            }
         }
-        canvas.drawText(String.format("%.0f", slump), oval.centerX(), smallOval.centerY() - 40.f, currentSlumpPaint);
+
+        canvas.drawText(slumpString, oval.centerX(), (smallOval.top + smallOval.bottom) * 0.46f, currentSlumpPaint);
         canvas.drawText("mm", oval.centerX(), smallOval.centerY(), currentSlumpUnitPaint);
     }
 
