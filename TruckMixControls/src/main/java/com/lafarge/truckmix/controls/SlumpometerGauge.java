@@ -37,7 +37,7 @@ public class SlumpometerGauge extends View {
     private int concreteRangeMin;
     private int concreteRangeMax;
     private int tolerance;
-    private String concreteCode;
+    private String concreteCode = "";
 
     private Paint backgroundPaint;
     private Paint backgroundMaskPaint;
@@ -202,8 +202,8 @@ public class SlumpometerGauge extends View {
     private void drawNeedleAndCurrentSlump(Canvas canvas) {
         RectF oval = getOval(canvas, 1.0f);
         float radius = oval.width()*0.33f;
-        RectF smallOval = getOval(canvas, 0.35f);
-        RectF smallOvalMask = getOval(canvas, 0.33f);
+        RectF smallOval = getOval(canvas, 0.38f);
+        RectF smallOvalMask = getOval(canvas, 0.36f);
         smallOvalMask.left = smallOval.left;
         smallOvalMask.right = smallOval.right;
         smallOvalMask.inset(-1, 0);
@@ -211,13 +211,13 @@ public class SlumpometerGauge extends View {
 
         double slump = getSlump();
 
-        float angle = 10 + (float) (slump / MAX_SLUMP * 160);
+        float angle = (float) (slump / MAX_SLUMP * 180);
 
         // Sorry future me or whoever you are...
         float startLeftX = (float) (oval.centerX() + Math.cos((180 - angle - triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
         float startRightX = (float) (oval.centerX() + Math.cos((180 - angle + triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
-        float startLeftY = (float) (oval.centerY() + 10.f - Math.sin((angle + triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
-        float startRightY = (float) (oval.centerY() + 10.f - Math.sin((angle - triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float startLeftY = (float) (oval.centerY() - Math.sin((angle + triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
+        float startRightY = (float) (oval.centerY() - Math.sin((angle - triangleOffset) / 180 * Math.PI) * smallOval.width() * 0.5f);
         float endX = (float) (oval.centerX() + Math.cos((180 - angle) / 180 * Math.PI) * (radius));
         float endY = (float) (oval.centerY() - Math.sin(angle / 180 * Math.PI) * (radius));
 
@@ -249,46 +249,48 @@ public class SlumpometerGauge extends View {
     }
 
     private void drawTicks(Canvas canvas) {
-        float majorTicksLength = 30;
-
         RectF oval = getOval(canvas, 1.f);
-        float radius = oval.width()*0.35f;
+        float rangeRadius = oval.width()*0.51f;
+        float concreteCodeRadius = oval.width()*0.37f;
 
         final float startConcreteAngle = 180 * concreteRangeMin / (float)MAX_SLUMP;
         final float endConcreteAngle = 180 * concreteRangeMax / (float)MAX_SLUMP;
 
-        float txtX = oval.centerX() + radius + majorTicksLength/2 + 8;
-        float txtY = oval.centerY();
-        float offset = 115.f;
-
         canvas.save();
         canvas.rotate(180 + startConcreteAngle, oval.centerX(), oval.centerY());
-        canvas.rotate(+90, txtX, txtY);
-        canvas.drawText(String.format("%d", concreteRangeMin), txtX, txtY - offset, concreteRangeTextPaint);
+        float txtX1 = oval.centerX() + rangeRadius;
+        float txtY1 = oval.centerY();
+        canvas.rotate(+90, txtX1, txtY1);
+        canvas.drawText(String.format("%d", concreteRangeMin), txtX1, txtY1, concreteRangeTextPaint);
         canvas.restore();
 
         canvas.save();
         canvas.rotate(180 + endConcreteAngle, oval.centerX(), oval.centerY());
-        canvas.rotate(+90, txtX, txtY);
-        canvas.drawText(String.format("%d", concreteRangeMax), txtX, txtY - offset, concreteRangeTextPaint);
+        float txtX2 = oval.centerX() + rangeRadius;
+        float txtY2 = oval.centerY();
+        canvas.rotate(+90, txtX2, txtY2);
+        canvas.drawText(String.format("%d", concreteRangeMax), txtX2, txtY2, concreteRangeTextPaint);
         canvas.restore();
 
         canvas.save();
         canvas.rotate(180 + (startConcreteAngle + endConcreteAngle) * 0.5f, oval.centerX(), oval.centerY());
-        canvas.rotate(+90, txtX, txtY);
-        canvas.drawText(concreteCode, txtX, txtY, concreteCodeTextPaint);
+        float txtX3 = oval.centerX() + concreteCodeRadius;
+        float txtY3 = oval.centerY();
+        canvas.rotate(+90, txtX3, txtY3);
+        canvas.drawText(concreteCode, txtX3, txtY3, concreteCodeTextPaint);
         canvas.restore();
     }
 
     private RectF getOval(Canvas canvas, float factor) {
+        factor -= 0.05;
         RectF oval;
         final int canvasWidth = canvas.getWidth() - getPaddingLeft() - getPaddingRight();
         final int canvasHeight = canvas.getHeight() - getPaddingTop() - getPaddingBottom();
 
         if (canvasHeight*2 >= canvasWidth) {
-            oval = new RectF(0, 15, canvasWidth*factor, canvasWidth*factor);
+            oval = new RectF(0, 0, canvasWidth*factor, canvasWidth*factor);
         } else {
-            oval = new RectF(0, 15, canvasHeight*2*factor, canvasHeight*2*factor);
+            oval = new RectF(0, 0, canvasHeight*2*factor, canvasHeight*2*factor);
         }
 
         oval.offset((canvasWidth-oval.width())/2 + getPaddingLeft(), (canvasHeight*2-oval.height())/2 + getPaddingTop());
