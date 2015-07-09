@@ -63,8 +63,6 @@ public class SlumpometerFragment extends Fragment {
         slumpometer.setConcreteRange(90, 150);
         slumpometer.setTolerance(10);
         slumpometer.setConcreteCode("S3");
-        slumpometer.setMajorTickStep(30);
-        slumpometer.setMinorTicks(2);
     }
 
     @Override
