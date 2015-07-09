@@ -23,6 +23,9 @@ public class SlumpometerFragment extends Fragment {
 
     private static final String TAG = "SlumpometerFragment";
 
+    private double nextSlump;
+    private boolean ascending;
+
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Timer timer = new Timer();
 
@@ -60,7 +63,7 @@ public class SlumpometerFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        slumpometer.setConcreteRange(90, 150);
+        slumpometer.setConcreteRange(100, 150);
         slumpometer.setTolerance(10);
         slumpometer.setConcreteCode("S3");
     }
@@ -69,19 +72,33 @@ public class SlumpometerFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
+        nextSlump = 0;
+        ascending = true;
+
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        double nextSlump = new Random().nextInt(300);
                         Log.d(TAG, "nextSlump: " + nextSlump);
+
                         slumpometer.setSlump(nextSlump, 300, 0);
+
+                        if (ascending) {
+                            ++nextSlump;
+                        } else {
+                            --nextSlump;
+                        }
+                        if (nextSlump == 0) {
+                            ascending = true;
+                        } else if (nextSlump == SlumpometerGauge.MAX_SLUMP) {
+                            ascending = false;
+                        }
                     }
                 });
             }
-        }, 5000, 1000);
+        }, 5000, 100);
     }
 
     @Override
