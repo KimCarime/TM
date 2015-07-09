@@ -32,7 +32,7 @@ public class SlumpometerGauge extends View {
     private static final int BACKGROUND_CONTRETE = Color.rgb(0, 168, 110);
     private static final int BACKGROUND_TOLERANCE = Color.rgb(255, 220, 32);
 
-    private double speed = 0;
+    private double slump = 0;
 
     private int concreteRangeMin;
     private int concreteRangeMax;
@@ -94,40 +94,31 @@ public class SlumpometerGauge extends View {
     //
 
     public double getSlump() {
-        return getSpeed();
+        return slump;
     }
 
     public void setSlump(double slump) {
-        setSpeed(slump);
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public void setSpeed(double speed) {
-        if (speed < 0)
+        if (slump < 0)
             throw new IllegalArgumentException("Non-positive value specified as a slump.");
-        if (speed > MAX_SLUMP)
-            speed = MAX_SLUMP;
-        this.speed = speed;
+        if (slump > MAX_SLUMP)
+            slump = MAX_SLUMP;
+        this.slump = slump;
         invalidate();
     }
 
     @TargetApi(11)
-    public ValueAnimator setSpeed(double speed, long duration, long startDelay) {
-        if (speed < 0)
+    public ValueAnimator setSlump(double slump, long duration, long startDelay) {
+        if (slump < 0)
             throw new IllegalArgumentException("Negative value specified as a slump.");
-
-        if (speed > MAX_SLUMP)
-            speed = MAX_SLUMP;
+        if (slump > MAX_SLUMP)
+            slump = MAX_SLUMP;
 
         ValueAnimator va = ValueAnimator.ofObject(new TypeEvaluator<Double>() {
             @Override
             public Double evaluate(float fraction, Double startValue, Double endValue) {
                 return startValue + fraction * (endValue - startValue);
             }
-        }, getSpeed(), speed);
+        }, getSlump(), slump);
 
         va.setDuration(duration);
         va.setStartDelay(startDelay);
@@ -135,16 +126,11 @@ public class SlumpometerGauge extends View {
             public void onAnimationUpdate(ValueAnimator animation) {
                 Double value = (Double) animation.getAnimatedValue();
                 if (value != null)
-                    setSpeed(value);
+                    setSlump(value);
             }
         });
         va.start();
         return va;
-    }
-
-    @TargetApi(11)
-    public ValueAnimator setSpeed(double progress, boolean animate) {
-        return setSpeed(progress, 1500, 200);
     }
 
     //
@@ -220,7 +206,7 @@ public class SlumpometerGauge extends View {
         smallOvalMask.inset(-1, 0);
         final float triangleOffset = 3;
 
-        double slump = getSpeed();
+        double slump = getSlump();
 
         float angle = 10 + (float) (slump / MAX_SLUMP * 160);
 

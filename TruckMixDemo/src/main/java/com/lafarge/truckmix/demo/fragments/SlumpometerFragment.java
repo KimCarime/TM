@@ -75,9 +75,9 @@ public class SlumpometerFragment extends Fragment {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
-                        double nextSpeed = new Random().nextInt(300);
-                        Log.d(TAG, "nextSpeed: " + nextSpeed);
-                        slumpometer.setSpeed(nextSpeed, 300, 0);
+                        double nextSlump = new Random().nextInt(300);
+                        Log.d(TAG, "nextSlump: " + nextSlump);
+                        slumpometer.setSlump(nextSlump, 300, 0);
                     }
                 });
             }
