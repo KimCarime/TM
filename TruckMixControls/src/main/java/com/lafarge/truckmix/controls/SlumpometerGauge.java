@@ -24,7 +24,11 @@ public class SlumpometerGauge extends View {
     public static final int DEFAULT_MINOR_TICKS = 1;
     public static final int CONCRETE_RANGE_LABEL_TEXT_DIZE_DP = 12;
     public static final int CONCRETE_CODE_LABEL_TEXT_DIZE_DP = 18;
-    public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 24;
+    public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 28;
+    public static final int CURRENT_SLUMP_UNIT_LABEL_TEXT_DIZE_DP = 12;
+
+    private static final int SLUMP_NORMAL_COLOR = Color.BLACK;
+    private static final int SLUMP_OUTOFBOUND_COLOR = Color.rgb(206, 37, 32);
 
     private double speed = 0;
     private double majorTickStep = DEFAULT_MAJOR_TICK_STEP;
@@ -44,6 +48,7 @@ public class SlumpometerGauge extends View {
     private Paint concreteRangeTextPaint;
     private Paint concreteCodeTextPaint;
     private Paint currentSlumpPaint;
+    private Paint currentSlumpUnitPaint;
 
     //
     // Constructor
@@ -181,7 +186,7 @@ public class SlumpometerGauge extends View {
         drawTicks(canvas);
 
         // Draw Needle and current slump
-        drawNeedle(canvas);
+        drawNeedleAndCurrentSlump(canvas);
     }
 
     @Override
@@ -226,7 +231,7 @@ public class SlumpometerGauge extends View {
         setMeasuredDimension(width, height);
     }
 
-    private void drawNeedle(Canvas canvas) {
+    private void drawNeedleAndCurrentSlump(Canvas canvas) {
         RectF oval = getOval(canvas, 1.0f);
         float radius = oval.width()*0.33f;
         RectF smallOval = getOval(canvas, 0.35f);
@@ -263,6 +268,16 @@ public class SlumpometerGauge extends View {
         canvas.drawPath(path, needlePaint);
         canvas.drawOval(smallOval, needleBottomPaint);
         canvas.drawOval(smallOvalMask, backgroundMaskPaint);
+
+        if (slump < concreteRangeMin - tolerance || slump > concreteRangeMax + tolerance) {
+            currentSlumpPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
+            currentSlumpUnitPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
+        } else {
+            currentSlumpPaint.setColor(SLUMP_NORMAL_COLOR);
+            currentSlumpUnitPaint.setColor(SLUMP_NORMAL_COLOR);
+        }
+        canvas.drawText(String.format("%.0f", slump), oval.centerX(), smallOval.centerY() - 40.f, currentSlumpPaint);
+        canvas.drawText("mm", oval.centerX(), smallOval.centerY(), currentSlumpUnitPaint);
     }
 
     private void drawTicks(Canvas canvas) {
@@ -379,14 +394,19 @@ public class SlumpometerGauge extends View {
         concreteCodeTextPaint.setLinearText(true);
 
         currentSlumpPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        currentSlumpPaint.setColor(Color.BLACK);
+        currentSlumpPaint.setColor(SLUMP_NORMAL_COLOR);
         currentSlumpPaint.setTypeface(Typeface.create("Helvetica", Typeface.BOLD));
-        currentSlumpPaint.setTextSize(Math.round(CURRENT_SLUMP_LABEL_TEXT_DIZE_DP  * density));
+        currentSlumpPaint.setTextSize(Math.round(CURRENT_SLUMP_LABEL_TEXT_DIZE_DP * density));
         currentSlumpPaint.setTextAlign(Paint.Align.CENTER);
         currentSlumpPaint.setLinearText(true);
 
         needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         needlePaint.setStyle(Paint.Style.FILL);
         needlePaint.setColor(Color.BLACK);
+        currentSlumpUnitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        currentSlumpUnitPaint.setColor(SLUMP_NORMAL_COLOR);
+        currentSlumpUnitPaint.setTextSize(Math.round(CURRENT_SLUMP_UNIT_LABEL_TEXT_DIZE_DP * density));
+        currentSlumpUnitPaint.setTextAlign(Paint.Align.CENTER);
+        currentSlumpUnitPaint.setLinearText(true);
     }
 }
