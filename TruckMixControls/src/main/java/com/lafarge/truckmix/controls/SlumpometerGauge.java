@@ -70,6 +70,7 @@ public class SlumpometerGauge extends View {
 
     public void setConcreteCode(String concreteCode) {
         this.concreteCode = concreteCode;
+        invalidate();
     }
 
     public void setConcreteRange(int min, int max) {
@@ -81,12 +82,14 @@ public class SlumpometerGauge extends View {
             throw new IllegalArgumentException("Min range value cannot be greater than Max range value.");
         this.concreteRangeMin = min;
         this.concreteRangeMax = max;
+        invalidate();
     }
 
     public void setTolerance(int tolerance) {
         if (tolerance < 0)
             throw new IllegalArgumentException("Non-positive value specified for tolerance.");
         this.tolerance = tolerance;
+        invalidate();
     }
 
     //
