@@ -25,8 +25,12 @@ public class SlumpometerGauge extends View {
     public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 28;
     public static final int CURRENT_SLUMP_UNIT_LABEL_TEXT_DIZE_DP = 12;
 
+    private static final int BACKGROUND_COLOR = Color.rgb(235, 242, 244);
+    private static final int NEEDLE_COLOR = Color.BLACK;
     private static final int SLUMP_NORMAL_COLOR = Color.BLACK;
     private static final int SLUMP_OUTOFBOUND_COLOR = Color.rgb(206, 37, 32);
+    private static final int BACKGROUND_CONTRETE = Color.rgb(0, 168, 110);
+    private static final int BACKGROUND_TOLERANCE = Color.rgb(255, 220, 32);
 
     private double speed = 0;
 
@@ -337,7 +341,7 @@ public class SlumpometerGauge extends View {
 
         backgroundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundPaint.setStyle(Paint.Style.FILL);
-        backgroundPaint.setColor(Color.rgb(235, 242, 244));
+        backgroundPaint.setColor(BACKGROUND_COLOR);
 
         backgroundMaskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundMaskPaint.setStyle(Paint.Style.FILL);
@@ -345,15 +349,11 @@ public class SlumpometerGauge extends View {
 
         backgroundConcretPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundConcretPaint.setStyle(Paint.Style.FILL);
-        backgroundConcretPaint.setColor(Color.rgb(0, 168, 110));
+        backgroundConcretPaint.setColor(BACKGROUND_CONTRETE);
 
         backgroundTolerancePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         backgroundTolerancePaint.setStyle(Paint.Style.FILL);
-        backgroundTolerancePaint.setColor(Color.rgb(255, 220, 32));
-
-        needleBottomPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        needleBottomPaint.setStyle(Paint.Style.FILL);
-        needleBottomPaint.setColor(Color.BLACK);
+        backgroundTolerancePaint.setColor(BACKGROUND_TOLERANCE);
 
         concreteRangeTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         concreteRangeTextPaint.setColor(Color.BLACK);
@@ -368,6 +368,14 @@ public class SlumpometerGauge extends View {
         concreteCodeTextPaint.setTextAlign(Paint.Align.CENTER);
         concreteCodeTextPaint.setLinearText(true);
 
+        needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        needlePaint.setStyle(Paint.Style.FILL);
+        needlePaint.setColor(NEEDLE_COLOR);
+
+        needleBottomPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        needleBottomPaint.setStyle(Paint.Style.FILL);
+        needleBottomPaint.setColor(Color.BLACK);
+
         currentSlumpPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         currentSlumpPaint.setColor(SLUMP_NORMAL_COLOR);
         currentSlumpPaint.setTypeface(Typeface.create("Helvetica", Typeface.BOLD));
@@ -375,9 +383,6 @@ public class SlumpometerGauge extends View {
         currentSlumpPaint.setTextAlign(Paint.Align.CENTER);
         currentSlumpPaint.setLinearText(true);
 
-        needlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        needlePaint.setStyle(Paint.Style.FILL);
-        needlePaint.setColor(Color.BLACK);
         currentSlumpUnitPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         currentSlumpUnitPaint.setColor(SLUMP_NORMAL_COLOR);
         currentSlumpUnitPaint.setTextSize(Math.round(CURRENT_SLUMP_UNIT_LABEL_TEXT_DIZE_DP * density));
