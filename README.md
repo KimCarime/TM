@@ -9,10 +9,11 @@ device is able to communicate with other system and share additional data on the
 
 ## Overview
 
-The project is separated into three sub-projects. The first one, TruckMix, is a java library that contains all
+The project is separated into four sub-projects. The first one, TruckMix, is a java library that contains all
 business logic about the communication with the device.
 The second one, TruckMixService, is an Android service that wrap the first library. Its job is to communicate with
 the device through bluetooth and to expose an API to communicate with it.
+The third one, TruckMixControls, contains controls for TruckMix. Currently there is only a gauge for the slump called SlumpometerGauge.
 The last project, TruckMixDemo, is a demo project to show how to integrate TruckMixService and how use the API.
 
 ## Integration
