@@ -20,7 +20,7 @@ import android.view.View;
 public class SlumpometerGauge extends View {
 
     public static final double MAX_SLUMP = 300.0;
-    public static final int CONCRETE_RANGE_LABEL_TEXT_DIZE_DP = 12;
+    public static final int CONCRETE_RANGE_LABEL_TEXT_DIZE_DP = 13;
     public static final int CONCRETE_CODE_LABEL_TEXT_DIZE_DP = 18;
     public static final int CURRENT_SLUMP_LABEL_TEXT_DIZE_DP = 28;
     public static final int CURRENT_SLUMP_UNIT_LABEL_TEXT_DIZE_DP = 12;
