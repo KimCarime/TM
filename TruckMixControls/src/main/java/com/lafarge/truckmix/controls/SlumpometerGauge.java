@@ -107,6 +107,11 @@ public class SlumpometerGauge extends View {
     public int getTolerance() {
         return tolerance;
     }
+
+    public boolean isSlumpOutOfRange() {
+        return slump < concreteRangeMin - tolerance || slump > concreteRangeMax + tolerance;
+    }
+
     //
     // Animation
     //
@@ -258,7 +263,7 @@ public class SlumpometerGauge extends View {
             slumpString = "--";
         } else {
             slumpString = String.format("%.0f", slump);
-            if (slump < concreteRangeMin - tolerance || slump > concreteRangeMax + tolerance) {
+            if (isSlumpOutOfRange()) {
                 currentSlumpPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
                 currentSlumpUnitPaint.setColor(SLUMP_OUTOFBOUND_COLOR);
             } else {
