@@ -178,6 +178,11 @@ public class TruckMixService extends Service implements ITruckMixService {
     }
 
     @Override
+    public boolean isExternalDisplayActivated() {
+        return mCommunicator.isExternalDisplayStateActivated();
+    }
+
+    @Override
     public Communicator.Information getLastInformation() {
         return mCommunicator.getLastInformation();
     }

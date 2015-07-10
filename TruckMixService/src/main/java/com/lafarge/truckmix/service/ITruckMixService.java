@@ -72,6 +72,16 @@ public interface ITruckMixService {
     void changeExternalDisplayState(final boolean activated);
 
     /**
+     * Return the state of the external display
+     * Note this method is here only of UI purpose, you can't trust this value because if you
+     * change the external display and there is no connection the change will have no effect.
+     *
+     * @see ITruckMixService#changeExternalDisplayState(boolean)
+     * @return true if the external is activated, otherwise false.
+     */
+    boolean isExternalDisplayActivated();
+
+    /**
      * Return last information that was sent by the calculator.
      * If a value has expired, then it will be null.
      * The object is reset each time a new delivery is started.

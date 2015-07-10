@@ -133,6 +133,11 @@ public class TruckMix implements ITruckMixService {
     }
 
     @Override
+    public boolean isExternalDisplayActivated() {
+        return mIsBound && mBoundService.isExternalDisplayActivated();
+    }
+
+    @Override
     public Communicator.Information getLastInformation() {
         return mIsBound ? mBoundService.getLastInformation() : null;
     }

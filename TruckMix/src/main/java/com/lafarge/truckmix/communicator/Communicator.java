@@ -63,6 +63,7 @@ public class Communicator {
     private State state;
     private boolean isSync;
     private boolean isConnected;
+    private boolean isExternalDisplayActivated;
 
     // Message received state
     RotationDirection currentRotation;
@@ -183,9 +184,19 @@ public class Communicator {
             loggerListener.log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
             bytesListener.send(encoder.fake());
             bytesListener.send(encoder.changeExternalDisplayState(isActivated));
+            isExternalDisplayActivated = isActivated;
         } else {
             loggerListener.log("ACTION (IGNORED): change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
         }
+    }
+
+    /**
+     * Return the state of the external display
+     *
+     * @return true if the external display is activated, otherwise false.
+     */
+    public boolean isExternalDisplayStateActivated() {
+        return isExternalDisplayActivated;
     }
 
     /**
