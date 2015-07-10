@@ -32,9 +32,9 @@ public class EventFactory {
 
     public static Event createMixerTransitionEvent(RotationDirection rotationDirection) {
         switch (rotationDirection) {
-            case MIXING:
-                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
             case UNLOADING:
+                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
+            case MIXING:
                 return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 1);
             default:
                 throw new IllegalArgumentException("Event for this RotationDirection is not yet supported");
