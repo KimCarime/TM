@@ -73,6 +73,10 @@ public class SlumpometerGauge extends View {
         invalidate();
     }
 
+    public String getConcreteCode() {
+        return concreteCode;
+    }
+
     public void setConcreteRange(int min, int max) {
         if (min < 0 || max < 0)
             throw new IllegalArgumentException("Non-positive value for min or max concrete range.");
@@ -85,6 +89,14 @@ public class SlumpometerGauge extends View {
         invalidate();
     }
 
+    public int getConcreteRangeMin() {
+        return concreteRangeMin;
+    }
+
+    public int getConcreteRangeMax() {
+        return concreteRangeMax;
+    }
+
     public void setTolerance(int tolerance) {
         if (tolerance < 0)
             throw new IllegalArgumentException("Non-positive value specified for tolerance.");
@@ -92,6 +104,9 @@ public class SlumpometerGauge extends View {
         invalidate();
     }
 
+    public int getTolerance() {
+        return tolerance;
+    }
     //
     // Animation
     //
