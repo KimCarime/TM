@@ -48,9 +48,6 @@ public class TruckMix implements ITruckMixService {
     // Api
     private String mAddress;
 
-    // Others
-    private boolean mManifestCheckingDisabled = false;
-
     //
     // Constructor
     //
