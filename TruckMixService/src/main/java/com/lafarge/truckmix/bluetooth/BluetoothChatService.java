@@ -415,6 +415,7 @@ public class BluetoothChatService {
             case STATE_NONE:
                 mLoggerListener.log("BLUETOOTH: disconnected");
                 mConnectionStateListener.onCalculatorDisconnected();
+                mContext.getServiceInstance().displayNotification(false);
                 mContext.post(new Runnable() {
                     @Override
                     public void run() {
@@ -429,6 +430,7 @@ public class BluetoothChatService {
             case STATE_CONNECTED:
                 mLoggerListener.log("BLUETOOTH: connected");
                 mConnectionStateListener.onCalculatorConnected();
+                mContext.getServiceInstance().displayNotification(true);
                 mContext.post(new Runnable() {
                     @Override
                     public void run() {

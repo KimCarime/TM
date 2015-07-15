@@ -1,5 +1,6 @@
 package com.lafarge.truckmix;
 
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,9 @@ public class TruckMix implements ITruckMixService {
     private TruckMixService mBoundService;
     private boolean mIsBound;
 
+    // Options
+    private final boolean mNotificationActivated;
+
     // Listeners
     private CommunicatorListener mCommunicatorListener;
     private LoggerListener mLoggerListener;
@@ -53,11 +57,13 @@ public class TruckMix implements ITruckMixService {
 
     private TruckMix(
             Context context,
+            boolean notificationActivated,
             CommunicatorListener communicatorListener,
             EventListener eventListener,
             LoggerListener loggerListener,
             ConnectionStateListener connectionStateListener) {
         mContext = context;
+        mNotificationActivated = notificationActivated;
         mCommunicatorListener = communicatorListener;
         mEventListener = eventListener;
         mLoggerListener = loggerListener;
@@ -168,9 +174,20 @@ public class TruckMix implements ITruckMixService {
         return mIsBound && mBoundService.isQualityTrackingActivated();
     }
 
+    @Override
+    public void setPendingIntent(PendingIntent pendingIntent) {
+        if (mIsBound) {
+            mBoundService.setPendingIntent(pendingIntent);
+        }
+    }
+
     //
     // Getters
     //
+
+    public boolean isNotificationActivated() {
+        return mNotificationActivated;
+    }
 
     public CommunicatorListener getCommunicatorListener() {
         return mCommunicatorListener;
@@ -198,6 +215,7 @@ public class TruckMix implements ITruckMixService {
             mBoundService.start(mAddress, TruckMix.this);
             mIsBound = true;
 
+            // Update state if actions was done before service was actually bound
             if (mTruckParameters != null) {
                 setTruckParameters(mTruckParameters);
             }
@@ -223,6 +241,7 @@ public class TruckMix implements ITruckMixService {
      */
     public static class Builder {
         private final Context mmContext;
+        private boolean mmShowNotificationActivated = true;
         private CommunicatorListener mmCommunicatorListener;
         private LoggerListener mmLoggerListener;
         private EventListener mmEventListener;
@@ -233,6 +252,11 @@ public class TruckMix implements ITruckMixService {
                 throw new IllegalArgumentException("Context must not be null.");
             }
             mmContext = context.getApplicationContext();
+        }
+
+        public Builder setShowNotificationActivated(boolean activated) {
+            mmShowNotificationActivated = activated;
+            return this;
         }
 
         public Builder setCommunicatorListener(CommunicatorListener communicatorListener) {
@@ -338,7 +362,7 @@ public class TruckMix implements ITruckMixService {
                     public void onCalculatorDisconnected() {}
                 };
             }
-            return new TruckMix(mmContext, mmCommunicatorListener, mmEventListener, mmLoggerListener, mmConnectionStateListener);
+            return new TruckMix(mmContext, mmShowNotificationActivated, mmCommunicatorListener, mmEventListener, mmLoggerListener, mmConnectionStateListener);
         }
     }
 }

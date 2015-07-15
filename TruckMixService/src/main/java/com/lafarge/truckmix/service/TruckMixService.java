@@ -1,5 +1,6 @@
 package com.lafarge.truckmix.service;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
@@ -19,6 +20,7 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
+import com.lafarge.truckmix.notification.NotificationFactory;
 
 public class TruckMixService extends Service implements ITruckMixService {
 
@@ -43,6 +45,10 @@ public class TruckMixService extends Service implements ITruckMixService {
 
     // Service
     private final IBinder mBinder = new TruckMixBinder();
+
+    // Options
+    private boolean mNotificationActivated = true;
+    private PendingIntent mPendingIntent;
 
     //
     // Inner types
@@ -70,12 +76,14 @@ public class TruckMixService extends Service implements ITruckMixService {
     public void onCreate() {
         super.onCreate();
         Log.i(TAG, "TruckMixService version " + BuildConfig.VERSION_NAME + " is starting up");
+        displayNotification(false);
     }
 
     @Override
     public void onDestroy() {
-        mHandlerThread.quit();
         mBluetoothChat.stop();
+        mHandlerThread.quit();
+        stopForeground(true);
         Log.i(TAG, "TruckMixService stopped");
     }
 
@@ -90,6 +98,7 @@ public class TruckMixService extends Service implements ITruckMixService {
 
     public void start(String address, TruckMix truc) {
         // Client
+        mNotificationActivated = truc.isNotificationActivated();
         mCommunicatorListener = truc.getCommunicatorListener();
         mLoggerListener = truc.getLoggerListener();
         mEventListener = truc.getEventListener();
@@ -214,6 +223,21 @@ public class TruckMixService extends Service implements ITruckMixService {
     @Override
     public boolean isQualityTrackingActivated() {
         return mCommunicator.isQualityTrackingActivated();
+    }
+
+    @Override
+    public void setPendingIntent(PendingIntent pendingIntent) {
+        mPendingIntent = pendingIntent;
+    }
+
+    //
+    // Other
+    //
+
+    public void displayNotification(boolean connected) {
+        if (mNotificationActivated) {
+            startForeground(NotificationFactory.NOTIFICATION_TRUCKMIX_ID, NotificationFactory.createTruckMixNotification(this, mPendingIntent, connected));
+        }
     }
 
     //

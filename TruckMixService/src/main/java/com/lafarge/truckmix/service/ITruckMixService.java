@@ -1,5 +1,7 @@
 package com.lafarge.truckmix.service;
 
+import android.app.PendingIntent;
+
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
@@ -121,4 +123,10 @@ public interface ITruckMixService {
      * Return the state of the quality tracking
      */
     boolean isQualityTrackingActivated();
+
+    /**
+     * Set pending intent for notification.
+     * Note that setting this is useless if you disable notification.
+     */
+    void setPendingIntent(final PendingIntent pendingIntent);
 }

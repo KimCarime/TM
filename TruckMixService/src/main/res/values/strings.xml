@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Notifications -->
+    <string name="truckmix_notif_title">TruckMix</string>
+    <string name="truckmix_notif_connected">TruckMix: Truck connected</string>
+    <string name="truckmix_notif_disconnected">TruckMix: Truck disconnected</string>
+</resources>
