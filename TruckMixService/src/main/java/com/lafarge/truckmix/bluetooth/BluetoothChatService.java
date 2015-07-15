@@ -23,7 +23,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Handler;
 import android.util.Log;
 
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
@@ -143,7 +142,7 @@ public class BluetoothChatService {
     /**
      * Stop all threads
      */
-    public synchronized void disconnect() {
+    public synchronized void disconnect(boolean informListeners) {
         Log.d(TAG, "disconnect");
         mStopped = true;
         mDeviceAddress = null;
@@ -151,7 +150,10 @@ public class BluetoothChatService {
         cancelTimer();
         cancelThreads();
 
-        setState(STATE_NONE);
+        // We don't want to inform listeners when service is stopped,
+        if (informListeners) {
+            setState(STATE_NONE);
+        }
     }
 
     /**
@@ -159,7 +161,7 @@ public class BluetoothChatService {
      */
     public synchronized void stop() {
         Log.d(TAG, "stop");
-        disconnect();
+        disconnect(false);
         if (mBtAdapter != null) {
             mContext.getServiceInstance().unregisterReceiver(mReceiver);
         }
