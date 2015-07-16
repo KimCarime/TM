@@ -282,7 +282,8 @@ public class Communicator {
     }
 
     /**
-     *
+     * Allow to retrieve last information catched by TruckMix.
+     * @see Communicator.Information
      */
     public Information getLastInformation() {
         return information;
@@ -923,6 +924,20 @@ public class Communicator {
         }
     };
 
+    /**
+     * Store information catch by TruckMix and provide a as-is cache function.
+     *
+     * Some values are timestamped and have a expiration delay of VALUE_EXPIRATION_DELAY_IN_MILLIS.
+     * If the value is expired then the getter would return null.
+     * Values expirable are :
+     *  - slump
+     *  - temperature
+     *  - rotationDirection
+     *  - inputPressure
+     *  - outputPressure
+     *  - rotationSpeed
+     *  - speedSensorState
+     */
     public class Information {
         public static final int VALUE_EXPIRATION_DELAY_IN_MILLIS = 5*1000*60;
 
@@ -1012,7 +1027,6 @@ public class Communicator {
             this.speedSensorState = new Value<SpeedSensorState>(speedSensorState);
         }
 
-
         public AlarmType getAlarm() {
             return alarm != null ? alarm.getData() : null;
         }
@@ -1037,7 +1051,6 @@ public class Communicator {
             speedSensorState = null;
             alarm = null;
         }
-
 
         //
         // Private stuff
