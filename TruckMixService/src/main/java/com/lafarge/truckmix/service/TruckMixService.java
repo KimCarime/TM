@@ -99,6 +99,7 @@ public class TruckMixService extends Service implements ITruckMixService {
     public void start(String address, TruckMix truc) {
         // Client
         mNotificationActivated = truc.isNotificationActivated();
+        mPendingIntent = truc.getPendingIntent();
         mCommunicatorListener = truc.getCommunicatorListener();
         mLoggerListener = truc.getLoggerListener();
         mEventListener = truc.getEventListener();
@@ -223,11 +224,6 @@ public class TruckMixService extends Service implements ITruckMixService {
     @Override
     public boolean isQualityTrackingActivated() {
         return mCommunicator.isQualityTrackingActivated();
-    }
-
-    @Override
-    public void setPendingIntent(PendingIntent pendingIntent) {
-        mPendingIntent = pendingIntent;
     }
 
     //

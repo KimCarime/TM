@@ -30,6 +30,7 @@ public class TruckMix implements ITruckMixService {
 
     // Options
     private final boolean mNotificationActivated;
+    private final PendingIntent mPendingIntent;
 
     // Listeners
     private CommunicatorListener mCommunicatorListener;
@@ -55,12 +56,14 @@ public class TruckMix implements ITruckMixService {
     private TruckMix(
             Context context,
             boolean notificationActivated,
+            PendingIntent pendingIntent,
             CommunicatorListener communicatorListener,
             EventListener eventListener,
             LoggerListener loggerListener,
             ConnectionStateListener connectionStateListener) {
         mContext = context;
         mNotificationActivated = notificationActivated;
+        mPendingIntent = pendingIntent;
         mCommunicatorListener = communicatorListener;
         mEventListener = eventListener;
         mLoggerListener = loggerListener;
@@ -171,19 +174,16 @@ public class TruckMix implements ITruckMixService {
         return mIsBound && mBoundService.isQualityTrackingActivated();
     }
 
-    @Override
-    public void setPendingIntent(PendingIntent pendingIntent) {
-        if (mIsBound) {
-            mBoundService.setPendingIntent(pendingIntent);
-        }
-    }
-
     //
     // Getters
     //
 
     public boolean isNotificationActivated() {
         return mNotificationActivated;
+    }
+
+    public PendingIntent getPendingIntent() {
+        return mPendingIntent;
     }
 
     public CommunicatorListener getCommunicatorListener() {
@@ -238,7 +238,8 @@ public class TruckMix implements ITruckMixService {
      */
     public static class Builder {
         private final Context mmContext;
-        private boolean mmShowNotificationActivated = true;
+        private boolean mmNotificationActivated = true;
+        private PendingIntent mmPendingIntent;
         private CommunicatorListener mmCommunicatorListener;
         private LoggerListener mmLoggerListener;
         private EventListener mmEventListener;
@@ -251,8 +252,9 @@ public class TruckMix implements ITruckMixService {
             mmContext = context.getApplicationContext();
         }
 
-        public Builder setShowNotificationActivated(boolean activated) {
-            mmShowNotificationActivated = activated;
+        public Builder setNotificationActivated(boolean activated, PendingIntent pendingIntent) {
+            mmNotificationActivated = activated;
+            mmPendingIntent = pendingIntent;
             return this;
         }
 
@@ -359,7 +361,7 @@ public class TruckMix implements ITruckMixService {
                     public void onCalculatorDisconnected() {}
                 };
             }
-            return new TruckMix(mmContext, mmShowNotificationActivated, mmCommunicatorListener, mmEventListener, mmLoggerListener, mmConnectionStateListener);
+            return new TruckMix(mmContext, mmNotificationActivated, mmPendingIntent, mmCommunicatorListener, mmEventListener, mmLoggerListener, mmConnectionStateListener);
         }
     }
 }

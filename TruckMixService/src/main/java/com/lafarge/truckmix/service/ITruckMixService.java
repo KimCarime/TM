@@ -123,10 +123,4 @@ public interface ITruckMixService {
      * Return the state of the quality tracking
      */
     boolean isQualityTrackingActivated();
-
-    /**
-     * Set pending intent for notification.
-     * Note that setting this is useless if you disable notification.
-     */
-    void setPendingIntent(final PendingIntent pendingIntent);
 }
