@@ -12,13 +12,13 @@ public class NotificationFactory {
     public static final int NOTIFICATION_TRUCKMIX_ID = 4242;
 
     public static Notification createTruckMixNotification(Context context, PendingIntent pendingIntent, boolean connected) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        return new NotificationCompat.Builder(context)
                 .setWhen(System.currentTimeMillis())
                 .setOngoing(true)
-                .setContentTitle(mContext.getString(R.string.truckmix_notif_title))
+                .setContentTitle(context.getString(R.string.truckmix_notif_title))
                 .setContentIntent(pendingIntent)
-                .setSmallIcon(connected ? R.drawable.status_icon_truckmix_connected : R.drawable.status_icon_truckmix_disconnected)
-                .setContentText(context.getString(connected ? R.string.truckmix_notif_connected : R.string.truckmix_notif_disconnected));
-        return builder.build();
+                .setSmallIcon(connected ? R.drawable.truckmix_status_icon_connected : R.drawable.truckmix_status_icon_disconnected)
+                .setContentText(context.getString(connected ? R.string.truckmix_notif_connected : R.string.truckmix_notif_disconnected))
+                .build();
     }
 }
