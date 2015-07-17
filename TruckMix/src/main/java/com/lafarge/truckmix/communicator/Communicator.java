@@ -321,12 +321,12 @@ public class Communicator {
                 }
                 break;
             case WAITING_FOR_DELIVERY_NOTE_ACCEPTATION:
+                information.clear();
                 if (isSync) {
                     cancelTimer();
                 }
                 break;
             case DELIVERY_IN_PROGRESS:
-                information.clear();
                 cancelTimer();
                 if (isConnected) {
                     bytesListener.send(encoder.fake());
