@@ -136,7 +136,7 @@ public class BluetoothChatService {
         mConnectionThread = new ConnectionThread(device);
         mConnectionThread.start();
 
-        setState(STATE_CONNECTING);
+        setState(STATE_CONNECTING, true);
     }
 
     /**
@@ -151,9 +151,7 @@ public class BluetoothChatService {
         cancelThreads();
 
         // We don't want to inform listeners when service is stopped,
-        if (informListeners) {
-            setState(STATE_NONE);
-        }
+        setState(STATE_NONE, informListeners);
     }
 
     /**
@@ -361,7 +359,7 @@ public class BluetoothChatService {
         mConnectedThread = new ConnectedThread(socket, device);
         mConnectedThread.start();
 
-        setState(STATE_CONNECTED);
+        setState(STATE_CONNECTED, true);
     }
 
     /**
@@ -400,7 +398,7 @@ public class BluetoothChatService {
     private void connectionLost() {
         cancelThreads();
 
-        setState(STATE_NONE);
+        setState(STATE_NONE, true);
     }
 
     /**
@@ -408,7 +406,7 @@ public class BluetoothChatService {
      *
      * @param state An integer defining the current connection state
      */
-    private synchronized void setState(int state) {
+    private synchronized void setState(int state, boolean postOnCommunicatorQueue) {
         Log.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
 
@@ -418,12 +416,16 @@ public class BluetoothChatService {
                 mLoggerListener.log("BLUETOOTH: disconnected");
                 mConnectionStateListener.onCalculatorDisconnected();
                 mContext.getServiceInstance().displayNotification(false);
-                mContext.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mContext.getCommunicatorInstance().setConnected(false);
-                    }
-                });
+                if (postOnCommunicatorQueue) {
+                    mContext.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mContext.getCommunicatorInstance().setConnected(false);
+                        }
+                    });
+                } else {
+                    mContext.getCommunicatorInstance().setConnected(false);
+                }
                 break;
             case STATE_CONNECTING:
                 mLoggerListener.log("BLUETOOTH: connecting to " + mDeviceAddress);
@@ -433,12 +435,16 @@ public class BluetoothChatService {
                 mLoggerListener.log("BLUETOOTH: connected");
                 mConnectionStateListener.onCalculatorConnected();
                 mContext.getServiceInstance().displayNotification(true);
-                mContext.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mContext.getCommunicatorInstance().setConnected(true);
-                    }
-                });
+                if (postOnCommunicatorQueue) {
+                    mContext.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mContext.getCommunicatorInstance().setConnected(true);
+                        }
+                    });
+                } else {
+                    mContext.getCommunicatorInstance().setConnected(true);
+                }
                 break;
         }
     }
