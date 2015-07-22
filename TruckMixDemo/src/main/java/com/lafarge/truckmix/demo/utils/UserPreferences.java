@@ -2,6 +2,8 @@ package com.lafarge.truckmix.demo.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 
@@ -99,7 +101,7 @@ public class UserPreferences {
         int timeDelayDriver = settings.getInt(KEY_TRUCK_PARAMETERS_TIME_DELAY_DRIVER, 120);
         int pulseNumber = settings.getInt(KEY_TRUCK_PARAMETERS_PULSE_NUMBER, 45);
         int flowmeterFrequency = settings.getInt(KEY_TRUCK_PARAMETERS_FLOWMETER_FREQUENCY, 60);
-        TruckParameters.CommandPumpMode commandPumpMode = TruckParameters.CommandPumpMode.valueOf(settings.getString
+        CommandPumpMode commandPumpMode = CommandPumpMode.valueOf(settings.getString
                 (KEY_TRUCK_PARAMETERS_COMMAND_PUMP_MODE, "SEMI_AUTO"));
         double calibrationInputSensorA = settings.getFloat(KEY_TRUCK_PARAMETERS_CALIBRATION_INPUT_SENSOR_A, 2.5f);
         double calibrationInputSensorB = settings.getFloat(KEY_TRUCK_PARAMETERS_CALIBRATION_INPUT_SENSOR_B, 0.f);

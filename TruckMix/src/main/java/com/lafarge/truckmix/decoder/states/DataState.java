@@ -1,8 +1,8 @@
 package com.lafarge.truckmix.decoder.states;
 
+import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
-import com.lafarge.truckmix.common.Protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 package com.lafarge.truckmix.decoder.actions;
 
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 
 /**
  * Abstract class of a decoded action. This is the final state of the decoder. Subclasses are responsible of decoding

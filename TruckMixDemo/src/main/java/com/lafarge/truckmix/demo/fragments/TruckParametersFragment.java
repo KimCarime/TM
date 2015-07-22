@@ -8,11 +8,14 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import butterknife.ButterKnife;
-import butterknife.InjectView;
+
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.demo.R;
 import com.lafarge.truckmix.demo.utils.UserPreferences;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class TruckParametersFragment extends Fragment {
 
@@ -40,17 +43,22 @@ public class TruckParametersFragment extends Fragment {
 
     private UserPreferences mPrefs;
 
+    //
+    // Constructor
+    //
+
+    public TruckParametersFragment() {
+        // Required empty public constructor
+    }
+
     public static TruckParametersFragment newInstance() {
         TruckParametersFragment fragment = new TruckParametersFragment();
         return fragment;
     }
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public TruckParametersFragment() {
-    }
+    //
+    // Fragment lifecycle
+    //
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +76,10 @@ public class TruckParametersFragment extends Fragment {
         updateParameters();
         return view;
     }
+
+    //
+    // Public
+    //
 
     public void updateParameters() {
         TruckParameters parameters = mPrefs.getTruckParameters();
@@ -106,8 +118,7 @@ public class TruckParametersFragment extends Fragment {
         int timeDelayDriver = Integer.parseInt(mTimeDelayDriver.getText().toString());
         int pulseNumber = Integer.parseInt(mPulseNumber.getText().toString());
         int flowmeterFrequency = Integer.parseInt(mFlowmeterFrequency.getText().toString());
-        TruckParameters.CommandPumpMode commandPumpMode = TruckParameters.CommandPumpMode.valueOf(mCommandPumpMode
-                .getSelectedItem().toString());
+        CommandPumpMode commandPumpMode = CommandPumpMode.valueOf(mCommandPumpMode.getSelectedItem().toString());
         double calibrationInputSensorA = Double.parseDouble(mCalibrationInputSensorA.getText().toString().replace(",", "."));
         double calibrationInputSensorB = Double.parseDouble(mCalibrationInputSensorB.getText().toString().replace(",", "."));
         double calibrationOutputSensorA = Double.parseDouble(mCalibrationOutputSensorA.getText().toString().replace(",", "."));

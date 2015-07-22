@@ -3,10 +3,12 @@ package com.lafarge.truckmix.encoder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.encoder.listeners.MessageSentListener;
 import com.lafarge.truckmix.utils.Convert;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -17,7 +19,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -144,7 +150,7 @@ public class EncoderScenariosTest {
             found = encoder.flowmeterFrequency(((Double) message.value).intValue());
 
         } else if (message.type.equals(Protocol.TRAME_MODE_DE_COMMANDE_POMPE)) {
-            found = encoder.commandPumpMode(TruckParameters.CommandPumpMode.valueOf((String) message.value));
+            found = encoder.commandPumpMode(CommandPumpMode.valueOf((String) message.value));
 
         } else if (message.type.equals(Protocol.TRAME_FACTEUR_A_CAPTEUR_PRESSION_ENTREE)) {
             found = encoder.calibrationInputSensorA((Double) message.value);
@@ -190,7 +196,7 @@ public class EncoderScenariosTest {
                     ((Double) message.values.get("timeDelayDriver")).intValue(),
                     ((Double) message.values.get("pulseNumber")).intValue(),
                     ((Double) message.values.get("flowmeterFrequency")).intValue(),
-                    TruckParameters.CommandPumpMode.valueOf(((String) message.values.get("commandPumpMode"))),
+                    CommandPumpMode.valueOf(((String) message.values.get("commandPumpMode"))),
                     ((Double) message.values.get("calibrationInputSensorA")),
                     ((Double) message.values.get("calibrationInputSensorB")),
                     ((Double) message.values.get("calibrationOutputSensorA")),

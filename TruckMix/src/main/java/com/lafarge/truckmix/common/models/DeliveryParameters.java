@@ -22,4 +22,13 @@ public class DeliveryParameters {
         this.maxWater = maxWater;
         this.loadVolume = loadVolume;
     }
+
+    @Override
+    public String toString() {
+        return "DeliveryParameters{"
+                + "targetSlump=" + targetSlump
+                + ", maxWater=" + maxWater
+                + ", loadVolume=" + loadVolume
+                + "}";
+    }
 }

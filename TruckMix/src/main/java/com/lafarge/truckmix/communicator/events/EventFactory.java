@@ -1,6 +1,6 @@
 package com.lafarge.truckmix.communicator.events;
 
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+import com.lafarge.truckmix.common.enums.RotationDirection;
 
 /**
  * Factory of Event, used by the Communicator to send events to EventListener.
@@ -14,7 +14,7 @@ public class EventFactory {
         return new Event<Integer>(Event.EventId.START_DELIVERY, accepted ? 1 : 0);
     }
 
-    public static Event createEndOfDeliveryEvent(int currentSlump) {
+    public static Event createEndOfDeliveryEvent(Integer currentSlump) {
         return new Event<Integer>(Event.EventId.END_DELIVERY, currentSlump);
     }
 
@@ -26,22 +26,27 @@ public class EventFactory {
         return new Event<Integer>(Event.EventId.NEW_SLUMP, slump);
     }
 
-    public static Event createMixerTransitionEvent(MessageReceivedListener.RotationDirection mixing) {
-        if (mixing == MessageReceivedListener.RotationDirection.UNLOADING) {
-            return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
-        } else if (mixing == MessageReceivedListener.RotationDirection.MIXING) {
-            return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 1);
-        } else {
-            throw new IllegalArgumentException("Event for this RotationDirection is not yet supported");
+    public static Event createNewTemperatureEvent(float temperature) {
+        return new Event<Float>(Event.EventId.NEW_TEMPERATURE, temperature);
+    }
+
+    public static Event createMixerTransitionEvent(RotationDirection rotationDirection) {
+        switch (rotationDirection) {
+            case UNLOADING:
+                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 0);
+            case MIXING:
+                return new Event<Integer>(Event.EventId.MIXER_TRANSITION, 1);
+            default:
+                throw new IllegalArgumentException("Event for this RotationDirection is not yet supported");
         }
     }
 
-    public static Event createInputPressureEvent(float inPressure) {
-        return new Event<Float>(Event.EventId.INPUT_PRESSURE, inPressure);
+    public static Event createInputPressureEvent(float inputPressure) {
+        return new Event<Float>(Event.EventId.INPUT_PRESSURE, inputPressure);
     }
 
-    public static Event createOutputPressureEvent(float outPressure) {
-        return new Event<Float>(Event.EventId.OUTPUT_PRESSURE, outPressure);
+    public static Event createOutputPressureEvent(float outputPressure) {
+        return new Event<Float>(Event.EventId.OUTPUT_PRESSURE, outputPressure);
     }
 
     public static Event createRotationSpeedEvent(float rotationSpeed) {

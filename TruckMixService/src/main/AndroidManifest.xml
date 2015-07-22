@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lafarge.truckmix.service" >
+    package="com.lafarge.truckmix" >
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <application>
+        <service
+            android:name=".service.TruckMixService"
+            android:label="TruckMix Service">
+        </service>
+    </application>
 
 </manifest>

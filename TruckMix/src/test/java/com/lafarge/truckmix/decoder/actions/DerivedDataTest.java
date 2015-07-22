@@ -1,9 +1,13 @@
 package com.lafarge.truckmix.decoder.actions;
 
+import com.lafarge.truckmix.common.enums.RotationDirection;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 
 public class DerivedDataTest extends ReadActionTest {
 
@@ -13,7 +17,7 @@ public class DerivedDataTest extends ReadActionTest {
         ReadAction message = new DerivedData(callback);
 
         message.decode(new byte[]{0x00, 0x00, 0x00, 0x52, 0x02, 0x46});
-        verify(callback, only()).derivedData(MessageReceivedListener.RotationDirection.MIXING, true, 82, 582);
+        verify(callback, only()).derivedData(RotationDirection.MIXING, true, 82, 582);
     }
 
     @Override

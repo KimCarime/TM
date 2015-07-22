@@ -1,306 +1,265 @@
 package com.lafarge.truckmix.service;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.*;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
+
+import com.lafarge.truckmix.BuildConfig;
+import com.lafarge.truckmix.TruckMix;
+import com.lafarge.truckmix.bluetooth.BluetoothChatService;
+import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
+import com.lafarge.truckmix.common.models.DeliveryParameters;
+import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.Communicator;
-import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
-import com.lafarge.truckmix.bluetooth.BluetoothChatService;
-import com.lafarge.truckmix.bluetooth.BluetoothChatServiceMessages;
+import com.lafarge.truckmix.notification.NotificationFactory;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+public class TruckMixService extends Service implements ITruckMixService {
 
-public class TruckMixService extends Service {
     private static final String TAG = "TruckMixService";
 
+    // Modules
     private Communicator mCommunicator;
-    private BluetoothChatService mBluetoothChatService;
+    private BluetoothChatService mBluetoothChat;
 
-    /** Keeps track of all current registered clients. */
-    private final List<Messenger> mClients = Collections.synchronizedList(new ArrayList<Messenger>());
-    /** Target we publish for clients to sendMessage messages to IncomingHandler */
-    private final Messenger mMessenger = new Messenger(new IncomingHandler(this));
+    // Client listeners
+    private CommunicatorListener mCommunicatorListener;
+    private LoggerListener mLoggerListener;
+    private EventListener mEventListener;
+    private ConnectionStateListener mConnectionStateListener;
 
-    private int mBindCount;
+    // Private listeners
+    private CommunicatorBytesListener mCommunicatorBytesListener;
+
+    // Thread management
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
+
+    // Service
+    private final IBinder mBinder = new TruckMixBinder();
+
+    // Options
+    private boolean mNotificationActivated = true;
+    private PendingIntent mPendingIntent;
+
+    //
+    // Inner types
+    //
+
+    public class TruckMixBinder extends Binder {
+        public TruckMixService getService() {
+            return TruckMixService.this;
+        }
+    }
+
+    public interface TruckMixContext {
+        void post(final Runnable runnable);
+
+        TruckMixService getServiceInstance();
+        Communicator getCommunicatorInstance();
+        BluetoothChatService getBluetoothChatInstance();
+    }
+
+    //
+    // Service overrides
+    //
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.i(TAG, "TruckMixService version " + BuildConfig.VERSION_NAME + " is starting up");
-        mBluetoothChatService = new BluetoothChatService(this, new BluetoothChatServiceHandler(this));
-        mCommunicator = new Communicator(mBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
+        displayNotification(false);
     }
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "onDestroy called. Stop bluetooth connection");
-        mBluetoothChatService.stop();
+        mBluetoothChat.stop();
+        mHandlerThread.quit();
+        stopForeground(true);
+        Log.i(TAG, "TruckMixService stopped");
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        ++mBindCount;
-        Toast.makeText(getApplicationContext(), "binding", Toast.LENGTH_SHORT).show();
-        return mMessenger.getBinder();
+        return mBinder;
+    }
+
+    //
+    // API
+    //
+
+    public void start(String address, TruckMix truc) {
+        // Client
+        mNotificationActivated = truc.isNotificationActivated();
+        mPendingIntent = truc.getPendingIntent();
+        mCommunicatorListener = truc.getCommunicatorListener();
+        mLoggerListener = truc.getLoggerListener();
+        mEventListener = truc.getEventListener();
+        mConnectionStateListener = truc.getConnectionStateListener();
+
+        // Thread
+        mHandlerThread = new HandlerThread("TruckMixServiceThread");
+        mHandlerThread.start();
+        mHandler = new Handler(mHandlerThread.getLooper());
+
+        // Internal
+        mCommunicatorBytesListener = new CommunicatorBytesListener() {
+            @Override
+            public void send(final byte[] bytes) {
+                mBluetoothChat.write(bytes);
+            }
+        };
+
+        // Module instantiation
+        mCommunicator = new Communicator(mCommunicatorBytesListener, mCommunicatorListener, mLoggerListener, mEventListener);
+        mBluetoothChat = new BluetoothChatService(mContext, mConnectionStateListener, mLoggerListener);
+        mBluetoothChat.connect(address);
+    }
+
+    //
+    // ITruckMixService implementation
+    //
+
+    @Override
+    public boolean isConnected() {
+        return mBluetoothChat.getState() == BluetoothChatService.STATE_CONNECTED;
     }
 
     @Override
-    public boolean onUnbind(Intent intent) {
-        --mBindCount;
-        return super.onUnbind(intent);
+    public void setTruckParameters(final TruckParameters parameters) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.setTruckParameters(parameters);
+            }});
     }
 
-    /**
-     *
-     */
-    static abstract class TruckMixServiceHandler extends Handler {
-        protected final WeakReference<TruckMixService> mService;
-
-        public TruckMixServiceHandler(TruckMixService service) {
-            this.mService = new WeakReference<TruckMixService>(service);
-        }
+    @Override
+    public void deliveryNoteReceived(final DeliveryParameters parameters) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.deliveryNoteReceived(parameters);
+            }});
     }
 
-    /**
-     * Handler of incoming messages from clients.
-     */
-    private static class IncomingHandler extends TruckMixServiceHandler {
+    @Override
+    public void acceptDelivery(final boolean accepted) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.acceptDelivery(accepted);
+            }});
+    }
 
-        public IncomingHandler(TruckMixService service) {
-            super(service);
-        }
+    @Override
+    public void endDelivery() {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.endDelivery();
+            }});
+    }
 
-        @Override
-        public void handleMessage(Message msg) {
-            Log.d(TAG, "handleMessage from client + " + msg.replyTo);
+    @Override
+    public void allowWaterAddition(final boolean allowWaterAddition) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.allowWaterAddition(allowWaterAddition);
+            }});
+    }
 
-            TruckMixService service = mService.get();
-            if (service == null) return;
+    @Override
+    public void changeExternalDisplayState(final boolean activated) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.changeExternalDisplayState(activated);
+            }});
+    }
 
-            switch (msg.what) {
-                case TruckMixServiceMessages.MSG_REGISTER_CLIENT:
-                    Log.i(TAG, "Client registered: " + msg.replyTo);
-                    service.mClients.add(msg.replyTo);
-                    break;
-                case TruckMixServiceMessages.MSG_UNREGISTER_CLIENT:
-                    Log.i(TAG, "Client unregistered: " + msg.replyTo);
-                    service.mClients.remove(msg.replyTo);
-                    break;
-                case TruckMixServiceMessages.MSG_CONNECT_DEVICE:
-                    service.mBluetoothChatService.connect(TruckMixServiceMessages.getAddressFromConnectMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_ALLOW_WATER_REQUEST:
-                    service.mCommunicator.setWaterRequestAllowed(TruckMixServiceMessages.getValueFromAllowWaterRequestMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_ENABLE_QUALITY_TRACKING:
-                    service.mCommunicator.setQualityTrackingActivated(TruckMixServiceMessages.getValueFromEnableQualityTrackingMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_TRUCK_PARAMETERS:
-                    service.mCommunicator.setTruckParameters(TruckMixServiceMessages.getDataFromTruckParametersMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_DELIVERY_PARAMETERS:
-                    service.mCommunicator.deliveryNoteReceived(TruckMixServiceMessages.getDataFromDeliveryParametersMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_ACCEPT_DELIVERY:
-                    service.mCommunicator.acceptDelivery(TruckMixServiceMessages.getValueFromAcceptDeliveryMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_END_DELIVERY:
-                    service.mCommunicator.endDelivery();
-                    break;
-                case TruckMixServiceMessages.MSG_ADD_WATER_PERMISSION:
-                    service.mCommunicator.allowWaterAddition(TruckMixServiceMessages.getValueFromAddWaterPermissionMessage(msg));
-                    break;
-                case TruckMixServiceMessages.MSG_CHANGE_EXTERNAL_DISPLAY_STATE:
-                    service.mCommunicator.changeExternalDisplayState(TruckMixServiceMessages.getValueFromChangeExternalDisplayStateMessage(msg));
+    @Override
+    public boolean isExternalDisplayActivated() {
+        return mCommunicator.isExternalDisplayStateActivated();
+    }
+
+    @Override
+    public Communicator.Information getLastInformation() {
+        return mCommunicator.getLastInformation();
+    }
+
+    @Override
+    public void setWaterRequestAllowed(final boolean waterRequestAllowed) {
+        mHandler.post(new Runnable(){
+            @Override
+            public void run() {
+                mCommunicator.setWaterRequestAllowed(waterRequestAllowed);
+            }});
+    }
+
+    @Override
+    public boolean isWaterRequestAllowed() {
+        return mCommunicator.isWaterRequestAllowed();
+    }
+
+    @Override
+    public void setQualityTrackingActivated(final boolean qualityTrackingEnabled) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCommunicator.setQualityTrackingActivated(qualityTrackingEnabled);
             }
-        }
-    };
+        });
+    }
 
-    /**
-     * Handler of incoming bluetooth messages.
-     */
-    private static class BluetoothChatServiceHandler extends TruckMixServiceHandler {
+    @Override
+    public boolean isQualityTrackingActivated() {
+        return mCommunicator.isQualityTrackingActivated();
+    }
 
-        public BluetoothChatServiceHandler(TruckMixService service) {
-            super(service);
-        }
+    //
+    // Other
+    //
 
-        @Override
-        public void handleMessage(Message msg) {
-            TruckMixService service = mService.get();
-            if (service == null) return;
-
-            switch (msg.what) {
-                case BluetoothChatServiceMessages.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED:
-                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectedMessage());
-                            service.mCommunicator.setConnected(true);
-                            break;
-                        case BluetoothChatService.STATE_CONNECTING:
-                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsConnectingMessage());
-                            break;
-                        case BluetoothChatService.STATE_NONE:
-                            service.sendMessage(TruckMixServiceMessages.createCalculatorIsDisconnectedMessage());
-                            service.mCommunicator.setConnected(false);
-                            break;
-                    }
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_WRITE:
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_READ:
-                    service.mCommunicator.received(Arrays.copyOf((byte[]) msg.obj, msg.arg1));
-                    break;
-                case BluetoothChatServiceMessages.MESSAGE_DEVICE_NAME:
-                    break;
-            }
+    public void displayNotification(boolean connected) {
+        if (mNotificationActivated) {
+            startForeground(NotificationFactory.NOTIFICATION_TRUCKMIX_ID, NotificationFactory.createTruckMixNotification(this, mPendingIntent, connected));
         }
     }
 
-    /**
-     * Implementation of the CommunicatorBytesListener.
-     * Every bytes retrieved here should be send via Bluetooth.
-     */
-    private final CommunicatorBytesListener mBytesListener = new CommunicatorBytesListener() {
+    //
+    // Private stuff
+    //
+
+    private final TruckMixContext mContext = new TruckMixContext() {
+
         @Override
-        public void send(byte[] bytes) {
-            mBluetoothChatService.write(bytes);
+        public void post(final Runnable runnable) {
+            mHandler.post(runnable);
+        }
+
+        @Override
+        public TruckMixService getServiceInstance() {
+            return TruckMixService.this;
+        }
+
+        @Override
+        public Communicator getCommunicatorInstance() {
+            return mCommunicator;
+        }
+
+        @Override
+        public BluetoothChatService getBluetoothChatInstance() {
+            return mBluetoothChat;
         }
     };
-
-    /**
-     * Implementation of the CommunicatorListener.
-     */
-    private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
-        @Override
-        public void slumpUpdated(int slump) {
-            sendMessage(TruckMixServiceMessages.createSlumpUpdatedMessage(slump));
-        }
-
-        @Override
-        public void mixingModeActivated() {
-            sendMessage(TruckMixServiceMessages.createMixingModeActivatedMessage());
-        }
-
-        @Override
-        public void unloadingModeActivated() {
-            sendMessage(TruckMixServiceMessages.createUnloadingModeActivatedMessage());
-        }
-
-        @Override
-        public void waterAdded(int volume, MessageReceivedListener.WaterAdditionMode additionMode) {
-            sendMessage(TruckMixServiceMessages.createWaterAddedMessage(volume, additionMode));
-        }
-
-        @Override
-        public void waterAdditionRequest(int volume) {
-            sendMessage(TruckMixServiceMessages.createWaterAdditionRequestMessage(volume));
-        }
-
-        @Override
-        public void waterAdditionBegan() {}
-
-        @Override
-        public void waterAdditionEnd() {}
-
-        @Override
-        public void alarmWaterAdditionBlocked() {
-            sendMessage(TruckMixServiceMessages.createAlarmWaterAdditionBlockedMessage());
-        }
-
-        @Override
-        public void stateChanged(int step, int subStep) {
-            sendMessage(TruckMixServiceMessages.createStateChangedMessage(step, subStep));
-        }
-
-        @Override
-        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
-            sendMessage(TruckMixServiceMessages.createCalibrationDataMessage(inputPressure, outputPressure, rotationSpeed));
-        }
-
-        @Override
-        public void alarmWaterMax() {
-            sendMessage(TruckMixServiceMessages.createAlarmWaterMaxMessage());
-        }
-
-        @Override
-        public void alarmFlowageError() {
-            sendMessage(TruckMixServiceMessages.createAlarmFlowageErrorMessage());
-        }
-
-        @Override
-        public void alarmCountingError() {
-            sendMessage(TruckMixServiceMessages.createAlarmCountingErrorMessage());
-        }
-
-        @Override
-        public void inputSensorConnectionChanged(boolean connected) {
-            sendMessage(TruckMixServiceMessages.createInputSensorConnectionChangedMessage(connected));
-        }
-
-        @Override
-        public void outputSensorConnectionChanged(boolean connected) {
-            sendMessage(TruckMixServiceMessages.createOutputSensorConnectionChangedMessage(connected));
-        }
-
-        @Override
-        public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
-            sendMessage(TruckMixServiceMessages.createSpeedSensorHasExceedMinThresholdMessage(thresholdExceed));
-        }
-
-        @Override
-        public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
-            sendMessage(TruckMixServiceMessages.createSpeedSensorHasExceedMaxThresholdMessage(thresholdExceed));
-        }
-    };
-
-    /**
-     * Implementation of the LoggerListener
-     */
-    private final LoggerListener mLoggerListener = new LoggerListener() {
-        @Override
-        public void log(String log) {
-            sendMessage(TruckMixServiceMessages.createLogMessage(log));
-        }
-    };
-
-    /**
-     * Implementation of the EventListener
-     */
-    private final EventListener mEventListener = new EventListener() {
-        @Override
-        public void onNewEvents(Event event) {
-            sendMessage(TruckMixServiceMessages.createNewEventMessage(event));
-        }
-    };
-
-    /**
-     * Send a message of the list of clients. Note that we should only have one client in the array.
-     */
-    private void sendMessage(Message msg) {
-        // We are going through the list from back to front so this is safe to do inside the loop.
-        for (int i = mClients.size() - 1; i >= 0; i--) {
-            try {
-                Log.i(TAG, "Sending message to clients: " + msg);
-                Message m = new Message();
-                m.copyFrom(msg);
-                mClients.get(i).send(m);
-            }
-            catch (RemoteException e) {
-                // The client is dead. Remove it from the list
-                Log.e(TAG, "Client is dead. Removing from list: " + i);
-                mClients.remove(i);
-            }
-        }
-    }
 }

@@ -1,9 +1,37 @@
 package com.lafarge.truckmix.decoder.states;
 
-import com.lafarge.truckmix.decoder.actions.*;
+import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.decoder.actions.AlarmCountingError;
+import com.lafarge.truckmix.decoder.actions.AlarmFlowageError;
+import com.lafarge.truckmix.decoder.actions.AlarmWaterAdditionBlocked;
+import com.lafarge.truckmix.decoder.actions.AlarmWaterMax;
+import com.lafarge.truckmix.decoder.actions.CalibrationData;
+import com.lafarge.truckmix.decoder.actions.DeliveryParametersReceived;
+import com.lafarge.truckmix.decoder.actions.DeliveryParametersRequest;
+import com.lafarge.truckmix.decoder.actions.DeliveryValidationReceived;
+import com.lafarge.truckmix.decoder.actions.DeliveryValidationRequest;
+import com.lafarge.truckmix.decoder.actions.DerivedData;
+import com.lafarge.truckmix.decoder.actions.InternData;
+import com.lafarge.truckmix.decoder.actions.MixingModeActivated;
+import com.lafarge.truckmix.decoder.actions.RawData;
+import com.lafarge.truckmix.decoder.actions.ReadAction;
+import com.lafarge.truckmix.decoder.actions.SensorInputConnectionChanged;
+import com.lafarge.truckmix.decoder.actions.SensorOutputConnectionChanged;
+import com.lafarge.truckmix.decoder.actions.SensorSpeedThresholdMax;
+import com.lafarge.truckmix.decoder.actions.SensorSpeedThresholdMin;
+import com.lafarge.truckmix.decoder.actions.SlumpUpdated;
+import com.lafarge.truckmix.decoder.actions.StateChanged;
+import com.lafarge.truckmix.decoder.actions.TemperatureUpdated;
+import com.lafarge.truckmix.decoder.actions.TraceDebug;
+import com.lafarge.truckmix.decoder.actions.TruckParametersReceived;
+import com.lafarge.truckmix.decoder.actions.TruckParametersRequest;
+import com.lafarge.truckmix.decoder.actions.UnloadingModeActivated;
+import com.lafarge.truckmix.decoder.actions.WaterAdded;
+import com.lafarge.truckmix.decoder.actions.WaterAdditionBegan;
+import com.lafarge.truckmix.decoder.actions.WaterAdditionEnd;
+import com.lafarge.truckmix.decoder.actions.WaterAdditionRequest;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
-import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.utils.CRC16Modbus;
 
 import java.io.ByteArrayOutputStream;
@@ -97,6 +125,8 @@ public final class CrcState extends State {
             return new SlumpUpdated(messageListener);
         } else if (s.equals(Protocol.TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE)) {
             return new WaterAdded(messageListener);
+        } else if (s.equals(Protocol.TRAME_TEMPERATURE_COURANTE)) {
+            return new TemperatureUpdated(messageListener);
         } else if (s.equals(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_MALAXAGE)) {
             return new MixingModeActivated(messageListener);
         } else if (s.equals(Protocol.TRAME_NOTIFICATION_PASSAGE_EN_VIDANGE)) {

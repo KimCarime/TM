@@ -10,5 +10,5 @@ public interface CommunicatorBytesListener {
      *
      * @param bytes The bytes to send
      */
-    void send(byte[] bytes);
+    void send(final byte[] bytes);
 }

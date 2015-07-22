@@ -2,6 +2,7 @@ package com.lafarge.truckmix.decoder.states;
 
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
+
 import org.junit.Before;
 import org.junit.Test;
 

@@ -1,6 +1,7 @@
 package com.lafarge.truckmix.decoder.actions;
 
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;

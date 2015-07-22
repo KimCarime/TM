@@ -1,4 +1,4 @@
-package com.lafarge.truckmix.demo;
+package com.lafarge.truckmix.controls;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

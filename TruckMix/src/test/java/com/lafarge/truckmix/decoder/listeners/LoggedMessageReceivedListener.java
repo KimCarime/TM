@@ -1,11 +1,17 @@
 package com.lafarge.truckmix.decoder.listeners;
 
-import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 
 public class LoggedMessageReceivedListener implements MessageReceivedListener {
     @Override
     public void slumpUpdated(int slump) {
         System.out.println("  -> slump updated: " + slump);
+    }
+
+    @Override
+    public void temperatureUpdated(float temperature) {
+        System.out.println("  -> temperature updated: " + temperature);
     }
 
     @Override
@@ -84,8 +90,8 @@ public class LoggedMessageReceivedListener implements MessageReceivedListener {
     }
 
     @Override
-    public void rawData(int inPressure, int outPressure, int interval, boolean buttonHold) {
-        System.out.println("  -> raw Data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO"));
+    public void rawData(int inputPressure, int outputPressure, int interval, boolean buttonHold) {
+        System.out.println("  -> raw Data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO"));
     }
 
     @Override
@@ -99,8 +105,8 @@ public class LoggedMessageReceivedListener implements MessageReceivedListener {
     }
 
     @Override
-    public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
-        System.out.println("  -> calibration Data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", rotationSpeed: " + rotationSpeed);
+    public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
+        System.out.println("  -> calibration Data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", rotationSpeed: " + rotationSpeed);
     }
 
     @Override

@@ -1,10 +1,13 @@
 package com.lafarge.truckmix.decoder.actions;
 
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.only;
+import static org.mockito.Mockito.verify;
 
 public class TraceDebugTest extends ReadActionTest {
 
@@ -19,7 +22,6 @@ public class TraceDebugTest extends ReadActionTest {
 
     @Override
     @Test
-    @Ignore
-    // This test is useless because TraceDebug doesn't have a defined size
+    @Ignore ("This test is useless because TraceDebug doesn't have a defined size")
     public void should_throw_an_exception_if_data_length_is_not_conform_to_protocol() {}
 }

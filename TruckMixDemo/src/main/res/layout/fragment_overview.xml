@@ -25,7 +25,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Slump :"
+                                android:text="@string/overview_current_slump"
                                 />
 
                         <TextView
@@ -36,6 +36,31 @@
                                 android:layout_marginRight="10dp"
                                 android:layout_weight="1"
                                 />
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="start"
+                            android:layout_marginLeft="10dp"
+                            android:layout_weight="1"
+                            android:text="@string/overview_current_temperature"
+                            />
+
+                        <TextView
+                            android:id="@+id/textView14"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:layout_marginRight="10dp"
+                            android:layout_weight="1"
+                            />
 
                 </LinearLayout>
                 <LinearLayout
@@ -50,7 +75,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Alarm :"
+                                android:text="@string/overview_alarm"
                                 />
 
                         <TextView
@@ -75,7 +100,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Mode toupie :"
+                                android:text="@string/overview_mixing_mode"
                                 />
 
                         <TextView
@@ -106,7 +131,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Pression entree :"
+                                android:text="@string/overview_input_pressure"
                                 />
 
                         <TextView
@@ -131,7 +156,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Pression sortie :"
+                                android:text="@string/overview_output_pressure"
                                 />
 
                         <TextView
@@ -156,7 +181,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Vitesse de rotation :"
+                                android:text="@string/overview_rotation_speed"
                                 />
 
                         <TextView
@@ -187,7 +212,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Etat capteur Pe :"
+                                android:text="@string/overview_input_pressure_sensor_state"
                                 />
 
                         <TextView
@@ -212,7 +237,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Etat capteur Ps :"
+                                android:text="@string/overview_output_pressure_sensor_state"
                                 />
 
                         <TextView
@@ -225,12 +250,6 @@
                                 />
 
                 </LinearLayout>
-                <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_margin="10dp"
-                        android:background="@android:color/darker_gray"
-                        />
                 <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -243,32 +262,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Capteur vitesse seuil min:"
-                                />
-
-                        <TextView
-                                android:id="@+id/textView6"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="end"
-                                android:layout_marginRight="10dp"
-                                android:layout_weight="1"
-                                />
-
-                </LinearLayout>
-                <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical|center_horizontal"
-                        android:orientation="horizontal">
-
-                        <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="start"
-                                android:layout_marginLeft="10dp"
-                                android:layout_weight="1"
-                                android:text="Capteur vitesse seuil max:"
+                                android:text="@string/overview_speed_sensor_state"
                                 />
 
                         <TextView
@@ -299,7 +293,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Mode acquisition :"
+                                android:text="@string/overview_acquisition_mode"
                                 />
 
                         <TextView
@@ -323,7 +317,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Mode régulation :"
+                                android:text="@string/overview_regulation_mode"
                                 />
 
                         <TextView
@@ -347,7 +341,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Mode pompe :"
+                                android:text="@string/overview_pump_mode"
                                 />
 
                         <TextView
@@ -371,7 +365,7 @@
                                 android:gravity="start"
                                 android:layout_marginLeft="10dp"
                                 android:layout_weight="1"
-                                android:text="Mode slump :"
+                                android:text="@string/overview_slump_mode"
                                 />
 
                         <TextView

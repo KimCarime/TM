@@ -1,5 +1,10 @@
 package com.lafarge.truckmix.communicator;
 
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.EventFactory;
@@ -54,12 +59,16 @@ public class Communicator {
     private boolean waterRequestAllowed;
     private boolean qualityTrackingActivated;
 
-    // Current state
+    // Communicator state
     private State state;
     private boolean isSync;
     private boolean isConnected;
-    private int currentSlump;
-    MessageReceivedListener.RotationDirection currentRotation;
+    private boolean isExternalDisplayActivated;
+
+    // Message received state
+    RotationDirection currentRotation;
+    SpeedSensorState currentSpeedSensorState;
+    private Information information;
 
     // Other
     private final Scheduler scheduler;
@@ -95,6 +104,7 @@ public class Communicator {
         this.state = State.WAITING_FOR_DELIVERY_NOTE;
         this.isConnected = false;
         this.scheduler = scheduler;
+        this.information = new Information();
     }
 
     //
@@ -157,7 +167,7 @@ public class Communicator {
             loggerListener.log("ACTION: end delivery");
             setState(State.WAITING_FOR_DELIVERY_NOTE);
             if (qualityTrackingActivated) {
-                eventListener.onNewEvents(EventFactory.createEndOfDeliveryEvent(currentSlump));
+                eventListener.onNewEvents(EventFactory.createEndOfDeliveryEvent(information.getSlump()));
             }
         } else {
             loggerListener.log("ACTION (IGNORED): end delivery");
@@ -174,9 +184,19 @@ public class Communicator {
             loggerListener.log("ACTION: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
             bytesListener.send(encoder.fake());
             bytesListener.send(encoder.changeExternalDisplayState(isActivated));
+            isExternalDisplayActivated = isActivated;
         } else {
             loggerListener.log("ACTION (IGNORED): change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED"));
         }
+    }
+
+    /**
+     * Return the state of the external display
+     *
+     * @return true if the external display is activated, otherwise false.
+     */
+    public boolean isExternalDisplayStateActivated() {
+        return isExternalDisplayActivated;
     }
 
     /**
@@ -205,7 +225,8 @@ public class Communicator {
      * @param isConnected true if the terminal is connected to the calculator, otherwise false.
      */
     public void setConnected(boolean isConnected) {
-        loggerListener.log("BLUETOOTH: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        loggerListener.log("INTERNAL: connection state: " + (isConnected ? "CONNECTED" : "NOT CONNECTED"));
+        loggerListener.log("INTERNAL: current state: " + state.name());
         this.isConnected = isConnected;
         if (!isConnected) {
             cancelTimer();
@@ -217,19 +238,11 @@ public class Communicator {
         }
     }
 
-    /** Returns the current connection state of the Communicator */
+    /**
+     * Returns the current connection state of the Communicator
+     */
     public boolean isConnected() {
         return isConnected;
-    }
-
-    /** Returns the current slump sent by the calculator */
-    public int currentSlump() {
-        return currentSlump;
-    }
-
-    /** Return the current rotation mode sent by the calculator */
-    public MessageReceivedListener.RotationDirection currentRotation() {
-        return currentRotation;
     }
 
     /**
@@ -243,7 +256,9 @@ public class Communicator {
         this.waterRequestAllowed = waterRequestAllowed;
     }
 
-    /** Return the state of the water request allowance */
+    /**
+     * Return the state of the water request allowance
+     */
     public boolean isWaterRequestAllowed() {
         return waterRequestAllowed;
     }
@@ -255,13 +270,23 @@ public class Communicator {
      * @param activated true to activate the quality tracking, otherwise false.
      */
     public void setQualityTrackingActivated(boolean activated) {
-        loggerListener.log("OPTION: quality tracking is " + (waterRequestAllowed ? "ENABLED" : "DISABLED"));
+        loggerListener.log("OPTION: quality tracking is " + (activated ? "ENABLED" : "DISABLED"));
         this.qualityTrackingActivated = activated;
     }
 
-    /** Return the state of the quality tracking */
+    /**
+     * Return the state of the quality tracking.
+     */
     public boolean isQualityTrackingActivated() {
         return qualityTrackingActivated;
+    }
+
+    /**
+     * Allow to retrieve last information catched by TruckMix.
+     * @see Communicator.Information
+     */
+    public Information getLastInformation() {
+        return information;
     }
 
     /**
@@ -287,7 +312,7 @@ public class Communicator {
     //
 
     private void setState(State state) {
-        loggerListener.log("STATE: state changed: " + state.toString());
+        loggerListener.log("INTERNAL: state changed: " + state.toString());
         switch (state) {
             case WAITING_FOR_DELIVERY_NOTE:
                 isSync = false;
@@ -296,6 +321,7 @@ public class Communicator {
                 }
                 break;
             case WAITING_FOR_DELIVERY_NOTE_ACCEPTATION:
+                information.clear();
                 if (isSync) {
                     cancelTimer();
                 }
@@ -342,7 +368,7 @@ public class Communicator {
             if (isConnected) {
                 if (state == State.DELIVERY_IN_PROGRESS) {
                     loggerListener.log("RECEIVED: slump updated: " + slump + " mm");
-                    currentSlump = slump;
+                    information.setSlump(slump);
                     communicatorListener.slumpUpdated(slump);
                     if (qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createNewSlumpEvent(slump));
@@ -354,12 +380,29 @@ public class Communicator {
         }
 
         @Override
+        public void temperatureUpdated(float temperature) {
+            if (isConnected) {
+                if (state == State.DELIVERY_IN_PROGRESS) {
+                    loggerListener.log("RECEIVED: temperature updated: " + temperature + " °C");
+                    information.setTemperature(temperature);
+                    communicatorListener.temperatureUpdated(temperature);
+                    if (qualityTrackingActivated) {
+                        eventListener.onNewEvents(EventFactory.createNewTemperatureEvent(temperature));
+                    }
+                } else {
+                    loggerListener.log("RECEIVED (IGNORED): temperature updated");
+                }
+            }
+        }
+
+        @Override
         public void mixingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: mixing mode activated");
-                communicatorListener.mixingModeActivated();
                 if (currentRotation != RotationDirection.MIXING) {
                     currentRotation = RotationDirection.MIXING;
+                    communicatorListener.rotationDirectionChanged(RotationDirection.MIXING);
+                    information.setRotationDirection(RotationDirection.MIXING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.MIXING));
                     }
@@ -371,9 +414,10 @@ public class Communicator {
         public void unloadingModeActivated() {
             if (isConnected) {
                 loggerListener.log("RECEIVED: unloadingModeActivated");
-                communicatorListener.unloadingModeActivated();
                 if (currentRotation != RotationDirection.UNLOADING) {
                     currentRotation = RotationDirection.UNLOADING;
+                    communicatorListener.rotationDirectionChanged(RotationDirection.UNLOADING);
+                    information.setRotationDirection(RotationDirection.UNLOADING);
                     if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createMixerTransitionEvent(RotationDirection.UNLOADING));
                     }
@@ -384,9 +428,9 @@ public class Communicator {
         @Override
         public void waterAdded(int volume, WaterAdditionMode additionMode) {
             if (isConnected && waterRequestAllowed) {
-                if (state == State.DELIVERY_IN_PROGRESS && waterRequestAllowed) {
+                if (state == State.DELIVERY_IN_PROGRESS) {
                     loggerListener.log("RECEIVED: water added: " + volume + "L, additionMode: " + additionMode.toString());
-                    communicatorListener.waterAdded(volume, additionMode);
+                    communicatorListener.waterAdded(volume, WaterAdditionMode.AUTO);
                 } else {
                     loggerListener.log("RECEIVED (IGNORED): water added");
                 }
@@ -425,7 +469,7 @@ public class Communicator {
         public void alarmWaterAdditionBlocked() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water addition blocked");
-                communicatorListener.alarmWaterAdditionBlocked();
+                communicatorListener.alarmTriggered(AlarmType.WATER_ADDITION_BLOCKED);
             }
         }
 
@@ -513,9 +557,9 @@ public class Communicator {
         }
 
         @Override
-        public void rawData(int inPressure, int outPressure, int interval, boolean buttonHold) {
+        public void rawData(int inputPressure, int outputPressure, int interval, boolean buttonHold) {
             if (isConnected) {
-                loggerListener.log("RECEIVED: raw data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO") + ")");
+                loggerListener.log("RECEIVED: raw data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", interval: " + interval + ", buttonHold: " + (buttonHold ? "YES" : "NO") + ")");
             }
         }
 
@@ -530,20 +574,32 @@ public class Communicator {
         public void internData(boolean inSensorConnected, boolean outSensorConnected, boolean speedTooLow, boolean speedTooHigh, boolean commandEP1Activated, boolean commandVA1Activated) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: intern data (inSensorConnected: " + (inSensorConnected ? "YES" : "NO") + ", outSensorConnected: " + (outSensorConnected ? "YES" : "NO") + ", speedTooLow: " + (speedTooLow ? "YES" : "NO") + ", speedTooHigh: " + (speedTooHigh ? "YES" : "NO") + ", commandEP1Activated: " + (commandEP1Activated ? "YES" : "NO") + ", commandVA1Activated: " + (commandVA1Activated ? "YES" : "NO") + ")");
+                SpeedSensorState speedSensorState;
+                if (speedTooLow) {
+                    speedSensorState = SpeedSensorState.TOO_SLOW;
+                } else if (speedTooHigh) {
+                    speedSensorState = SpeedSensorState.TOO_FAST;
+                } else {
+                    speedSensorState = SpeedSensorState.NORMAL;
+                }
+                communicatorListener.internData(inSensorConnected, outSensorConnected, speedSensorState);
             }
         }
 
         @Override
-        public void calibrationData(float inPressure, float outPressure, float rotationSpeed) {
+        public void calibrationData(float inputPressure, float outputPressure, float rotationSpeed) {
             if (isConnected) {
                 if (state == State.DELIVERY_IN_PROGRESS) {
-                    loggerListener.log("RECEIVED: calibration data (inPressure: " + inPressure + ", outPressure:" + outPressure + ", " +
+                    loggerListener.log("RECEIVED: calibration data (inputPressure: " + inputPressure + ", outputPressure:" + outputPressure + ", " +
                             "rotationSpeed: " + rotationSpeed + " tr/min)");
-                    communicatorListener.calibrationData(inPressure, outPressure, rotationSpeed);
+                    communicatorListener.calibrationData(inputPressure, outputPressure, rotationSpeed);
+                    information.setInputPressure(inputPressure);
+                    information.setOutputPressure(outputPressure);
+                    information.setRotationSpeed(rotationSpeed);
                     if (qualityTrackingActivated) {
                         eventListener.onNewEvents(EventFactory.createRotationSpeedEvent(rotationSpeed));
-                        eventListener.onNewEvents(EventFactory.createInputPressureEvent(inPressure));
-                        eventListener.onNewEvents(EventFactory.createOutputPressureEvent(outPressure));
+                        eventListener.onNewEvents(EventFactory.createInputPressureEvent(inputPressure));
+                        eventListener.onNewEvents(EventFactory.createOutputPressureEvent(outputPressure));
                     }
                 } else {
                     loggerListener.log("RECEIVED (IGNORED): calibration data");
@@ -555,7 +611,8 @@ public class Communicator {
         public void alarmWaterMax() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: water max");
-                communicatorListener.alarmWaterMax();
+                information.setAlarm(AlarmType.WATER_MAX);
+                communicatorListener.alarmTriggered(AlarmType.WATER_MAX);
             }
         }
 
@@ -563,7 +620,8 @@ public class Communicator {
         public void alarmFlowageError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: flowage error");
-                communicatorListener.alarmFlowageError();
+                information.setAlarm(AlarmType.FLOWAGE_ERROR);
+                communicatorListener.alarmTriggered(AlarmType.FLOWAGE_ERROR);
             }
         }
 
@@ -571,7 +629,8 @@ public class Communicator {
         public void alarmCountingError() {
             if (isConnected && waterRequestAllowed) {
                 loggerListener.log("RECEIVED: ALARM: counting error");
-                communicatorListener.alarmCountingError();
+                information.setAlarm(AlarmType.COUNTING_ERROR);
+                communicatorListener.alarmTriggered(AlarmType.COUNTING_ERROR);
             }
         }
 
@@ -579,6 +638,7 @@ public class Communicator {
         public void inputSensorConnectionChanged(boolean connected) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: input sensor connection changed: " + (connected ? "IS CONNECTED" : "NOT CONNECTED"));
+                information.setInputPressureSensorState(connected);
                 communicatorListener.inputSensorConnectionChanged(connected);
             }
         }
@@ -587,6 +647,7 @@ public class Communicator {
         public void outputSensorConnectionChanged(boolean connected) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: output sensor connection changed: " + (connected ? "IS CONNECTED" : "NOT CONNECTED"));
+                information.setOutputPressureSensorState(connected);
                 communicatorListener.outputSensorConnectionChanged(connected);
             }
         }
@@ -595,7 +656,15 @@ public class Communicator {
         public void speedSensorHasExceedMinThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed min threshold: " + (thresholdExceed ? "YES" : "NO"));
-                communicatorListener.speedSensorHasExceedMinThreshold(thresholdExceed);
+                if (thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_SLOW) {
+                    currentSpeedSensorState = SpeedSensorState.TOO_SLOW;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.TOO_SLOW);
+                    information.setSpeedSensorState(SpeedSensorState.TOO_SLOW);
+                } else if (!thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_FAST){
+                    currentSpeedSensorState = SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(SpeedSensorState.NORMAL);
+                }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMinEvent(thresholdExceed));
                 }
@@ -606,7 +675,15 @@ public class Communicator {
         public void speedSensorHasExceedMaxThreshold(boolean thresholdExceed) {
             if (isConnected) {
                 loggerListener.log("RECEIVED: speed sensor has exceed max threshold: " + (thresholdExceed ? "YES" : "NO"));
-                communicatorListener.speedSensorHasExceedMaxThreshold(thresholdExceed);
+                if (thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_FAST) {
+                    currentSpeedSensorState = SpeedSensorState.TOO_FAST;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.TOO_FAST);
+                    information.setSpeedSensorState(SpeedSensorState.TOO_FAST);
+                } else if (!thresholdExceed && currentSpeedSensorState != SpeedSensorState.TOO_SLOW){
+                    currentSpeedSensorState = SpeedSensorState.NORMAL;
+                    communicatorListener.speedSensorStateChanged(SpeedSensorState.NORMAL);
+                    information.setSpeedSensorState(SpeedSensorState.NORMAL);
+                }
                 if (state == State.DELIVERY_IN_PROGRESS && qualityTrackingActivated) {
                     eventListener.onNewEvents(EventFactory.createRotationSpeedLimitMaxEvent(thresholdExceed));
                 }
@@ -621,203 +698,203 @@ public class Communicator {
         @Override
         public void targetSlump(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: target slump: " + value + " mm\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: target slump: " + value + " mm");
             }
         }
 
         @Override
         public void maximumWater(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: maximum water: " + value + " L\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: maximum water: " + value + " L");
             }
         }
 
         @Override
         public void waterAdditionPermission(boolean isAllowed, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: water addition allowed: " + (isAllowed ? "YES" : "NO") + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: water addition allowed: " + (isAllowed ? "YES" : "NO") + "");
             }
         }
 
         @Override
         public void changeExternalDisplayState(boolean isActivated, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED") + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: change external display state: " + (isActivated ? "ACTIVATED" : "NOT ACTIVATED") + "");
             }
         }
 
         @Override
         public void endOfDelivery(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: end of delivery\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: end of delivery");
             }
         }
 
         @Override
         public void beginningOfDelivery(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: beginning of delivery\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: beginning of delivery");
             }
         }
 
         @Override
         public void loadVolume(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: load volume: " + value + " m3" + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: load volume: " + value + " m3" + "");
             }
         }
 
         @Override
         public void parameterT1(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter T1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter T1: " + value + "");
             }
         }
 
         @Override
         public void parameterA11(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A11: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A11: " + value + "");
             }
         }
 
         @Override
         public void parameterA12(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A12: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A12: " + value + "");
             }
         }
 
         @Override
         public void parameterA13(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: parameter A13: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: parameter A13: " + value + "");
             }
         }
 
         @Override
         public void magnetQuantity(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: magnet quantity: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: magnet quantity: " + value + "");
             }
         }
 
         @Override
         public void timePump(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: time pump: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: time pump: " + value + "");
             }
         }
 
         @Override
         public void timeDelayDriver(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: time delay driver: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: time delay driver: " + value + "");
             }
         }
 
         @Override
         public void pulseNumber(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: pulse number: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: pulse number: " + value + "");
             }
         }
 
         @Override
         public void flowmeterFrequency(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: flowmeter frequency: " + value + "Hz\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: flowmeter frequency: " + value + "Hz");
             }
         }
 
         @Override
-        public void commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode, byte[] bytes) {
+        public void commandPumpMode(CommandPumpMode commandPumpMode, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: command pump mode: " + commandPumpMode.toString() + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: command pump mode: " + commandPumpMode.toString() + "");
             }
         }
 
         @Override
         public void calibrationInputSensorA(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration input sensor A: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration input sensor A: " + value + "");
             }
         }
 
         @Override
         public void calibrationOutputSensorA(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration output sensor A: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration output sensor A: " + value + "");
             }
         }
 
         @Override
         public void calibrationInputSensorB(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration input  sensor B: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration input  sensor B: " + value + "");
             }
         }
 
         @Override
         public void calibrationOutputSensorB(double value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: calibration output sensor B: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: calibration output sensor B: " + value + "");
             }
         }
 
         @Override
         public void openingTimeEV1(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: opening time EV1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: opening time EV1: " + value + "");
             }
         }
 
         @Override
         public void openingTimeVA1(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: opening time VA1: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: opening time VA1: " + value + "");
             }
         }
 
         @Override
         public void countingTolerance(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: counting tolerance: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: counting tolerance: " + value + "");
             }
         }
 
         @Override
         public void waitingDurationAfterWaterAddition(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: waiting duration after water addition: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: waiting duration after water addition: " + value + "");
             }
         }
 
         @Override
         public void maxDelayBeforeFlowage(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max delay before flowage: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max delay before flowage: " + value + "");
             }
         }
 
         @Override
         public void maxFlowageError(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max flowage error: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max flowage error: " + value + "");
             }
         }
 
         @Override
         public void maxCountingError(int value, byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: max couting error: " + value + "\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: max couting error: " + value + "");
             }
         }
 
         @Override
         public void fake(byte[] bytes) {
             if (isConnected) {
-                loggerListener.log("SENT: trame bidon\n    " + Convert.bytesToHex(bytes));
+                loggerListener.log("SENT: trame bidon");
             }
         }
     };
@@ -825,7 +902,7 @@ public class Communicator {
     /**
      * Progression of the Decoder
      */
-    private final ProgressListener progressListener= new ProgressListener() {
+    private final ProgressListener progressListener = new ProgressListener() {
         @Override
         public void timeout() {
             if (isConnected) {
@@ -834,11 +911,7 @@ public class Communicator {
         }
 
         @Override
-        public void willDecode(byte[] buff) {
-            if (isConnected) {
-                loggerListener.log("PROCESS: will decode:\n    " + Convert.bytesToHex(buff));
-            }
-        }
+        public void willDecode(byte[] buff) {}
 
         @Override
         public void willProcessByte(ProgressState state, byte b) {}
@@ -850,4 +923,171 @@ public class Communicator {
             }
         }
     };
+
+    /**
+     * Store information catch by TruckMix and provide a as-is cache function.
+     *
+     * Some values are timestamped and have a expiration delay of VALUE_EXPIRATION_DELAY_IN_MILLIS.
+     * If the value is expired then the getter would return null.
+     * Values expirable are :
+     *  - slump
+     *  - temperature
+     *  - rotationDirection
+     *  - inputPressure
+     *  - outputPressure
+     *  - rotationSpeed
+     *  - speedSensorState
+     */
+    public class Information {
+        public static final int VALUE_EXPIRATION_DELAY_IN_MILLIS = 5*1000*60;
+
+        private Value<Integer> slump;
+        private Value<Float> temperature;
+        private Value<RotationDirection> rotationDirection;
+        private Value<Float> inputPressure;
+        private Value<Float> outputPressure;
+        private Value<Float> rotationSpeed;
+        private Value<Boolean> inputPressureSensorState;
+        private Value<Boolean> outputPressureSensorState;
+        private Value<SpeedSensorState> speedSensorState;
+        private Value<AlarmType> alarm;
+
+        public Information() {
+        }
+
+        public Integer getSlump() {
+            return !isValueExpired(slump) ? slump.getData() : null;
+        }
+
+        public void setSlump(int slump) {
+            this.slump = new Value<Integer>(slump);
+        }
+
+        public void setTemperature(float temperature) {
+            this.temperature = new Value<Float>(temperature);
+        }
+
+        public Float getTemperature() {
+            return temperature != null ? temperature.getData() : null;
+        }
+
+        public RotationDirection getRotationDirection() {
+            return !isValueExpired(rotationDirection) ? rotationDirection.getData() : null;
+        }
+
+        public void setRotationDirection(RotationDirection rotationDirection) {
+            this.rotationDirection = new Value<RotationDirection>(rotationDirection);
+        }
+
+        public Float getInputPressure() {
+            return !isValueExpired(inputPressure) ? inputPressure.getData() : null;
+        }
+
+        public void setInputPressure(float inputPressure) {
+            this.inputPressure = new Value<Float>(inputPressure);
+        }
+
+        public Float getOutputPressure() {
+            return !isValueExpired(outputPressure) ? outputPressure.getData() : null;
+        }
+
+        public void setOutputPressure(float outputPressure) {
+            this.outputPressure = new Value<Float>(outputPressure);
+        }
+
+        public Float getRotationSpeed() {
+            return !isValueExpired(rotationSpeed) ? rotationSpeed.getData() : null;
+        }
+
+        public void setRotationSpeed(float rotationSpeed) {
+            this.rotationSpeed = new Value<Float>(rotationSpeed);
+        }
+
+        public Boolean getInputPressureSensorState() {
+            return inputPressureSensorState != null ? inputPressureSensorState.getData() : null;
+        }
+
+        public void setInputPressureSensorState(boolean connected) {
+            this.inputPressureSensorState = new Value<Boolean>(connected);
+        }
+
+        public Boolean getOutputPressureSensorState() {
+            return outputPressureSensorState != null ? outputPressureSensorState.getData() : null;
+        }
+
+        public void setOutputPressureSensorState(boolean connected) {
+            this.outputPressureSensorState = new Value<Boolean>(connected);
+        }
+
+        public SpeedSensorState getSpeedSensorState() {
+            return !isValueExpired(speedSensorState) ? speedSensorState.getData() : null;
+        }
+
+        public void setSpeedSensorState(SpeedSensorState speedSensorState) {
+            this.speedSensorState = new Value<SpeedSensorState>(speedSensorState);
+        }
+
+        public AlarmType getAlarm() {
+            return alarm != null ? alarm.getData() : null;
+        }
+
+        public void setAlarm(AlarmType alarm) {
+            this.alarm = new Value<AlarmType>(alarm);
+        }
+
+        //
+        // Public
+        //
+
+        public void clear() {
+            slump = null;
+            temperature = null;
+            rotationDirection = null;
+            inputPressure = null;
+            outputPressure = null;
+            rotationSpeed = null;
+            inputPressureSensorState = null;
+            outputPressureSensorState = null;
+            speedSensorState = null;
+            alarm = null;
+        }
+
+        //
+        // Private stuff
+        //
+
+        private boolean isValueExpired(Value value) {
+            if (value != null) {
+                return System.currentTimeMillis() - value.getTimestamp() > VALUE_EXPIRATION_DELAY_IN_MILLIS;
+            } else {
+                return true;
+            }
+        }
+
+        //
+        // Inner types
+        //
+
+        public class Value<T> {
+            private final T data;
+            private final long timestamp;
+
+            public Value(T data) {
+                this(data, System.currentTimeMillis());
+            }
+
+            public Value(T data, long timestamp) {
+                this.data = data;
+                this.timestamp = timestamp;
+            }
+
+            public T getData() {
+                return data;
+            }
+
+            public long getTimestamp() {
+                return timestamp;
+            }
+        }
+    }
 }

@@ -4,28 +4,28 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.view.View;
 import android.widget.ArrayAdapter;
+
 import com.lafarge.truckmix.demo.R;
 
 public class ConsoleListFragment extends ListFragment {
 
-    private static final String TAG = "ConsoleListFragment";
-
     private ArrayAdapter<String> mAdapter;
+
+    //
+    // Constructor
+    //
 
     public ConsoleListFragment() {
         // Required empty public constructor
     }
 
     public static ConsoleListFragment newInstance() {
-        ConsoleListFragment fragment = new ConsoleListFragment();
-        return fragment;
+        return new ConsoleListFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
+    //
+    // Fragment lifecycle
+    //
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -43,9 +43,9 @@ public class ConsoleListFragment extends ListFragment {
         getListView().setDivider(null);
     }
 
-    public void clear() {
-        mAdapter.clear();
-    }
+    //
+    // Public
+    //
 
     public void addLog(String log) {
         mAdapter.add(log);
@@ -56,5 +56,9 @@ public class ConsoleListFragment extends ListFragment {
                 getListView().setSelection(mAdapter.getCount() - 1);
             }
         });
+    }
+
+    public void clear() {
+        mAdapter.clear();
     }
 }

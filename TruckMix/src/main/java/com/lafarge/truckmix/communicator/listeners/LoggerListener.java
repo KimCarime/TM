@@ -9,5 +9,5 @@ public interface LoggerListener {
      *
      * @param log The message
      */
-    void log(String log);
+    void log(final String log);
 }

@@ -6,10 +6,27 @@
 
     <!-- MainActivity -->
     <string name="title_main_section1">Console</string>
-    <string name="title_main_section2">Vue d\'ensemble</string>
+    <string name="title_main_section2">Overview</string>
+    <string name="title_main_section3">Slumpometer</string>
 
     <!-- ParametersActivity -->
-    <string name="title_customize_parameters_section1">Paramètre camion</string>
-    <string name="title_customize_parameters_section2">Paramètre de livraison</string>
+    <string name="title_customize_parameters_section1">Truck parameters</string>
+    <string name="title_customize_parameters_section2">Delivery parameters</string>
+
+    <!-- OverviewFragment -->
+    <string name="overview_current_slump">Current slump :</string>
+    <string name="overview_current_temperature">Temperature :</string>
+    <string name="overview_alarm">Alarm :</string>
+    <string name="overview_mixing_mode">Mixing mode :</string>
+    <string name="overview_input_pressure">Input pressure :</string>
+    <string name="overview_output_pressure">Output pressure :</string>
+    <string name="overview_rotation_speed">Rotation speed :</string>
+    <string name="overview_input_pressure_sensor_state">Input sensor state :</string>
+    <string name="overview_output_pressure_sensor_state">Output sensor state :</string>
+    <string name="overview_speed_sensor_state">Speed sensor state :</string>
+    <string name="overview_acquisition_mode">Acquisition mode :</string>
+    <string name="overview_regulation_mode">Regulation mode :</string>
+    <string name="overview_pump_mode">Pump mode :</string>
+    <string name="overview_slump_mode">Slump mode :</string>
 
 </resources>

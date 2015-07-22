@@ -1,0 +1,12 @@
+{
+  "description": "new temperature ideal case",
+  "packets" : [
+    ["0xC0", "0x01", "0x10" ,"0x03" ,"0x00", "0x04", "0x42", "0x2A", "0x23", "0x20", "0x96", "0x3F"]
+  ],
+  "results": [
+    {
+      "message": "TRAME_TEMPERATURE_COURANTE",
+      "data": [ 42.534300 ]
+    }
+  ]
+}

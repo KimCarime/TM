@@ -1,6 +1,6 @@
 package com.lafarge.truckmix.encoder.listeners;
 
-import com.lafarge.truckmix.common.models.TruckParameters;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 
 /**
  * This interface list every messages that the Encoder have actually encoded.
@@ -23,7 +23,7 @@ public interface MessageSentListener {
     void timeDelayDriver(int value, byte[] bytes);
     void pulseNumber(int value, byte[] bytes);
     void flowmeterFrequency(int value, byte[] bytes);
-    void commandPumpMode(TruckParameters.CommandPumpMode commandPumpMode, byte[] bytes);
+    void commandPumpMode(CommandPumpMode commandPumpMode, byte[] bytes);
     void calibrationInputSensorA(double value, byte[] bytes);
     void calibrationOutputSensorA(double value, byte[] bytes);
     void calibrationInputSensorB(double value, byte[] bytes);

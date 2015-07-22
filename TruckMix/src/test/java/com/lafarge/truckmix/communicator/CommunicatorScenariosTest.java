@@ -2,6 +2,7 @@ package com.lafarge.truckmix.communicator;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.DeliveryParameters;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.communicator.events.Event;
@@ -9,6 +10,7 @@ import com.lafarge.truckmix.communicator.listeners.CommunicatorBytesListener;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -18,7 +20,11 @@ import org.reflections.scanners.ResourcesScanner;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -139,7 +145,7 @@ public class CommunicatorScenariosTest {
                         .OUTPUT_PRESSURE) {
                     event = new Event<Float>(eventId, value.floatValue());
                 } else {
-                    event = new Event<Integer>(eventId, value.intValue());
+                    event = new Event<Integer>(eventId, value != null ? value.intValue() : null);
                 }
                 eventResults.add(event);
             }
@@ -200,7 +206,7 @@ public class CommunicatorScenariosTest {
                             ((Double) ((Action) step).values.get("timeDelayDriver")).intValue(),
                             ((Double) ((Action) step).values.get("pulseNumber")).intValue(),
                             ((Double) ((Action) step).values.get("flowmeterFrequency")).intValue(),
-                            TruckParameters.CommandPumpMode.valueOf(((String) ((Action) step).values.get("commandPumpMode"))),
+                            CommandPumpMode.valueOf(((String) ((Action) step).values.get("commandPumpMode"))),
                             ((Double) ((Action) step).values.get("calibrationInputSensorA")),
                             ((Double) ((Action) step).values.get("calibrationInputSensorB")),
                             ((Double) ((Action) step).values.get("calibrationOutputSensorA")),

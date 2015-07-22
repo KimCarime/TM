@@ -2,11 +2,14 @@ package com.lafarge.truckmix.decoder;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.lafarge.truckmix.common.Protocol;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
 import com.lafarge.truckmix.decoder.listeners.LoggedMessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.LoggedProgressListener;
-import com.lafarge.truckmix.common.Protocol;
 import com.lafarge.truckmix.decoder.listeners.MessageReceivedListener;
 import com.lafarge.truckmix.decoder.listeners.ProgressListener;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -17,10 +20,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyByte;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @RunWith(value = Parameterized.class)
 public class DecoderScenariosTest {
@@ -148,7 +160,7 @@ public class DecoderScenariosTest {
 
         } else if (result.message.equals(Protocol.TRAME_DONNEES_DERIVEES)) {
             verify(messageListener).derivedData(
-                    MessageReceivedListener.RotationDirection.valueOf((String) result.data.get(0)),
+                    RotationDirection.valueOf((String) result.data.get(0)),
                     (Boolean) result.data.get(1),
                     ((Double) result.data.get(2)).intValue(),
                     ((Double) result.data.get(3)).intValue());
@@ -193,6 +205,9 @@ public class DecoderScenariosTest {
         } else if (result.message.equals(Protocol.TRAME_SLUMP_COURANT)) {
             verify(messageListener).slumpUpdated(((Double) result.data.get(0)).intValue());
 
+        } else if (result.message.equals(Protocol.TRAME_TEMPERATURE_COURANTE)) {
+            verify(messageListener).temperatureUpdated(((Double) result.data.get(0)).floatValue());
+
         } else if (result.message.equals(Protocol.TRAME_NOTIFICATION_CAPTEUR_VITESSE_SEUIL_MAX)) {
             verify(messageListener).speedSensorHasExceedMaxThreshold((Boolean) result.data.get(0));
 
@@ -213,7 +228,7 @@ public class DecoderScenariosTest {
         } else if (result.message.equals(Protocol.TRAME_VOLUME_EAU_AJOUTE_PLUS_MODE)) {
             verify(messageListener).waterAdded(
                     ((Double) result.data.get(0)).intValue(),
-                    MessageReceivedListener.WaterAdditionMode.valueOf((String) result.data.get(1)));
+                    WaterAdditionMode.valueOf((String) result.data.get(1)));
 
         } else if (result.message.equals(Protocol.TRAME_DEMANDE_AUTORISATION_AJOUT_EAU)) {
             verify(messageListener).waterAdditionRequest(((Double) result.data.get(0)).intValue());

@@ -1,6 +1,5 @@
 package com.lafarge.truckmix.decoder.listeners;
 
-import com.lafarge.truckmix.decoder.listeners.ProgressListener;
 import com.lafarge.truckmix.utils.Convert;
 
 public class LoggedProgressListener implements ProgressListener {
