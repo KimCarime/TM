@@ -36,13 +36,13 @@ The list of them is as follow :
 ```
 res/
     drawable-hdpi/
-        truckmix_status_icon_disconnected.png
+        truckmix_status_icon_connected.png
         truckmix_status_icon_disconnected.png
     drawable-mdpi/
-        truckmix_status_icon_disconnected.png
+        truckmix_status_icon_connected.png
         truckmix_status_icon_disconnected.png
     drawable-xhdpi/
-        truckmix_status_icon_disconnected.png
+        truckmix_status_icon_connected.png
         truckmix_status_icon_disconnected.png
 ```
 ```xml
