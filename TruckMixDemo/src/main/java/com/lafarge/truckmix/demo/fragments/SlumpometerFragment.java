@@ -27,8 +27,8 @@ public class SlumpometerFragment extends Fragment {
     private boolean ascending;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private final Timer timer = new Timer();
-
+    //private final Timer timer = new Timer();
+    Timer timer ;
     @InjectView(R.id.slumpometer) SlumpometerGauge slumpometer;
 
     //
@@ -71,6 +71,8 @@ public class SlumpometerFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
+        timer = new Timer(); //kac erreur plantage reconstruction du slumpometer
 
         nextSlump = 0;
         ascending = true;
