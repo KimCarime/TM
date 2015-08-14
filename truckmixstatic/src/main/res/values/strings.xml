@@ -3,4 +3,11 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    //Select truck
+    <string name="SelectTruck_truckID">Select truck registration number: </string>
+    <string name="SelectTruck_truckID_Edit">Truck n°</string>
+    <string name="SelectTruck_targetSlump_Edit">slump in mm</string>
+    <string name="SelectTruck_targetSlump">Enter target slump</string>
+    <string name="SelectTruck_buttonLabel">Start slump calculation</string>
 </resources>
