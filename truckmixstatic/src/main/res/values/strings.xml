@@ -10,4 +10,11 @@
     <string name="SelectTruck_targetSlump_Edit">slump in mm</string>
     <string name="SelectTruck_targetSlump">Enter target slump</string>
     <string name="SelectTruck_buttonLabel">Start slump calculation</string>
+    <string name="menu_settings">Settings</string>
+    //slump calculation
+    <string name="title_activity_slump_calculation">SlumpCalculationActivity</string>
+    <string name="SlumpCalculation_truckID">Truck ID :</string>
+    <string name="SlumpCalculation_targetSlump">Target Slump :</string>
+    <string name="SlumpCalculation_measuredSlump">Measured slump (in mm) :</string>
+    <string name="SlumpCalculation_endCalculation">End calculation</string>
 </resources>
