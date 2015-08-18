@@ -26,6 +26,8 @@
             android:layout_height="wrap_content"
             android:textSize="50sp"
             android:hint="@string/SelectTruck_truckID_Edit"
+            android:inputType="textAutoComplete"
+            android:imeOptions="actionNext"
             />
     </LinearLayout>
     <LinearLayout
@@ -47,6 +49,7 @@
             android:textSize="50sp"
             android:hint="@string/SelectTruck_targetSlump_Edit"
             android:inputType="number"
+            android:imeOptions="actionDone"
             />
     </LinearLayout>
     <LinearLayout

@@ -54,7 +54,12 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.menu_settings) {
+        if (id == R.id.menu_1) { // Truck settings
+            startActivity(new Intent(MainActivity.this, ParametersTruckListActivity.class));
+            return true;
+        }
+        if (id == R.id.menu_2) { // Calculator settings
+            startActivity(new Intent(MainActivity.this, ParametersCalculatorActivity.class));
             return true;
         }
 

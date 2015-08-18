@@ -1,41 +1,24 @@
 package com.lafarge.truckmix.tmstatic;
 
-import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.widget.Button;
-
-import butterknife.OnClick;
+import android.view.Menu;
+import android.view.MenuItem;
 
 
-public class SlumpCalculationActivity extends AppCompatActivity {
-
-    //butter knife objects
+public class ParametersCalculatorActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_slump_calculation);
-        final Button mButtonEndCalculation= (Button) findViewById(R.id.buttonEndCalculation);
-        mButtonEndCalculation.setOnClickListener(EndCalculation); // Event listener
+        setContentView(R.layout.activity_parameters_calculator);
     }
 
-    //Action management
-    private View.OnClickListener EndCalculation= new View.OnClickListener(){ //event handler
-        @Override
-        public void onClick(View vue)
-        {
-            startActivity(new Intent(SlumpCalculationActivity.this, MainActivity.class));
-            finish();
-        }
-    };
-
-   /* @Override
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_slump_calculation, menu);
+        getMenuInflater().inflate(R.menu.menu_parameters_calculator, menu);
         return true;
     }
 
@@ -52,5 +35,5 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 }

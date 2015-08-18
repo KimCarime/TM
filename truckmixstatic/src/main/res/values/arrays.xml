@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="truck_parameters_command_pump_modes">
+        <item>AUTO</item>
+        <item>SEMI_AUTO</item>
+    </array>
+</resources>

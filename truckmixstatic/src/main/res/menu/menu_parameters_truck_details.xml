@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.lafarge.truckmix.tmstatic.ParametersTruckDetailsActivity">
+    <item android:id="@+id/TruckDetailsParam1" android:title="@string/TruckDetailsParam1"
+        android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/TruckDetailsParam2" android:title="@string/TruckDetailsParam2"
+        android:orderInCategory="100" app:showAsAction="always" />
+</menu>

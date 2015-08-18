@@ -11,10 +11,31 @@
     <string name="SelectTruck_targetSlump">Enter target slump</string>
     <string name="SelectTruck_buttonLabel">Start slump calculation</string>
     <string name="menu_settings">Settings</string>
+            //menu
+    <string name="menu_1">Truck settings</string>
+    <string name="menu_2">Calculator settings</string>
     //slump calculation
     <string name="title_activity_slump_calculation">SlumpCalculationActivity</string>
     <string name="SlumpCalculation_truckID">Truck ID :</string>
     <string name="SlumpCalculation_targetSlump">Target Slump :</string>
     <string name="SlumpCalculation_measuredSlump">Measured slump (in mm) :</string>
     <string name="SlumpCalculation_endCalculation">End calculation</string>
+    //calculator parameters
+    <string name="title_activity_parameters_calculator">ParametersCalculatorActivity</string>
+    <string name="ParameterCalculator_MACaddr">Calculator adapter MAC address :</string>
+            //menu
+    <string name="calculatorParam1">Save</string>
+    //Truck list parameters
+    <string name="title_activity_parameters_truck">ParametersTruckActivity</string>
+    <string name="title_activity_parameters_truck_list">ParametersTruckListActivity</string>
+    <string name="ParameterTruckList">Select the truck to modify</string>
+            //menu
+    <string name="TruckListParam1">New</string>
+    <string name="TruckListParam2">Edit</string>
+    <string name="TruckListParam3">Delete</string>
+    Truck details parameters
+    <string name="title_activity_parameters_truck_details">ParametersTruckDetailsActivity</string>
+            //menu
+    <string name="TruckDetailsParam1">Save</string>
+    <string name="TruckDetailsParam2">Reset</string>
 </resources>

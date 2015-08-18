@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.lafarge.truckmix.tmstatic.ParametersTruckListActivity">
+    <item android:id="@+id/TruckListParam1" android:title="@string/TruckListParam1"
+        android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/TruckListParam2" android:title="@string/TruckListParam2"
+        android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/TruckListParam3" android:title="@string/TruckListParam3"
+        android:orderInCategory="100" app:showAsAction="always" />
+</menu>
