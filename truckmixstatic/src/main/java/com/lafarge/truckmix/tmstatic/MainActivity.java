@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 //view
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
+import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -24,6 +27,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
+        //Data manager creation
+        DataManagerMock mDataManager= new DataManagerMock();
+       //Fetch truck list in the database
+        mDataManager.fetchTruckList();
+
         mButtonStartCalculation.setOnClickListener(StartCalculation); //listener creation for button start calculation
     }
 
