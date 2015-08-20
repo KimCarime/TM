@@ -38,4 +38,6 @@
             //menu
     <string name="TruckDetailsParam1">Save</string>
     <string name="TruckDetailsParam2">Reset</string>
+    <string name="noTruckAvailable">No truck available</string>
+    <string name="noTruckAvailableWarning">No truck available, please create new truck before launching slump calculation.</string>
 </resources>

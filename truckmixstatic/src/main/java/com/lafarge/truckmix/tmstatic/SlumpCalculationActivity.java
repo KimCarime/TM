@@ -1,25 +1,48 @@
 package com.lafarge.truckmix.tmstatic;
 
 import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
+import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+import com.lafarge.truckmix.tmstatic.utils.DataTruck;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import butterknife.OnClick;
 
 
 public class SlumpCalculationActivity extends AppCompatActivity {
 
     //butter knife objects
+    @InjectView(R.id.slumpCalculationMeasuredSlump) TextView mTextViewMeasuredSlump;
+    @InjectView(R.id.slumpCalculationTargetSlump) TextView mTextViewTargetSlump;
+    @InjectView(R.id.slumpCalculationTuckID) TextView mTextViewTruckID;
+    @InjectView(R.id.slumpCalculationEndCalculation) Button mButtonEndCalculation;
+    //attributes
+    private DataManagerMock mDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_slump_calculation);
-        final Button mButtonEndCalculation= (Button) findViewById(R.id.buttonEndCalculation);
+        ButterKnife.inject(this);
+
+        //get data
+        Intent incomingIntent = getIntent();
+        mDataManager=incomingIntent.getExtras().getParcelable("data");
+
+
+        //widget initialisation
         mButtonEndCalculation.setOnClickListener(EndCalculation); // Event listener
+        mTextViewTruckID.setText(mDataManager.getSelectedTruck().getRegistrationID());
+        mTextViewTargetSlump.setText(mDataManager.getTargetSlump());
+
     }
 
     //Action management

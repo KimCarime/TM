@@ -19,6 +19,7 @@
             android:layout_weight="1"/>
 
         <TextView
+            android:id="@+id/slumpCalculationTuckID"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="50sp"
@@ -42,6 +43,7 @@
             android:layout_gravity="start"
             android:layout_weight="1"/>
         <TextView
+            android:id="@+id/slumpCalculationTargetSlump"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="50sp"
@@ -69,6 +71,7 @@
                 android:text="@string/SlumpCalculation_measuredSlump"
                 android:layout_gravity="start"/>
             <TextView
+                android:id="@+id/slumpCalculationMeasuredSlump"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="200sp"
@@ -77,7 +80,7 @@
 
         </LinearLayout>
         <Button
-            android:id="@+id/buttonEndCalculation"
+            android:id="@+id/slumpCalculationEndCalculation"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:textSize="50sp"

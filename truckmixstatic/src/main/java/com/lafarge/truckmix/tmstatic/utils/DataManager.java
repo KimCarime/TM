@@ -17,6 +17,9 @@ public class DataManager implements Parcelable {
     protected String [] truckList;
     protected DataTruck selectedTruck;
     protected String MACAddrBT;
+
+
+
     protected int targetSlump;
 
     //constructor
@@ -52,6 +55,13 @@ public class DataManager implements Parcelable {
     }
     public String getMACAddrBT(){ //return the internal BT MAC address
         return MACAddrBT;
+    }
+
+    public int getTargetSlump() {
+        return targetSlump;
+    }
+    public void setTargetSlump(int targetSlump) {
+        this.targetSlump = targetSlump;
     }
 
 

@@ -20,15 +20,14 @@
             android:textSize="50sp"
             android:text="@string/SelectTruck_truckID"
             />
-        <EditText
-            android:id="@+id/fieldTruckID"
+        <Spinner
+            android:id="@+id/truckSelectionTruckID"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="50sp"
-            android:hint="@string/SelectTruck_truckID_Edit"
-            android:inputType="textAutoComplete"
-            android:imeOptions="actionNext"
-            />
+            android:layout_height="wrap_content">
+
+
+        </Spinner>
+
     </LinearLayout>
     <LinearLayout
         android:orientation="vertical"
