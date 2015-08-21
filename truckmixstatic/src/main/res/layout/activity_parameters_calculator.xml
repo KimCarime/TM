@@ -16,6 +16,7 @@
         android:text="@string/ParameterCalculator_MACaddr"
         />
     <EditText
+        android:id="@+id/MacAddress"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="XX:XX:XX:XX:XX:XX"

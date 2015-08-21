@@ -7,12 +7,14 @@ package com.lafarge.truckmix.tmstatic.utils;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.io.Serializable;
+
 /**
  * Manage application data
  * - interaction with database
  * - communication with app
  */
-public class DataManager implements Parcelable {
+public class DataManager implements Serializable {
     //attributes
     protected String [] truckList;
     protected DataTruck selectedTruck;
@@ -20,14 +22,14 @@ public class DataManager implements Parcelable {
 
 
 
-    protected int targetSlump;
+    protected String targetSlump;
 
     //constructor
     public DataManager(){
         truckList=null;
         selectedTruck=null;
         MACAddrBT=null;
-        targetSlump=-1;
+        targetSlump=null;
     }
 
     //methods
@@ -41,10 +43,16 @@ public class DataManager implements Parcelable {
     public void fetchSelectedTruck(String registration ){ //fetch truck detail in the database using the registration as parameter
 
     }
+    public void newTruck(){
+        this.selectedTruck=new DataTruck();
+    }
     public DataTruck getSelectedTruck(){ //return the internal selected truck
         return selectedTruck;
     }
-    public void saveTruck(DataTruck truckToSave){ //save given truck in the database
+    public void saveTruck(){ //save given truck in the database
+
+    }
+    public void deleteTruck(String truckToDelete){
 
     }
     public void fetchMACAddrBT(){ //fetch the Bluetooth MAC address in the database and record it in internal data
@@ -57,42 +65,11 @@ public class DataManager implements Parcelable {
         return MACAddrBT;
     }
 
-    public int getTargetSlump() {
+    public String getTargetSlump() {
         return targetSlump;
     }
-    public void setTargetSlump(int targetSlump) {
+    public void setTargetSlump(String targetSlump) {
         this.targetSlump = targetSlump;
     }
 
-
-    //Parcelable mandatory
-    @Override
-    public int describeContents(){
-        return 0;
-    }
-    @Override
-    public void writeToParcel(Parcel out, int flags){
-        //ajouter attributs ici
-        out.writeStringArray(truckList);
-        out.writeValue(selectedTruck);
-        out.writeString(MACAddrBT);
-        out.writeInt(targetSlump);
-    }
-
-    public static final Parcelable.Creator<DataManager> CREATOR
-            =new Parcelable.Creator<DataManager>(){
-        public DataManager createFromParcel(Parcel in){
-            return new DataManager(in);
-        }
-        public DataManager[] newArray(int size){
-            return new DataManager[size];
-        }
-    };
-    private DataManager(Parcel in){
-        //ajouter attributs ici aussi
-        in.writeStringArray(truckList);
-        in.writeValue(selectedTruck);
-        in.writeString(MACAddrBT);
-        in.writeInt(targetSlump);
-    }
 }

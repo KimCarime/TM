@@ -5,14 +5,29 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 
 
 public class ParametersCalculatorActivity extends AppCompatActivity {
+
+    @InjectView(R.id.MacAddress) EditText mMACAddress;
+
+    DataManager mDataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parameters_calculator);
+        ButterKnife.inject(this);
+        mDataManager=new DataManager();
+        mDataManager.fetchMACAddrBT();
+        mMACAddress.setText(mDataManager.getMACAddrBT());
     }
 
     @Override
@@ -30,7 +45,8 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.calculatorParam1) { //save
+            mDataManager.setMACAddrBT(mMACAddress.getText().toString());
             return true;
         }
 

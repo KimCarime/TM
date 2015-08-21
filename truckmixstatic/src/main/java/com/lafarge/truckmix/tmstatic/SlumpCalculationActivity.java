@@ -9,8 +9,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
+
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -34,14 +37,14 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         ButterKnife.inject(this);
 
         //get data
-        Intent incomingIntent = getIntent();
-        mDataManager=incomingIntent.getExtras().getParcelable("data");
+        Intent incomingIntent=getIntent();
+        mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("data");
 
 
         //widget initialisation
         mButtonEndCalculation.setOnClickListener(EndCalculation); // Event listener
         mTextViewTruckID.setText(mDataManager.getSelectedTruck().getRegistrationID());
-        mTextViewTargetSlump.setText(mDataManager.getTargetSlump());
+        mTextViewTargetSlump.setText( mDataManager.getTargetSlump());
 
     }
 

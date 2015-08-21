@@ -40,4 +40,7 @@
     <string name="TruckDetailsParam2">Reset</string>
     <string name="noTruckAvailable">No truck available</string>
     <string name="noTruckAvailableWarning">No truck available, please create new truck before launching slump calculation.</string>
+    <string name="noSlumpEntered">--</string>
+    <string name="ParametersTruckList_deleteTruck">Deleting truck</string>
+    <string name="TruckDetailsRegistrationNumber">Truck registration number</string>
 </resources>

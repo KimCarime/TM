@@ -1,20 +1,27 @@
 package com.lafarge.truckmix.tmstatic;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
+
+import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class ParametersTruckListActivity extends AppCompatActivity {
 
-private ListView mTruckList=null; //list declaration
-    private String[] mockedTrucks ={"AZERTY","PKNBR5"};
+    private ListView mTruckList=null; //list declaration
+    //private String[] mockedTrucks ={"AZERTY","PKNBR5"};
+    private DataManagerMock mDataManager;
+    private ArrayAdapter<String> listAdapter=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,8 +29,15 @@ private ListView mTruckList=null; //list declaration
         setContentView(R.layout.activity_parameters_truck_list);
         mTruckList= (ListView) findViewById(R.id.listTruck); // link list to the layout
 
-        mTruckList.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,mockedTrucks)); //list creation
-        mTruckList.setItemChecked(0,true); // select the first item -> no case with null selection
+
+        //Data manager creation
+        mDataManager= new DataManagerMock();
+        //Fetch truck list in the database
+        mDataManager.fetchTruckList();
+
+        refreshList();
+        mTruckList.setAdapter(listAdapter);
+        mTruckList.setItemChecked(0, true); // select the first item -> no case with null selection
     }
 
     @Override
@@ -42,17 +56,39 @@ private ListView mTruckList=null; //list declaration
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.TruckListParam1) { // New truck
-            startActivity(new Intent(ParametersTruckListActivity.this, ParametersTruckDetailsActivity.class));
+
+            mDataManager.newTruck();
+            Intent editingTruck=new Intent(ParametersTruckListActivity.this,ParametersTruckDetailsActivity.class);
+            editingTruck.putExtra("new",mDataManager);
+            startActivity(editingTruck);
             return true;
         }
         if (id == R.id.TruckListParam2) { // Edit truck
-            startActivity(new Intent(ParametersTruckListActivity.this, ParametersTruckDetailsActivity.class));
+            mDataManager.fetchSelectedTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition()));
+            Intent editingTruck=new Intent(ParametersTruckListActivity.this,ParametersTruckDetailsActivity.class);
+            editingTruck.putExtra("edit",mDataManager);
+            startActivity(editingTruck);
             return true;
         }
         if (id == R.id.TruckListParam3) { // Delete truck
+            mDataManager.deleteTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition()));
+            Toast.makeText(ParametersTruckListActivity.this, getResources().getString(R.string.ParametersTruckList_deleteTruck)+listAdapter.getItem(mTruckList.getCheckedItemPosition())+"...", Toast.LENGTH_SHORT).show();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    //other methods
+    private void refreshList(){
+        List<String> buffer = new ArrayList<String>();
+        mDataManager.fetchTruckList();
+        if(mDataManager.getTruckList()==null)
+            buffer.add(getResources().getString(R.string.noTruckAvailable));
+        else {
+            buffer=new ArrayList<String>(Arrays.asList(mDataManager.getTruckList()));
+        }
+       listAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,buffer); //adapter refresh
+
     }
 }

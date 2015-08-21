@@ -23,6 +23,8 @@ import java.util.List;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
+
+
 public class MainActivity extends AppCompatActivity {
 
     //butter knife objects
@@ -43,10 +45,8 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         //Data manager creation
         mDataManager= new DataManagerMock();
-       //Fetch truck list in the database
-        mDataManager.fetchTruckList();
 
-        //spinner
+       //spinner
         refreshSpinner();
 
         Liste.setAdapter(spinnerAdapter);
@@ -64,9 +64,9 @@ public class MainActivity extends AppCompatActivity {
             //get the field content and put them in the the data manager class
                 //TruckID
             String _TruckID=Liste.getSelectedItem().toString();
-            int _TargetSlump=0;
+            String _TargetSlump=getResources().getString(R.string.noSlumpEntered);
             if (!(mTargetSlump.getText().toString().matches("")))
-             _TargetSlump=Integer.parseInt(mTargetSlump.getText().toString());
+             _TargetSlump=mTargetSlump.getText().toString();
             if (_TruckID==getResources().getString(R.string.noTruckAvailable)) //no truck available
             {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.noTruckAvailableWarning), Toast.LENGTH_SHORT).show();
@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
                 mDataManager.fetchMACAddrBT();// fetch mac address here to avoid data corruption when updating mac address on settings
                 mDataManager.setTargetSlump(_TargetSlump);
                 //TargetSlump
-
+DataTruck truck=new DataTruck();
                 Intent intentSlumpCalculation = new Intent(MainActivity.this, SlumpCalculationActivity.class);
                 intentSlumpCalculation.putExtra("data", mDataManager);
                 startActivity(intentSlumpCalculation);
@@ -103,8 +103,8 @@ public class MainActivity extends AppCompatActivity {
         //pass data throught intent
         Intent intentTruckSettings = new Intent(MainActivity.this,ParametersTruckListActivity.class);
         intentTruckSettings.putExtra("data",mDataManager);
-        Intent intentCalculatorSettings = new Intent(MainActivity.this,ParametersTruckListActivity.class);
-        intentCalculatorSettings.putExtra("data",mDataManager);
+        Intent intentCalculatorSettings = new Intent(MainActivity.this,ParametersCalculatorActivity.class);
+        //intentCalculatorSettings.putExtra("data",mDataManager);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_1) { // Truck settings
@@ -124,9 +124,11 @@ public class MainActivity extends AppCompatActivity {
     {
 
         List<String> buffer = new ArrayList<String>();
+        mDataManager.fetchTruckList(); //fetch truck list in database
         if(mDataManager.getTruckList()==null)
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
+
             buffer=new ArrayList<String>(Arrays.asList(mDataManager.getTruckList()));
         }
         //updating adapter

@@ -26,10 +26,6 @@
             android:label="@string/title_activity_parameters_calculator" >
         </activity>
         <activity
-            android:name=".ParametersTruckActivity"
-            android:label="@string/title_activity_parameters_truck" >
-        </activity>
-        <activity
             android:name=".ParametersTruckListActivity"
             android:label="@string/title_activity_parameters_truck_list" >
         </activity>

@@ -5,10 +5,12 @@ import android.os.Parcelable;
 
 import com.lafarge.truckmix.common.enums.CommandPumpMode;
 
+import java.io.Serializable;
+
 /**
  * Created by Kim.Abdoul-Carime on 19/08/2015.
  */
-public class DataTruck implements Parcelable {
+public class DataTruck implements Serializable {
 
         //attribute
         private  String registrationID;
@@ -239,69 +241,6 @@ public class DataTruck implements Parcelable {
         maxFlowageError=truck.maxFlowageError ;
         maxCountingError=truck.maxCountingError;
     }
-    //Parcelable mandatory
-    @Override
-    public int describeContents(){
-        return 0;
-    }
-    @Override
-    public void writeToParcel(Parcel out, int flags){
-        //ajouter attributs ici
-        out.writeString(registrationID);
-        out.writeDouble(T1);
-        out.writeDouble(A11);
-        out.writeDouble(A12);
-        out.writeDouble(A13);
-        out.writeInt(magnetQuantity);
-        out.writeInt(timePump);
-        out.writeInt(timeDelayDriver);
-        out.writeInt(pulseNumber);
-        out.writeInt(flowmeterFrequency) ;
-        out.writeValue(commandPumpMode);
-        out.writeDouble(calibrationInputSensorA) ;
-        out.writeDouble(calibrationInputSensorB);
-        out.writeDouble(calibrationOutputSensorA);
-        out.writeDouble(calibrationOutputSensorB);
-        out.writeInt(openingTimeEV1);
-        out.writeInt(openingTimeVA1);
-        out.writeInt(toleranceCounting);
-        out.writeInt(waitingDurationAfterWaterAddition);
-        out.writeInt(maxDelayBeforeFlowage);
-        out.writeInt(maxFlowageError) ;
-    }
 
-    public static final Parcelable.Creator<DataTruck> CREATOR
-            =new Parcelable.Creator<DataTruck>(){
-        public DataTruck createFromParcel(Parcel in){
-            return new DataTruck(in);
-        }
-        public DataTruck[] newArray(int size){
-            return new DataTruck[size];
-        }
-    };
-    private DataTruck(Parcel in){
-        //ajouter attributs ici aussi
-        in.writeString(registrationID);
-        in.writeDouble(T1);
-        in.writeDouble(A11);
-        in.writeDouble(A12);
-        in.writeDouble(A13);
-        in.writeInt(magnetQuantity);
-        in.writeInt(timePump);
-        in.writeInt(timeDelayDriver);
-        in.writeInt(pulseNumber);
-        in.writeInt(flowmeterFrequency) ;
-        in.writeValue(commandPumpMode);
-        in.writeDouble(calibrationInputSensorA) ;
-        in.writeDouble(calibrationInputSensorB);
-        in.writeDouble(calibrationOutputSensorA);
-        in.writeDouble(calibrationOutputSensorB);
-        in.writeInt(openingTimeEV1);
-        in.writeInt(openingTimeVA1);
-        in.writeInt(toleranceCounting);
-        in.writeInt(waitingDurationAfterWaterAddition);
-        in.writeInt(maxDelayBeforeFlowage);
-        in.writeInt(maxFlowageError) ;
-    }
 
 }

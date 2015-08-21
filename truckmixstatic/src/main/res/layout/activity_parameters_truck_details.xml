@@ -13,7 +13,24 @@ tools:context="com.lafarge.truckmix.tmstatic.ParametersTruckDetailsActivity">
     android:stretchColumns="1"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp">
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical">
 
+        <TextView
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/TruckDetailsRegistrationNumber"/>
+
+        <EditText
+            android:id="@+id/RegistrationNumber"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:inputType="text"/>
+    </TableRow>
     <TableRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
