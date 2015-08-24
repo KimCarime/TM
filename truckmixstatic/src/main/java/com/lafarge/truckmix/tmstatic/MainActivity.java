@@ -15,6 +15,7 @@ import android.widget.Toast;
 import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
+import com.lafarge.truckmix.common.models.TruckParameters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
             String _TruckID=Liste.getSelectedItem().toString();
             String _TargetSlump=getResources().getString(R.string.noSlumpEntered);
             if (!(mTargetSlump.getText().toString().matches("")))
-             _TargetSlump=mTargetSlump.getText().toString();
+                _TargetSlump=mTargetSlump.getText().toString();
             if (_TruckID==getResources().getString(R.string.noTruckAvailable)) //no truck available
             {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.noTruckAvailableWarning), Toast.LENGTH_SHORT).show();
@@ -77,7 +78,6 @@ public class MainActivity extends AppCompatActivity {
                 mDataManager.fetchMACAddrBT();// fetch mac address here to avoid data corruption when updating mac address on settings
                 mDataManager.setTargetSlump(_TargetSlump);
                 //TargetSlump
-DataTruck truck=new DataTruck();
                 Intent intentSlumpCalculation = new Intent(MainActivity.this, SlumpCalculationActivity.class);
                 intentSlumpCalculation.putExtra("data", mDataManager);
                 startActivity(intentSlumpCalculation);
@@ -129,7 +129,7 @@ DataTruck truck=new DataTruck();
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
 
-            buffer=new ArrayList<String>(Arrays.asList(mDataManager.getTruckList()));
+            buffer=new ArrayList<String>(mDataManager.getTruckList());
         }
         //updating adapter
         spinnerAdapter = new ArrayAdapter<String>(this, R.layout.spinner_item, buffer);

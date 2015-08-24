@@ -2,10 +2,12 @@ package com.lafarge.truckmix.common.models;
 
 import com.lafarge.truckmix.common.enums.CommandPumpMode;
 
+import java.io.Serializable;
+
 /**
  * This class contains all information the calculator need for calibration.
  */
-public class TruckParameters {
+public class TruckParameters implements Serializable {
 
     // Member fields
     public final double T1;

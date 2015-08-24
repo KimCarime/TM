@@ -86,7 +86,7 @@ public class ParametersTruckListActivity extends AppCompatActivity {
         if(mDataManager.getTruckList()==null)
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
-            buffer=new ArrayList<String>(Arrays.asList(mDataManager.getTruckList()));
+            buffer=new ArrayList<String>(mDataManager.getTruckList());
         }
        listAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,buffer); //adapter refresh
 

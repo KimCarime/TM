@@ -11,7 +11,9 @@ import android.widget.EditText;
 import android.widget.Spinner;
 
 import com.lafarge.truckmix.common.enums.CommandPumpMode;
+import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+import com.lafarge.truckmix.tmstatic.utils.DataTruck;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -88,55 +90,60 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
     private void resetParameters() {
+        TruckParameters param=mDataManager.getSelectedTruck().getTruckParameters();
         mRegistrationNumber.setText("");
         mRegistrationNumber.setHint(mDataManager.getSelectedTruck().getRegistrationID());
-        mT1.setText(String.format("%f", mDataManager.getSelectedTruck().getT1()));
-        mA11.setText(String.format("%f", mDataManager.getSelectedTruck().getA11()));
-        mA12.setText(String.format("%f", mDataManager.getSelectedTruck().getA12()));
-        mA13.setText(String.format("%f", mDataManager.getSelectedTruck().getA13()));
-        mMagnetQuantity.setText(String.format("%d", mDataManager.getSelectedTruck().getMagnetQuantity()));
-        mTimePump.setText(String.format("%d",mDataManager.getSelectedTruck().getTimePump()));
-        mTimeDelayDriver.setText(String.format("%d", mDataManager.getSelectedTruck().getTimeDelayDriver()));
-        mPulseNumber.setText(String.format("%d", mDataManager.getSelectedTruck().getPulseNumber()));
-        mFlowmeterFrequency.setText(String.format("%d", mDataManager.getSelectedTruck().getFlowmeterFrequency()));
+        mT1.setText(String.format("%f", param.T1));
+        mA11.setText(String.format("%f", param.A11));
+        mA12.setText(String.format("%f", param.A12));
+        mA13.setText(String.format("%f", param.A13));
+        mMagnetQuantity.setText(String.format("%d",param.magnetQuantity));
+        mTimePump.setText(String.format("%d",param.timePump));
+        mTimeDelayDriver.setText(String.format("%d", param.timeDelayDriver));
+        mPulseNumber.setText(String.format("%d", param.pulseNumber));
+        mFlowmeterFrequency.setText(String.format("%d", param.flowmeterFrequency));
         mCommandPumpMode.setSelection(((ArrayAdapter<String>) mCommandPumpMode.getAdapter()).getPosition
-                (String.valueOf(mDataManager.getSelectedTruck().getCommandPumpMode())));
-        mCalibrationInputSensorA.setText(String.format("%f", mDataManager.getSelectedTruck().getCalibrationInputSensorA()));
-        mCalibrationInputSensorB.setText(String.format("%f", mDataManager.getSelectedTruck().getCalibrationInputSensorB()));
-        mCalibrationOutputSensorA.setText(String.format("%f", mDataManager.getSelectedTruck().getCalibrationOutputSensorA()));
-        mCalibrationOutputSensorB.setText(String.format("%f", mDataManager.getSelectedTruck().getCalibrationOutputSensorB()));
-        mEV1.setText(String.format("%d", mDataManager.getSelectedTruck().getOpeningTimeEV1()));
-        mVA1.setText(String.format("%d", mDataManager.getSelectedTruck().getOpeningTimeVA1()));
-        mToleranceCounting.setText(String.format("%d", mDataManager.getSelectedTruck().getToleranceCounting()));
-        mWaitingDurationAfterWaterAddition.setText(String.format("%d", mDataManager.getSelectedTruck().getWaitingDurationAfterWaterAddition()));
-        mMaxDelayBeforeFlowage.setText(String.format("%d", mDataManager.getSelectedTruck().getMaxDelayBeforeFlowage()));
-        mMaxFlowageError.setText(String.format("%d", mDataManager.getSelectedTruck().getMaxFlowageError()));
-        mMaxCoutingError.setText(String.format("%d", mDataManager.getSelectedTruck().getMaxCountingError()));
+                (String.valueOf(param.commandPumpMode)));
+        mCalibrationInputSensorA.setText(String.format("%f", param.calibrationInputSensorA));
+        mCalibrationInputSensorB.setText(String.format("%f", param.calibrationInputSensorB));
+        mCalibrationOutputSensorA.setText(String.format("%f", param.calibrationOutputSensorA));
+        mCalibrationOutputSensorB.setText(String.format("%f", param.calibrationOutputSensorB));
+        mEV1.setText(String.format("%d", param.openingTimeEV1));
+        mVA1.setText(String.format("%d", param.openingTimeVA1));
+        mToleranceCounting.setText(String.format("%d", param.toleranceCounting));
+        mWaitingDurationAfterWaterAddition.setText(String.format("%d", param.waitingDurationAfterWaterAddition));
+        mMaxDelayBeforeFlowage.setText(String.format("%d", param.maxDelayBeforeFlowage));
+        mMaxFlowageError.setText(String.format("%d", param.maxFlowageError));
+        mMaxCoutingError.setText(String.format("%d", param.maxCountingError));
 
     }
     private void saveParameters(){
-        mDataManager.getSelectedTruck().setT1(Double.parseDouble(mT1.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setA11(Double.parseDouble(mA11.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setA12(Double.parseDouble(mA12.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setA13(Double.parseDouble(mA13.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setMagnetQuantity(Integer.parseInt(mMagnetQuantity.getText().toString()));
-        mDataManager.getSelectedTruck().setTimePump(Integer.parseInt(mTimePump.getText().toString()));
-        mDataManager.getSelectedTruck().setTimeDelayDriver(Integer.parseInt(mTimeDelayDriver.getText().toString()));
-        mDataManager.getSelectedTruck().setPulseNumber(Integer.parseInt(mPulseNumber.getText().toString()));
-        mDataManager.getSelectedTruck().setFlowmeterFrequency(Integer.parseInt(mFlowmeterFrequency.getText().toString()));
-        mDataManager.getSelectedTruck().setCommandPumpMode(CommandPumpMode.valueOf(mCommandPumpMode.getSelectedItem().toString()));
-        mDataManager.getSelectedTruck().setCalibrationInputSensorA(Double.parseDouble(mCalibrationInputSensorA.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setCalibrationInputSensorB(Double.parseDouble(mCalibrationInputSensorB.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setCalibrationOutputSensorA(Double.parseDouble(mCalibrationOutputSensorA.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setCalibrationOutputSensorB(Double.parseDouble(mCalibrationOutputSensorB.getText().toString().replace(",", ".")));
-        mDataManager.getSelectedTruck().setOpeningTimeEV1(Integer.parseInt(mEV1.getText().toString()));
-        mDataManager.getSelectedTruck().setOpeningTimeVA1(Integer.parseInt(mVA1.getText().toString()));
-        mDataManager.getSelectedTruck().setToleranceCounting(Integer.parseInt(mToleranceCounting.getText().toString()));
-        mDataManager.getSelectedTruck().setWaitingDurationAfterWaterAddition(Integer.parseInt(mWaitingDurationAfterWaterAddition.getText().toString()));
-        mDataManager.getSelectedTruck().setMaxDelayBeforeFlowage(Integer.parseInt(mMaxDelayBeforeFlowage.getText().toString()));
-        mDataManager.getSelectedTruck().setMaxFlowageError(Integer.parseInt(mMaxFlowageError.getText().toString()));
-        mDataManager.getSelectedTruck().setMaxCountingError(Integer.parseInt(mMaxCoutingError.getText().toString()));
+        mDataManager.getSelectedTruck().setRegistrationID(mRegistrationNumber.getText().toString());
+        TruckParameters param=new TruckParameters(
+        Double.parseDouble(mT1.getText().toString().replace(",", ".")),
+        Double.parseDouble(mA11.getText().toString().replace(",", ".")),
+        Double.parseDouble(mA12.getText().toString().replace(",", ".")),
+        Double.parseDouble(mA13.getText().toString().replace(",", ".")),
+        Integer.parseInt(mMagnetQuantity.getText().toString()),
+        Integer.parseInt(mTimePump.getText().toString()),
+        Integer.parseInt(mTimeDelayDriver.getText().toString()),
+        Integer.parseInt(mPulseNumber.getText().toString()),
+        Integer.parseInt(mFlowmeterFrequency.getText().toString()),
+        CommandPumpMode.valueOf(mCommandPumpMode.getSelectedItem().toString()),
+        Double.parseDouble(mCalibrationInputSensorA.getText().toString().replace(",", ".")),
+        Double.parseDouble(mCalibrationInputSensorB.getText().toString().replace(",", ".")),
+        Double.parseDouble(mCalibrationOutputSensorA.getText().toString().replace(",", ".")),
+        Double.parseDouble(mCalibrationOutputSensorB.getText().toString().replace(",", ".")),
+        Integer.parseInt(mEV1.getText().toString()),
+        Integer.parseInt(mVA1.getText().toString()),
+        Integer.parseInt(mToleranceCounting.getText().toString()),
+        Integer.parseInt(mWaitingDurationAfterWaterAddition.getText().toString()),
+        Integer.parseInt(mMaxDelayBeforeFlowage.getText().toString()),
+        Integer.parseInt(mMaxFlowageError.getText().toString()),
+        Integer.parseInt(mMaxCoutingError.getText().toString())
+        );
 
+        mDataManager.getSelectedTruck().setTruckParameters(param);
         mDataManager.saveTruck();
 
     }

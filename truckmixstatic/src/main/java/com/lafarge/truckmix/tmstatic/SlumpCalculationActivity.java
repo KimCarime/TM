@@ -1,14 +1,36 @@
 package com.lafarge.truckmix.tmstatic;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.lafarge.truckmix.TruckMix;
+import com.lafarge.truckmix.bluetooth.ConnectionStateListener;
+import com.lafarge.truckmix.common.enums.AlarmType;
+import com.lafarge.truckmix.common.enums.RotationDirection;
+import com.lafarge.truckmix.common.enums.SpeedSensorState;
+import com.lafarge.truckmix.common.enums.WaterAdditionMode;
+import com.lafarge.truckmix.common.models.DeliveryParameters;
+import com.lafarge.truckmix.communicator.events.Event;
+import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
+import com.lafarge.truckmix.communicator.listeners.EventListener;
+import com.lafarge.truckmix.communicator.listeners.LoggerListener;
 import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
@@ -29,6 +51,15 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     @InjectView(R.id.slumpCalculationEndCalculation) Button mButtonEndCalculation;
     //attributes
     private DataManagerMock mDataManager;
+    private final String TAG="SlumpCalculation";
+
+    //TruckMix
+    // Service
+    private TruckMix mTruckMix;
+    //Thread
+    private Handler mMainThreadHandler;
+    private int mTargetSlumpValue=0;
+    private int mWaterVolumeMax=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +77,31 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         mTextViewTruckID.setText(mDataManager.getSelectedTruck().getRegistrationID());
         mTextViewTargetSlump.setText( mDataManager.getTargetSlump());
 
+        if  (!(mDataManager.getTargetSlump().equals(getResources().getString(R.string.noSlumpEntered)))){
+            mTargetSlumpValue = Integer.parseInt(mDataManager.getTargetSlump());
+            mWaterVolumeMax=500;
+        }
+
+
+
+
+        //TruckMix init
+        // Thread
+        mMainThreadHandler = new Handler(Looper.getMainLooper());
+
+        // Service
+        mTruckMix = new TruckMix.Builder(this)
+                .setCommunicatorListener(mCommunicatorListener)
+                .setLoggerListener(mLoggerListener)
+                .setEventListener(mEventListener)
+                .setConnectionStateListener(mConnectionStateListener)
+                .build();
+        mTruckMix.start(mDataManager.getMACAddrBT());
+        mTruckMix.setTruckParameters(mDataManager.getSelectedTruck().getTruckParameters());
+        mTruckMix.deliveryNoteReceived(new DeliveryParameters(mTargetSlumpValue, mWaterVolumeMax, 6));// target slump/volume ajout eau authorise/volume charge
+        mTruckMix.acceptDelivery(true);
+        mTruckMix.changeExternalDisplayState(true);
+
     }
 
     //Action management
@@ -54,11 +110,180 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         public void onClick(View vue)
         {
             startActivity(new Intent(SlumpCalculationActivity.this, MainActivity.class));
+            mTruckMix.endDelivery();
+            mTruckMix.stop();
             finish();
         }
     };
 
-   /* @Override
+    //
+    // TruckMix interface
+    //
+
+    private final ConnectionStateListener mConnectionStateListener = new ConnectionStateListener() {
+        @Override
+        public void onCalculatorConnected() {
+
+        }
+
+        @Override
+        public void onCalculatorConnecting() {
+
+        }
+
+        @Override
+        public void onCalculatorDisconnected() {
+
+        }
+    };
+
+    /**
+     *
+     */
+    private final LoggerListener mLoggerListener = new LoggerListener() {
+        @Override
+        public void log(final String log) {
+            Log.d(TAG, log);
+        }
+    };
+
+    /**
+     *
+     */
+    private final CommunicatorListener mCommunicatorListener = new CommunicatorListener() {
+        @Override
+        public void slumpUpdated(final int slump) {
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mTextViewMeasuredSlump.startAnimation(getBlinkAnimation());
+                    mTextViewMeasuredSlump.setText(String.format("%d", slump));
+
+                }
+            });
+        }
+
+        @Override
+        public void temperatureUpdated(final float temperature) {
+
+        }
+
+        @Override
+        public void rotationDirectionChanged(final RotationDirection rotationDirection) {
+
+        }
+
+        @Override
+        public void waterAdded(final int volume, final WaterAdditionMode additionMode) {
+
+        }
+
+        @Override
+        public void waterAdditionRequest(final int volume) {
+         /*   mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mAddWaterConfirmationDialog.isShowing()) {
+                        mAddWaterConfirmationDialog.dismiss();
+                    }
+                    mAddWaterConfirmationDialog = createAddWaterConfirmationDialog(volume);
+                    mAddWaterConfirmationDialog.show();
+                }
+            });*/
+        }
+
+        @Override
+        public void waterAdditionBegan() {
+        }
+
+        @Override
+        public void waterAdditionEnd() {
+        }
+
+        @Override
+        public void stateChanged(final int step, final int subStep) {
+
+        }
+
+        @Override
+        public void internData(final boolean inputSensorConnected, final boolean outputSensorConnected, final SpeedSensorState speedSensorState) {
+
+        }
+
+        @Override
+        public void calibrationData(final float inputPressure, final float outputPressure, final float rotationSpeed) {
+
+        }
+
+        @Override
+        public void inputSensorConnectionChanged(final boolean connected) {
+
+        }
+
+        @Override
+        public void outputSensorConnectionChanged(final boolean connected) {
+
+        }
+
+        @Override
+        public void speedSensorStateChanged(final SpeedSensorState speedSensorState) {
+           /* mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    getOverviewFragment().updateSpeedSensorState(speedSensorState);
+                }
+            });*/
+        }
+
+        @Override
+        public void alarmTriggered(final AlarmType alarmType) {
+
+        }
+    };
+
+    /**
+     *
+     */
+    private final EventListener mEventListener = new EventListener() {
+        @Override
+        public void onNewEvents(final Event event) {
+            Log.i(TAG, "new quality tracking event triggered: " + event);
+        }
+    };
+
+    //Dialog factory
+
+    private Dialog createAddWaterConfirmationDialog(int volume) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.waterAdditionDialogTitle));
+        builder.setMessage(getResources().getString(R.string.waterAdditionDialogMessage) + volume + " L ");
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mTruckMix.allowWaterAddition(true);
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mTruckMix.allowWaterAddition(false);
+                dialog.dismiss();
+            }
+        });
+        return builder.create();
+    }
+
+    //Animation
+    private Animation getBlinkAnimation(){
+        Animation animation = new AlphaAnimation(1, 0);
+        animation.setDuration(300);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setRepeatCount(1);
+        animation.setRepeatMode(Animation.REVERSE);
+        return animation;
+    }
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_slump_calculation, menu);
@@ -73,10 +298,14 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.debugSlumpCalculation) {
+            mTruckMix.setTruckParameters(mDataManager.getSelectedTruck().getTruckParameters());
+            mTruckMix.changeExternalDisplayState(true);
+
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }*/
+    }
 }

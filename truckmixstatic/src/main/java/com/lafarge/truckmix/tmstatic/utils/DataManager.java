@@ -8,6 +8,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manage application data
@@ -16,7 +18,7 @@ import java.io.Serializable;
  */
 public class DataManager implements Serializable {
     //attributes
-    protected String [] truckList;
+    protected List<String> truckList;
     protected DataTruck selectedTruck;
     protected String MACAddrBT;
 
@@ -26,7 +28,7 @@ public class DataManager implements Serializable {
 
     //constructor
     public DataManager(){
-        truckList=null;
+        truckList=new ArrayList<String>();
         selectedTruck=null;
         MACAddrBT=null;
         targetSlump=null;
@@ -36,7 +38,7 @@ public class DataManager implements Serializable {
     public void fetchTruckList() { //fetch trucks name in Database and record them in internal array
 
     }
-    public String[] getTruckList(){ //return the internal array  truck list
+    public List <String> getTruckList(){ //return the internal array  truck list
 
         return truckList;
     }

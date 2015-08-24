@@ -43,4 +43,6 @@
     <string name="noSlumpEntered">--</string>
     <string name="ParametersTruckList_deleteTruck">Deleting truck</string>
     <string name="TruckDetailsRegistrationNumber">Truck registration number</string>
+    <string name="waterAdditionDialogTitle">Water addition</string>
+    <string name="waterAdditionDialogMessage">System water addition proposal is :</string>
 </resources>
