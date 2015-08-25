@@ -14,7 +14,7 @@ public class WaterAdditionRequest extends ReadAction {
         checkIfDataLengthIsValid(data.length, Protocol.TRAME_DEMANDE_AUTORISATION_AJOUT_EAU);
 
         // Decode parameters
-        int volume = data[0];
+        int volume = (data[0]&0x000000ff); //Modif KAC 25/08/2015 convertion byte to int unsigned
 
         // Inform listener
         listener.waterAdditionRequest(volume);
