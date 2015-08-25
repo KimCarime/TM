@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 import android.widget.Spinner;
 import android.widget.Toast;
 //view
@@ -30,8 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
     //butter knife objects
     @InjectView(R.id.buttonStartCalculation) Button mButtonStartCalculation;
-    @InjectView(R.id.fieldTagetSlump) EditText mTargetSlump;
+    @InjectView(R.id.fieldTagetSlump) NumberPicker mTargetSlump;
     @InjectView(R.id.truckSelectionTruckID) Spinner Liste;
+    @InjectView(R.id.fieldLoadVolume) NumberPicker mLoadVolume;
 
 
     private ArrayAdapter<String> spinnerAdapter=null;
@@ -46,11 +48,19 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         //Data manager creation
         mDataManager= new DataManagerMock();
-
+    //WIDGET
        //spinner
         refreshSpinner();
-
         Liste.setAdapter(spinnerAdapter);
+        // number picker
+        mLoadVolume.setMinValue(0);
+        mLoadVolume.setMaxValue(15);
+        mLoadVolume.setValue(6);
+
+        mTargetSlump.setMinValue(0);
+        mTargetSlump.setMaxValue(300);
+        mTargetSlump.setValue(0);
+
 
 
         mButtonStartCalculation.setOnClickListener(StartCalculation); //listener creation for button start calculation
@@ -65,18 +75,17 @@ public class MainActivity extends AppCompatActivity {
             //get the field content and put them in the the data manager class
                 //TruckID
             String _TruckID=Liste.getSelectedItem().toString();
-            String _TargetSlump=getResources().getString(R.string.noSlumpEntered);
-            if (!(mTargetSlump.getText().toString().matches("")))
-                _TargetSlump=mTargetSlump.getText().toString();
+
             if (_TruckID==getResources().getString(R.string.noTruckAvailable)) //no truck available
             {
                 Toast.makeText(MainActivity.this, getResources().getString(R.string.noTruckAvailableWarning), Toast.LENGTH_SHORT).show();
             }
             else { //Truck is selected
 
+                mDataManager.setVolumeLoad(String.valueOf(mLoadVolume.getValue())); //get the load volume
                 mDataManager.fetchSelectedTruck(_TruckID);
                 mDataManager.fetchMACAddrBT();// fetch mac address here to avoid data corruption when updating mac address on settings
-                mDataManager.setTargetSlump(_TargetSlump);
+                mDataManager.setTargetSlump(String.valueOf(mTargetSlump.getValue()));
                 //TargetSlump
                 Intent intentSlumpCalculation = new Intent(MainActivity.this, SlumpCalculationActivity.class);
                 intentSlumpCalculation.putExtra("data", mDataManager);

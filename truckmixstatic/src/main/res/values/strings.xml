@@ -8,9 +8,12 @@
     <string name="SelectTruck_truckID">Select truck registration number: </string>
     <string name="SelectTruck_truckID_Edit">Truck n°</string>
     <string name="SelectTruck_targetSlump_Edit">slump in mm</string>
-    <string name="SelectTruck_targetSlump">Enter target slump</string>
+    <string name="SelectTruck_targetSlump">Enter target slump in mm</string>
     <string name="SelectTruck_buttonLabel">Start slump calculation</string>
     <string name="menu_settings">Settings</string>
+    <string name="SelectTruck_loadVolume">Enter The load volume in m3</string>
+    <string name="SelectTruck_loadVolume_edit">Load volume in m3</string>
+
             //menu
     <string name="menu_1">Truck settings</string>
     <string name="menu_2">Calculator settings</string>
@@ -20,6 +23,7 @@
     <string name="SlumpCalculation_targetSlump">Target Slump :</string>
     <string name="SlumpCalculation_measuredSlump">Measured slump (in mm) :</string>
     <string name="SlumpCalculation_endCalculation">End calculation</string>
+    <string name="SlumpCalculation_loadVolume">Load volume :</string>
     //calculator parameters
     <string name="title_activity_parameters_calculator">ParametersCalculatorActivity</string>
     <string name="ParameterCalculator_MACaddr">Calculator adapter MAC address :</string>
@@ -45,4 +49,10 @@
     <string name="TruckDetailsRegistrationNumber">Truck registration number</string>
     <string name="waterAdditionDialogTitle">Water addition</string>
     <string name="waterAdditionDialogMessage">System water addition proposal is :</string>
+    <string name="exitTitle">Exit application</string>
+    <string name="exitMessage">You are about to exit the application during a slump calculation. Do you really want to leave ?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+
 </resources>

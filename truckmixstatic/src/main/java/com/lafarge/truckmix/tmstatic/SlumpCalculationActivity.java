@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,8 @@ import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
 
+import java.nio.ByteBuffer;
+
 import javax.xml.datatype.DatatypeConfigurationException;
 
 import butterknife.ButterKnife;
@@ -49,9 +52,14 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     @InjectView(R.id.slumpCalculationTargetSlump) TextView mTextViewTargetSlump;
     @InjectView(R.id.slumpCalculationTuckID) TextView mTextViewTruckID;
     @InjectView(R.id.slumpCalculationEndCalculation) Button mButtonEndCalculation;
+    @InjectView(R.id.slumpCalculationLoadVolume) TextView mTextViewLoadVolume;
     //attributes
     private DataManagerMock mDataManager;
     private final String TAG="SlumpCalculation";
+
+    //Dialog
+    private Dialog mExitDialog;
+    private Dialog mAddWaterConfirmationDialog;
 
     //TruckMix
     // Service
@@ -60,6 +68,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     private Handler mMainThreadHandler;
     private int mTargetSlumpValue=0;
     private int mWaterVolumeMax=0;
+    private int mLoadVolume=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,14 +85,15 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         mButtonEndCalculation.setOnClickListener(EndCalculation); // Event listener
         mTextViewTruckID.setText(mDataManager.getSelectedTruck().getRegistrationID());
         mTextViewTargetSlump.setText( mDataManager.getTargetSlump());
+        mTextViewLoadVolume.setText(mDataManager.getVolumeLoad());
 
         if  (!(mDataManager.getTargetSlump().equals(getResources().getString(R.string.noSlumpEntered)))){
             mTargetSlumpValue = Integer.parseInt(mDataManager.getTargetSlump());
-            mWaterVolumeMax=500;
+            mWaterVolumeMax=255;//Max value to be received (byte conversion
         }
-
-
-
+        if  (!(mDataManager.getVolumeLoad().equals(getResources().getString(R.string.noSlumpEntered)))){
+            mLoadVolume = Integer.parseInt(mDataManager.getVolumeLoad());
+        }
 
         //TruckMix init
         // Thread
@@ -98,8 +108,9 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                 .build();
         mTruckMix.start(mDataManager.getMACAddrBT());
         mTruckMix.setTruckParameters(mDataManager.getSelectedTruck().getTruckParameters());
-        mTruckMix.deliveryNoteReceived(new DeliveryParameters(mTargetSlumpValue, mWaterVolumeMax, 6));// target slump/volume ajout eau authorise/volume charge
+        mTruckMix.deliveryNoteReceived(new DeliveryParameters(mTargetSlumpValue, mWaterVolumeMax, mLoadVolume));// target slump/volume ajout eau authorise/volume charge
         mTruckMix.acceptDelivery(true);
+        mTruckMix.setWaterRequestAllowed(true);
         mTruckMix.changeExternalDisplayState(true);
 
     }
@@ -162,10 +173,8 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                 }
             });
         }
-
         @Override
         public void temperatureUpdated(final float temperature) {
-
         }
 
         @Override
@@ -180,16 +189,19 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         @Override
         public void waterAdditionRequest(final int volume) {
-         /*   mMainThreadHandler.post(new Runnable() {
+            mMainThreadHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    if (mAddWaterConfirmationDialog.isShowing()) {
-                        mAddWaterConfirmationDialog.dismiss();
+                    if (mAddWaterConfirmationDialog!=null){
+                        if (mAddWaterConfirmationDialog.isShowing()) {
+                            mAddWaterConfirmationDialog.dismiss();
+                        }
                     }
+
                     mAddWaterConfirmationDialog = createAddWaterConfirmationDialog(volume);
                     mAddWaterConfirmationDialog.show();
                 }
-            });*/
+            });
         }
 
         @Override
@@ -251,20 +263,63 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         }
     };
 
+    //Close the TM service when leaving activity or application
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event){
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+            mExitDialog = createExitDialog();
+            mExitDialog.show();
+
+        }
+        return true;
+    }
+
+    @Override
+    protected void onDestroy(){
+        mTruckMix.stop();
+        super.onDestroy();
+    }
+    @Override
+    protected void onStop(){
+        mTruckMix.stop();
+        super.onStop();
+    }
+ /*   @Override
+    protected void onPause(){
+        mTruckMix.stop();
+        super.onPause();
+    }*/
+
     //Dialog factory
+
+    private Dialog createExitDialog(){
+        final AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.exitTitle));
+        builder.setMessage(getResources().getString(R.string.exitMessage));
+        builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice) {
+                //leave the application
+                dialog.dismiss();
+                finish();
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.no),new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice){
+                //don't leave the application
+                dialog.dismiss();
+            }
+        });
+        return builder.create();
+    }
 
     private Dialog createAddWaterConfirmationDialog(int volume) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getResources().getString(R.string.waterAdditionDialogTitle));
         builder.setMessage(getResources().getString(R.string.waterAdditionDialogMessage) + volume + " L ");
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mTruckMix.allowWaterAddition(true);
-                dialog.dismiss();
-            }
-        });
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mTruckMix.allowWaterAddition(false);

@@ -21,9 +21,7 @@ public class DataManager implements Serializable {
     protected List<String> truckList;
     protected DataTruck selectedTruck;
     protected String MACAddrBT;
-
-
-
+    protected String volumeLoad;
     protected String targetSlump;
 
     //constructor
@@ -73,5 +71,14 @@ public class DataManager implements Serializable {
     public void setTargetSlump(String targetSlump) {
         this.targetSlump = targetSlump;
     }
+
+    public String getVolumeLoad() {
+        return volumeLoad;
+    }
+
+    public void setVolumeLoad(String volumeLoad) {
+        this.volumeLoad = volumeLoad;
+    }
+
 
 }

@@ -1,8 +1,10 @@
 package com.lafarge.truckmix.tmstatic;
 
-import android.support.v7.app.ActionBarActivity;
+
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -20,6 +22,7 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
 
     DataManager mDataManager;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +31,7 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
         mDataManager=new DataManager();
         mDataManager.fetchMACAddrBT();
         mMACAddress.setText(mDataManager.getMACAddrBT());
+        mMACAddress.addTextChangedListener(formatMAC);
     }
 
     @Override
@@ -52,4 +56,23 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    //format the MAC address
+TextWatcher formatMAC=new TextWatcher() {
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+
+    }
+};
+
 }
