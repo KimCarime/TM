@@ -53,6 +53,7 @@
     <string name="exitMessage">You are about to exit the application during a slump calculation. Do you really want to leave ?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="SlumpCalculation_sensor">Sensors connected:</string>
 
 
 </resources>

@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcelable;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -53,9 +51,11 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     @InjectView(R.id.slumpCalculationTuckID) TextView mTextViewTruckID;
     @InjectView(R.id.slumpCalculationEndCalculation) Button mButtonEndCalculation;
     @InjectView(R.id.slumpCalculationLoadVolume) TextView mTextViewLoadVolume;
+    @InjectView(R.id.slumpCalculationSensorState) TextView mTextViewSensorState;
     //attributes
     private DataManagerMock mDataManager;
     private final String TAG="SlumpCalculation";
+    private Sensors mSensorsState;
 
     //Dialog
     private Dialog mExitDialog;
@@ -86,6 +86,13 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         mTextViewTruckID.setText(mDataManager.getSelectedTruck().getRegistrationID());
         mTextViewTargetSlump.setText( mDataManager.getTargetSlump());
         mTextViewLoadVolume.setText(mDataManager.getVolumeLoad());
+        // animate the measured slump
+        mTextViewMeasuredSlump.setAnimation(getWaitAnimation());
+        mTextViewMeasuredSlump.animate();
+
+        // sensor state
+        mTextViewSensorState.setText("NO");
+        mSensorsState= new Sensors();
 
         if  (!(mDataManager.getTargetSlump().equals(getResources().getString(R.string.noSlumpEntered)))){
             mTargetSlumpValue = Integer.parseInt(mDataManager.getTargetSlump());
@@ -112,6 +119,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         mTruckMix.acceptDelivery(true);
         mTruckMix.setWaterRequestAllowed(true);
         mTruckMix.changeExternalDisplayState(true);
+
 
     }
 
@@ -167,8 +175,10 @@ public class SlumpCalculationActivity extends AppCompatActivity {
             mMainThreadHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    mTextViewMeasuredSlump.clearAnimation();
                     mTextViewMeasuredSlump.startAnimation(getBlinkAnimation());
                     mTextViewMeasuredSlump.setText(String.format("%d", slump));
+
 
                 }
             });
@@ -219,7 +229,13 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         @Override
         public void internData(final boolean inputSensorConnected, final boolean outputSensorConnected, final SpeedSensorState speedSensorState) {
-
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSensorsState.setStateInputSensor(inputSensorConnected);
+                    mSensorsState.setStateOutputSensor(outputSensorConnected);
+                }
+            });
         }
 
         @Override
@@ -229,20 +245,31 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         @Override
         public void inputSensorConnectionChanged(final boolean connected) {
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSensorsState.setStateInputSensor(connected);
+                }
+            });
 
         }
 
         @Override
         public void outputSensorConnectionChanged(final boolean connected) {
-
+            mMainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    mSensorsState.setStateOutputSensor(connected);
+                }
+            });
         }
 
         @Override
-        public void speedSensorStateChanged(final SpeedSensorState speedSensorState) {
-           /* mMainThreadHandler.post(new Runnable() {
+        public void speedSensorStateChanged(final SpeedSensorState speedSensorState) { //NORMAL, TOO_SLOW, TOO_FAST
+      /*      mMainThreadHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    getOverviewFragment().updateSpeedSensorState(speedSensorState);
+
                 }
             });*/
         }
@@ -305,9 +332,9 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                 finish();
             }
         });
-        builder.setNegativeButton(getResources().getString(R.string.no),new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int choice){
+            public void onClick(DialogInterface dialog, int choice) {
                 //don't leave the application
                 dialog.dismiss();
             }
@@ -338,6 +365,60 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         animation.setRepeatMode(Animation.REVERSE);
         return animation;
     }
+    private Animation getWaitAnimation(){
+        Animation animation = new AlphaAnimation(1, 0);
+        animation.setDuration(1000);
+        animation.setInterpolator(new LinearInterpolator());
+        animation.setRepeatCount(Animation.INFINITE);
+        animation.setRepeatMode(Animation.REVERSE);
+        return animation;
+    }
+
+    // privates class
+    private class Sensors{
+        //attributes
+        private boolean stateOutputSensor=false;
+        private boolean stateInputSensor=false;
+        private boolean stateSensors=false;
+        //methods
+        public void setStateInputSensor(boolean stateInputSensor) {
+            Log.d("COUCOU","input"+String.valueOf(stateInputSensor));
+            if (this.stateInputSensor!=stateInputSensor){
+                this.stateInputSensor = stateInputSensor;
+                onStateChange();
+
+            }
+        }
+
+        public void setStateOutputSensor(boolean stateOutputSensor) {
+            Log.d("COUCOU","output"+String.valueOf(stateOutputSensor));
+            if (this.stateOutputSensor!=stateOutputSensor){
+                this.stateOutputSensor = stateOutputSensor;
+                onStateChange();
+            }
+        }
+
+
+        private void onStateChange(){
+            Log.d("COUCOU","State change"+ String.valueOf(stateInputSensor)+String.valueOf(stateOutputSensor));
+            if(stateOutputSensor&&stateInputSensor)
+                stateSensors=true;
+            else
+                stateSensors=false;
+            refreshDisplay();
+        }
+        public void refreshDisplay(){
+            if(stateSensors)
+                mTextViewSensorState.setText("YES");
+            else
+                mTextViewSensorState.setText("NO");
+
+        }
+
+
+    }
+
+    //menu management
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
