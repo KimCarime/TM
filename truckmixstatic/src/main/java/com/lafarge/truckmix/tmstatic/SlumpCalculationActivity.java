@@ -1,8 +1,10 @@
 package com.lafarge.truckmix.tmstatic;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Bundle;
@@ -56,10 +58,13 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     private DataManagerMock mDataManager;
     private final String TAG="SlumpCalculation";
     private Sensors mSensorsState;
+    private boolean flag_dialog=true;
 
     //Dialog
     private Dialog mExitDialog;
     private Dialog mAddWaterConfirmationDialog;
+    private ProgressDialog mWaitingConnection;
+    private AlertDialog mSpeedSensorDialog;
 
     //TruckMix
     // Service
@@ -119,6 +124,11 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         mTruckMix.acceptDelivery(true);
         mTruckMix.setWaterRequestAllowed(true);
         mTruckMix.changeExternalDisplayState(true);
+
+
+        //Dialog creation
+        waitingConnectionDialog();
+        mSpeedSensorDialog=createSpeedSensorDialog();
 
 
     }
@@ -234,6 +244,20 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                 public void run() {
                     mSensorsState.setStateInputSensor(inputSensorConnected);
                     mSensorsState.setStateOutputSensor(outputSensorConnected);
+                    if (speedSensorState ==SpeedSensorState.NORMAL){
+                        if (mSpeedSensorDialog.isShowing())
+                            mSpeedSensorDialog.dismiss();
+                    }else if (speedSensorState ==SpeedSensorState.TOO_FAST){
+                        if (!mSpeedSensorDialog.isShowing()) {
+                            mSpeedSensorDialog.setMessage(getResources().getString(R.string.SpeedSensorDialodTooFast));
+                            mSpeedSensorDialog.show();
+                        }
+                    }else if (speedSensorState ==SpeedSensorState.TOO_SLOW){
+                        if (!mSpeedSensorDialog.isShowing()) {
+                            mSpeedSensorDialog.setMessage(getResources().getString(R.string.SpeedSensorDialodTooSlow));
+                            mSpeedSensorDialog.show();
+                        }
+                    }
                 }
             });
         }
@@ -266,12 +290,26 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         @Override
         public void speedSensorStateChanged(final SpeedSensorState speedSensorState) { //NORMAL, TOO_SLOW, TOO_FAST
-      /*      mMainThreadHandler.post(new Runnable() {
+           mMainThreadHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    if (speedSensorState ==SpeedSensorState.NORMAL){
+                        if (mSpeedSensorDialog.isShowing())
+                            mSpeedSensorDialog.dismiss();
+                    }else if (speedSensorState ==SpeedSensorState.TOO_FAST){
+                        if (!mSpeedSensorDialog.isShowing()) {
+                            mSpeedSensorDialog.setMessage(getResources().getString(R.string.SpeedSensorDialodTooFast));
+                            mSpeedSensorDialog.show();
+                        }
+                    }else if (speedSensorState ==SpeedSensorState.TOO_SLOW){
+                        if (!mSpeedSensorDialog.isShowing()) {
+                            mSpeedSensorDialog.setMessage(getResources().getString(R.string.SpeedSensorDialodTooSlow));
+                            mSpeedSensorDialog.show();
+                        }
+                    }
 
                 }
-            });*/
+            });
         }
 
         @Override
@@ -304,11 +342,13 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy(){
+        mTruckMix.endDelivery();
         mTruckMix.stop();
         super.onDestroy();
     }
     @Override
     protected void onStop(){
+        mTruckMix.endDelivery();
         mTruckMix.stop();
         super.onStop();
     }
@@ -320,6 +360,25 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
     //Dialog factory
 
+    private AlertDialog createSpeedSensorDialog(){
+        final AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.SpeedSensorDialogTitle));
+        builder.setMessage("...");
+        return builder.create();
+    }
+    private Dialog createAddWaterConfirmationDialog(int volume) {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.waterAdditionDialogTitle));
+        builder.setMessage(getResources().getString(R.string.waterAdditionDialogMessage) + volume + " L ");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mTruckMix.allowWaterAddition(false);
+                dialog.dismiss();
+            }
+        });
+        return builder.create();
+    }
     private Dialog createExitDialog(){
         final AlertDialog.Builder builder =new AlertDialog.Builder(this);
         builder.setTitle(getResources().getString(R.string.exitTitle));
@@ -341,19 +400,46 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         });
         return builder.create();
     }
+    private void waitingConnectionDialog() {
+        flag_dialog=true;
+        mWaitingConnection= new ProgressDialog(this);
+        mWaitingConnection.setTitle(getResources().getString(R.string.waitingConnectionDialogTitle));
+        mWaitingConnection.setMessage(getResources().getString(R.string.waitingConnectionDialogMessage));
+        mWaitingConnection.setCancelable(false);
+        mWaitingConnection.setButton(ProgressDialog.BUTTON_NEUTRAL,
+                getResources().getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        flag_dialog = false;
 
-    private Dialog createAddWaterConfirmationDialog(int volume) {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.waterAdditionDialogTitle));
-        builder.setMessage(getResources().getString(R.string.waterAdditionDialogMessage) + volume + " L ");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    }
+                });
+        mWaitingConnection.show();
+
+
+        new Thread((new Runnable() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                mTruckMix.allowWaterAddition(false);
-                dialog.dismiss();
+            public void run() {
+                while ((mTruckMix.isConnected()==false)&&(flag_dialog==true))
+                {
+                    Log.d("COUCOU","thread is running");
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                mWaitingConnection.dismiss();
+                if(flag_dialog==false){
+                    startActivity(new Intent(SlumpCalculationActivity.this, MainActivity.class));
+                    mTruckMix.endDelivery();
+                    mTruckMix.stop();
+                    finish();
+
+                }
             }
-        });
-        return builder.create();
+        })).start();
     }
 
     //Animation
@@ -382,7 +468,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         private boolean stateSensors=false;
         //methods
         public void setStateInputSensor(boolean stateInputSensor) {
-            Log.d("COUCOU","input"+String.valueOf(stateInputSensor));
+           // Log.d("COUCOU","input"+String.valueOf(stateInputSensor));
             if (this.stateInputSensor!=stateInputSensor){
                 this.stateInputSensor = stateInputSensor;
                 onStateChange();
@@ -391,7 +477,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
         }
 
         public void setStateOutputSensor(boolean stateOutputSensor) {
-            Log.d("COUCOU","output"+String.valueOf(stateOutputSensor));
+           // Log.d("COUCOU","output"+String.valueOf(stateOutputSensor));
             if (this.stateOutputSensor!=stateOutputSensor){
                 this.stateOutputSensor = stateOutputSensor;
                 onStateChange();
@@ -400,7 +486,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
 
         private void onStateChange(){
-            Log.d("COUCOU","State change"+ String.valueOf(stateInputSensor)+String.valueOf(stateOutputSensor));
+           // Log.d("COUCOU","State change"+ String.valueOf(stateInputSensor)+String.valueOf(stateOutputSensor));
             if(stateOutputSensor&&stateInputSensor)
                 stateSensors=true;
             else
@@ -444,4 +530,5 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

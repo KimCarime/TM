@@ -56,6 +56,12 @@
     <string name="SlumpCalculation_sensor">Sensors connected:</string>
     <string name="CalculatorParametersMACSaved">MAC address saved</string>
     <string name="CalculatorParametersMACIncorrect">MAC address incorrect</string>
+    <string name="waitingConnectionDialogTitle">Waiting for truck connection</string>
+    <string name="waitingConnectionDialogMessage">Synchronisation in progress. Please wait to launch the slump calculation this could take a few minutes</string>
+    <string name="cancel">CANCEL</string>
+    <string name="SpeedSensorDialogTitle">Speed sensor warning</string>
+    <string name="SpeedSensorDialodTooFast">Warning the drum rotation is too fast for slump calculation</string>
+    <string name="SpeedSensorDialodTooSlow">Warning the drum rotation is too slow for slump calculation</string>
 
 
 </resources>
