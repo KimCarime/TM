@@ -20,7 +20,8 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:hint="XX:XX:XX:XX:XX:XX"
-        android:textSize="40sp"/>
+        android:textSize="40sp"
+        android:inputType="text"/>
 </LinearLayout>
 
 </RelativeLayout>
