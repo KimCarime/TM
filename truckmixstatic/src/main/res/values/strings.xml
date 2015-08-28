@@ -62,6 +62,9 @@
     <string name="SpeedSensorDialogTitle">Speed sensor warning</string>
     <string name="SpeedSensorDialodTooFast">Warning the drum rotation is too fast for slump calculation</string>
     <string name="SpeedSensorDialodTooSlow">Warning the drum rotation is too slow for slump calculation</string>
+    <string name="AdminDialogTitle">Admin password requested</string>
+    <string name="adminDialogMessage">Enter admin password :</string>
+    <string name="adminDialogErrorMessage">Wrong password</string>
 
 
 </resources>

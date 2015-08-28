@@ -4,7 +4,6 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Bundle;
@@ -32,17 +31,13 @@ import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
-import com.lafarge.truckmix.tmstatic.utils.DataTruck;
 
-import java.nio.ByteBuffer;
 
-import javax.xml.datatype.DatatypeConfigurationException;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
-import butterknife.OnClick;
+
 
 
 public class SlumpCalculationActivity extends AppCompatActivity {
@@ -412,7 +407,6 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         flag_dialog = false;
-
                     }
                 });
         mWaitingConnection.show();
@@ -423,7 +417,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
             public void run() {
                 while ((mTruckMix.isConnected()==false)&&(flag_dialog==true))
                 {
-                    Log.d("COUCOU","thread is running");
+                    //Log.d("COUCOU","thread is running");
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException e) {
@@ -431,12 +425,12 @@ public class SlumpCalculationActivity extends AppCompatActivity {
                     }
                 }
                 mWaitingConnection.dismiss();
-                if(flag_dialog==false){
+                mTruckMix.changeExternalDisplayState(true);
+                if(flag_dialog==false) {
                     startActivity(new Intent(SlumpCalculationActivity.this, MainActivity.class));
                     mTruckMix.endDelivery();
                     mTruckMix.stop();
                     finish();
-
                 }
             }
         })).start();

@@ -33,15 +33,15 @@ public class DataManager implements Serializable {
     }
 
     //methods
-    public void fetchTruckList() { //fetch trucks name in Database and record them in internal array
-
+    public void fetchTruckList(List<String> DBtruckList) { //fetch trucks name in Database and record them in internal array
+        truckList=DBtruckList;
     }
     public List <String> getTruckList(){ //return the internal array  truck list
 
         return truckList;
     }
-    public void fetchSelectedTruck(String registration ){ //fetch truck detail in the database using the registration as parameter
-
+    public void fetchSelectedTruck(DataTruck DBtruck ){ //fetch truck detail in the database using the registration as parameter
+        selectedTruck=DBtruck;
     }
     public void newTruck(){
         this.selectedTruck=new DataTruck();
@@ -55,9 +55,7 @@ public class DataManager implements Serializable {
     public void deleteTruck(String truckToDelete){
 
     }
-    public void fetchMACAddrBT(){ //fetch the Bluetooth MAC address in the database and record it in internal data
 
-    }
     public void setMACAddrBT(String addr){ //set Bluetooth MAC address in internal data
         MACAddrBT=addr;
     }
@@ -75,7 +73,6 @@ public class DataManager implements Serializable {
     public String getVolumeLoad() {
         return volumeLoad;
     }
-
     public void setVolumeLoad(String volumeLoad) {
         this.volumeLoad = volumeLoad;
     }

@@ -73,9 +73,7 @@ public class DataManagerMock extends DataManager implements Serializable {
         mockTruck3=this.selectedTruck;
         mockList.add(selectedTruck.getRegistrationID());
     }
-    public void fetchMACAddrBT(){
-        MACAddrBT=mockAddress;
-    }
+
 
 
 }

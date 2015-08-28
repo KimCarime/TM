@@ -1,7 +1,9 @@
 package com.lafarge.truckmix.tmstatic;
 
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,16 +25,26 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
 
     DataManager mDataManager;
 
+    //Shared preferences
+    public final static String MAC_ADDRESS ="mac address";
+    private SharedPreferences.Editor mEditor;
+    private SharedPreferences mPref;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parameters_calculator);
         ButterKnife.inject(this);
-        mDataManager=new DataManager();
-        mDataManager.fetchMACAddrBT();
-        mMACAddress.setText(mDataManager.getMACAddrBT());
+
+        mPref = PreferenceManager.getDefaultSharedPreferences(this);
+        mEditor = mPref.edit();
+
+        String _macAddress= mPref.getString(MAC_ADDRESS,"00:12:6F:35:7E:70");
+
+        mMACAddress.setText(_macAddress);
         mMACAddress.addTextChangedListener(formatMAC);
+
     }
 
     @Override
@@ -52,7 +64,10 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.calculatorParam1) { //save
             if (mMACAddress.getText().toString().length()==17) {
-                mDataManager.setMACAddrBT(mMACAddress.getText().toString());
+                //mDataManager.setMACAddrBT(mMACAddress.getText().toString());
+
+                mEditor.putString(MAC_ADDRESS,mMACAddress.getText().toString());
+                mEditor.commit();
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.CalculatorParametersMACSaved), Toast.LENGTH_SHORT).show();
             }
             else
