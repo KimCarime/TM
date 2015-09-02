@@ -33,6 +33,10 @@ public class DataManager implements Serializable {
     }
 
     //methods
+    public void newTruck(){
+        this.selectedTruck=new DataTruck();
+    }
+
     public void fetchTruckList(List<String> DBtruckList) { //fetch trucks name in Database and record them in internal array
         truckList=DBtruckList;
     }
@@ -40,15 +44,14 @@ public class DataManager implements Serializable {
 
         return truckList;
     }
+
     public void fetchSelectedTruck(DataTruck DBtruck ){ //fetch truck detail in the database using the registration as parameter
         selectedTruck=DBtruck;
-    }
-    public void newTruck(){
-        this.selectedTruck=new DataTruck();
     }
     public DataTruck getSelectedTruck(){ //return the internal selected truck
         return selectedTruck;
     }
+
     public void saveTruck(){ //save given truck in the database
 
     }

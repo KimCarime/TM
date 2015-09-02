@@ -14,12 +14,23 @@ import java.util.List;
  * Created by Kim.Abdoul-Carime on 19/08/2015.
  */
 public class DataManagerMock extends DataManager implements Serializable {
+
+
     private DataTruck mockTruck1;
+
+
+
     private DataTruck mockTruck2;
     private DataTruck mockTruck3;
     private String mockAddress;
     private List<String> mockList;
 
+    public DataTruck getMockTruck1() {
+        return mockTruck1;
+    }
+    public DataTruck getMockTruck2() {
+        return mockTruck2;
+    }
 
     public DataManagerMock(){
         super();
@@ -55,7 +66,7 @@ public class DataManagerMock extends DataManager implements Serializable {
         mockTruck2.setTruckParameters(new TruckParameters(T1, A11, A12, A13, magnetQuantity, timePump, timeDelayDriver, pulseNumber,
                 flowmeterFrequency, commandPumpMode, calibrationInputSensorA, calibrationInputSensorB, calibrationOutputSensorA, calibrationOutputSensorB, openingTimeEV1, openingTimeVA1, toleranceCounting, waitingDurationAfterWaterAddition, maxDelayBeforeFlowage, maxFlowageError, maxCountingError));
     }
-
+/*
     public void fetchTruckList(){
 
         truckList=mockList;
@@ -73,7 +84,7 @@ public class DataManagerMock extends DataManager implements Serializable {
         mockTruck3=this.selectedTruck;
         mockList.add(selectedTruck.getRegistrationID());
     }
-
+*/
 
 
 }

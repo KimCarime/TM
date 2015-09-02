@@ -20,6 +20,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> spinnerAdapter=null;
     //Attributes
     private DataManagerMock mDataManager;
+    //private DataManager mDataManager;
 
     //Dialogs
     private AlertDialog mAdminDialog;
@@ -50,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
     public final static String MAC_ADDRESS ="mac address";
     SharedPreferences mPref;
 
+    //Database
+    private DAOTrucks db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +63,16 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.inject(this);
         //Data manager creation
         mDataManager= new DataManagerMock();
+        //Database init
+        db = new DAOTrucks(this);
+
+        //TEST MOCK
+        //test purpose
+        db.purge(); // A SUPPRIMER QUAND DEV FINI
+        db.newTruck(mDataManager.getMockTruck1());
+        db.newTruck(mDataManager.getMockTruck2());
+
+        ////
     //WIDGET
        //spinner
         refreshSpinner();
@@ -95,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             else { //Truck is selected
 
                 mDataManager.setVolumeLoad(String.valueOf(mLoadVolume.getValue())); //get the load volume
-                mDataManager.fetchSelectedTruck(_TruckID);
+                mDataManager.fetchSelectedTruck(db.fetchTruck(_TruckID));
                 //mDataManager.fetchMACAddrBT();// fetch mac address here to avoid data corruption when updating mac address on settings
                 String buff=mPref.getString(MAC_ADDRESS,"00:12:6F:35:7E:70");
 
@@ -192,8 +208,8 @@ public class MainActivity extends AppCompatActivity {
     {
 
         List<String> buffer = new ArrayList<String>();
-        mDataManager.fetchTruckList(); //fetch truck list in database
-        if(mDataManager.getTruckList()==null)
+        mDataManager.fetchTruckList(db.fetchTruckList()); //fetch truck list in database
+        if(mDataManager.getTruckList().isEmpty())
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
 

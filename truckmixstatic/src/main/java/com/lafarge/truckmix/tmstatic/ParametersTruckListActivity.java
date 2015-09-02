@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 
 import java.util.ArrayList;
@@ -22,18 +23,20 @@ public class ParametersTruckListActivity extends AppCompatActivity {
     //private String[] mockedTrucks ={"AZERTY","PKNBR5"};
     private DataManagerMock mDataManager;
     private ArrayAdapter<String> listAdapter=null;
+    //Database
+    private DAOTrucks db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parameters_truck_list);
         mTruckList= (ListView) findViewById(R.id.listTruck); // link list to the layout
-
+        db=new DAOTrucks(this);
 
         //Data manager creation
         mDataManager= new DataManagerMock();
         //Fetch truck list in the database
-        mDataManager.fetchTruckList();
+        mDataManager.fetchTruckList(db.fetchTruckList());
 
         refreshList();
         mTruckList.setAdapter(listAdapter);
@@ -64,7 +67,7 @@ public class ParametersTruckListActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.TruckListParam2) { // Edit truck
-            mDataManager.fetchSelectedTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition()));
+            mDataManager.fetchSelectedTruck(db.fetchTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition())));
             Intent editingTruck=new Intent(ParametersTruckListActivity.this,ParametersTruckDetailsActivity.class);
             editingTruck.putExtra("edit",mDataManager);
             startActivity(editingTruck);
@@ -82,7 +85,7 @@ public class ParametersTruckListActivity extends AppCompatActivity {
     //other methods
     private void refreshList(){
         List<String> buffer = new ArrayList<String>();
-        mDataManager.fetchTruckList();
+        mDataManager.fetchTruckList(db.fetchTruckList());
         if(mDataManager.getTruckList()==null)
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
