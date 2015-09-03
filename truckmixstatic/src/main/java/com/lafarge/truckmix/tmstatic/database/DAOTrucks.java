@@ -3,7 +3,10 @@ package com.lafarge.truckmix.tmstatic.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
+import com.lafarge.truckmix.common.enums.CommandPumpMode;
+import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
 
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ public class DAOTrucks extends DAOBase {
             COLUMN_NAME_MAXCOUNTINGERROR + " INTEGER NOT NULL); ";
     public static final String DROP_TABLE_TRUCKS="DROP TABLE IF EXISTS " + TABLE_NAME_TRUCKS + ";";
     public static final String SELECT_TRUCKS_REGISTRATION="SELECT "+ "*"/*COLUMN_NAME_REGISTRATION*/ + " FROM " + TABLE_NAME_TRUCKS;
+    public static final String SELECT_SINGLE_TRUCK="SELECT * FROM "+TABLE_NAME_TRUCKS+" WHERE "+COLUMN_NAME_REGISTRATION+" = " ;
 
 
 
@@ -103,23 +107,83 @@ public class DAOTrucks extends DAOBase {
         value.put(COLUMN_NAME_MAX_DELAY_BEFORE_FLOWAGE,truck.getTruckParameters().maxDelayBeforeFlowage);
         value.put(COLUMN_NAME_MAXFLOWAGEERROR, truck.getTruckParameters().maxFlowageError);
         value.put(COLUMN_NAME_MAXCOUNTINGERROR, truck.getTruckParameters().maxCountingError);
+
         this.open();
-
-
         long rowId =mDb.insert(TABLE_NAME_TRUCKS, null, value);
-
         this.close();
     }
     public void deleteTruck(String registration){
 
     }
     public void editTruck(DataTruck truck){
+        ContentValues value = new ContentValues();
+        value.put(COLUMN_NAME_REGISTRATION,truck.getRegistrationID());
+        value.put(COLUMN_NAME_T1,truck.getTruckParameters().T1);
+        value.put(COLUMN_NAME_A11,truck.getTruckParameters().A11);
+        value.put(COLUMN_NAME_A12,truck.getTruckParameters().A12);
+        value.put(COLUMN_NAME_A13,truck.getTruckParameters().A13);
+        value.put(COLUMN_NAME_MAGNETQUANTITY,truck.getTruckParameters().magnetQuantity);
+        value.put(COLUMN_NAME_TIMEPUMP,truck.getTruckParameters().timePump);
+        value.put(COLUMN_NAME_TIMEDELAYDRIVER,truck.getTruckParameters().timeDelayDriver);
+        value.put(COLUMN_NAME_PULSENUMBER,truck.getTruckParameters().pulseNumber);
+        value.put(COLUMN_NAME_FLOWMETERFREQUENCY,truck.getTruckParameters().flowmeterFrequency);
+        value.put(COLUMN_NAME_COMMANDPUMP,truck.getTruckParameters().commandPumpMode.toString()); //PAS SUR POUR CELUI LA
+        value.put(COLUMN_NAME_CALIBRATIONINPUTSENSORA,truck.getTruckParameters().calibrationInputSensorA);
+        value.put(COLUMN_NAME_CALIBRATIONINPUTSENSORB,truck.getTruckParameters().calibrationInputSensorB);
+        value.put(COLUMN_NAME_CALIBRATIONOUTPUTSENSORA,truck.getTruckParameters().calibrationOutputSensorA);
+        value.put(COLUMN_NAME_CALIBRATIONOUTPUTSENSORB,truck.getTruckParameters().calibrationOutputSensorB);
+        value.put(COLUMN_NAME_OPENINGTIMEEV1,truck.getTruckParameters().openingTimeEV1);
+        value.put(COLUMN_NAME_OPENINGTIMEVA1,truck.getTruckParameters().openingTimeVA1);
+        value.put(COLUMN_NAME_TOLERENCECOUNTING,truck.getTruckParameters().toleranceCounting);
+        value.put(COLUMN_NAME_WAITINGDURATIONAFTERWATERADDITION,truck.getTruckParameters().waitingDurationAfterWaterAddition);
+        value.put(COLUMN_NAME_MAX_DELAY_BEFORE_FLOWAGE,truck.getTruckParameters().maxDelayBeforeFlowage);
+        value.put(COLUMN_NAME_MAXFLOWAGEERROR, truck.getTruckParameters().maxFlowageError);
+        value.put(COLUMN_NAME_MAXCOUNTINGERROR, truck.getTruckParameters().maxCountingError);
+
+        this.open();
+        long rowId =mDb.update(TABLE_NAME_TRUCKS, value,COLUMN_NAME_REGISTRATION +" = ?",new String[]{truck.getRegistrationID()});
+        this.close();
 
     }
     public DataTruck fetchTruck(String registration){
-        DataTruck selectedTruck=null;
+        DataTruck _selectedTruck=null;
+        TruckParameters _selectedParameters=null;
 
-        return selectedTruck;
+
+        this.open();
+        //Find the truck row
+        Cursor c=mDb.rawQuery(SELECT_SINGLE_TRUCK+"'"+registration+"'", null);
+        if(c.moveToFirst()){
+
+            double T1=c.getDouble(c.getColumnIndex(COLUMN_NAME_T1));
+            double A11=c.getDouble(c.getColumnIndex(COLUMN_NAME_A11));
+            double A12=c.getDouble(c.getColumnIndex(COLUMN_NAME_A12));
+            double A13=c.getDouble(c.getColumnIndex(COLUMN_NAME_A13));
+            int magnetQuantity= c.getInt(c.getColumnIndex(COLUMN_NAME_MAGNETQUANTITY));
+            int timePump =c.getInt(c.getColumnIndex(COLUMN_NAME_TIMEPUMP));
+            int timeDelayDriver =c.getInt(c.getColumnIndex(COLUMN_NAME_TIMEDELAYDRIVER));
+            int pulseNumber=c.getInt(c.getColumnIndex(COLUMN_NAME_PULSENUMBER));
+            int flowmeterFrequency=c.getInt(c.getColumnIndex(COLUMN_NAME_FLOWMETERFREQUENCY));
+            CommandPumpMode commandPumpMode=CommandPumpMode.valueOf(c.getString(c.getColumnIndex(COLUMN_NAME_COMMANDPUMP))); //NOT SURE
+            double calibrationInputSensorA=c.getDouble(c.getColumnIndex(COLUMN_NAME_CALIBRATIONINPUTSENSORA));
+            double calibrationInputSensorB=c.getDouble(c.getColumnIndex(COLUMN_NAME_CALIBRATIONINPUTSENSORB));
+            double calibrationOutputSensorA=c.getDouble(c.getColumnIndex(COLUMN_NAME_CALIBRATIONOUTPUTSENSORA));
+            double calibrationOutputSensorB=c.getDouble(c.getColumnIndex(COLUMN_NAME_CALIBRATIONOUTPUTSENSORB));
+            int openingTimeEV1=c.getInt(c.getColumnIndex(COLUMN_NAME_OPENINGTIMEEV1));
+            int openingTimeVA1=c.getInt(c.getColumnIndex(COLUMN_NAME_OPENINGTIMEVA1));
+            int toleranceCounting=c.getInt(c.getColumnIndex(COLUMN_NAME_TOLERENCECOUNTING));
+            int waitingDurationAfterWaterAddition=c.getInt(c.getColumnIndex(COLUMN_NAME_WAITINGDURATIONAFTERWATERADDITION));
+            int maxDelayBeforeFlowage=c.getInt(c.getColumnIndex(COLUMN_NAME_MAX_DELAY_BEFORE_FLOWAGE));
+            int maxFlowageError=c.getInt(c.getColumnIndex(COLUMN_NAME_MAXFLOWAGEERROR));
+            int maxCountingError=c.getInt(c.getColumnIndex(COLUMN_NAME_MAXCOUNTINGERROR));
+            _selectedParameters=new TruckParameters(T1, A11, A12, A13, magnetQuantity, timePump, timeDelayDriver, pulseNumber,
+                    flowmeterFrequency, commandPumpMode, calibrationInputSensorA, calibrationInputSensorB, calibrationOutputSensorA,
+                    calibrationOutputSensorB, openingTimeEV1, openingTimeVA1, toleranceCounting, waitingDurationAfterWaterAddition, maxDelayBeforeFlowage,
+                    maxFlowageError, maxCountingError);
+            _selectedTruck=new DataTruck(registration,_selectedParameters);
+        }
+        this.close();
+        return _selectedTruck;
     }
     public List<String> fetchTruckList(){
         this.open();
@@ -136,5 +200,6 @@ public class DAOTrucks extends DAOBase {
         this.close();
         return _truckList;
     }
+
 
 }

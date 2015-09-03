@@ -12,6 +12,7 @@ import android.widget.Spinner;
 
 import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.TruckParameters;
+import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
 import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
 import com.lafarge.truckmix.tmstatic.utils.DataTruck;
 
@@ -46,19 +47,30 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
 
     //attributes
     private DataManagerMock mDataManager;
+    //Database
+    private DAOTrucks db;
+    //ENUM
+    private final boolean EDIT=false;
+    private final boolean NEW=true;
+    private boolean typeTruck=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_parameters_truck_details);
         ButterKnife.inject(this);
+        //database
+        db=new DAOTrucks(this);
         //get data
         Intent incomingIntent=getIntent();
+
         mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("new");
+        typeTruck=NEW;
        if( (mDataManager)==null)
         {
             mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("edit");
             mRegistrationNumber.setEnabled(false);
+            typeTruck=EDIT;
         }
         resetParameters();
     }
@@ -118,7 +130,8 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
 
     }
     private void saveParameters(){
-        mDataManager.getSelectedTruck().setRegistrationID(mRegistrationNumber.getText().toString());
+        if(typeTruck==NEW) // get the truck registration only for new trucks
+            mDataManager.getSelectedTruck().setRegistrationID(mRegistrationNumber.getText().toString());
         TruckParameters param=new TruckParameters(
         Double.parseDouble(mT1.getText().toString().replace(",", ".")),
         Double.parseDouble(mA11.getText().toString().replace(",", ".")),
@@ -144,7 +157,14 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         );
 
         mDataManager.getSelectedTruck().setTruckParameters(param);
-        mDataManager.saveTruck();
+        //mDataManager.saveTruck(); USELESS ??
+        if(typeTruck==NEW) {
+            db.newTruck(mDataManager.getSelectedTruck());
+        }
+        else{
+            db.editTruck(mDataManager.getSelectedTruck());
+        }
+
 
     }
 }

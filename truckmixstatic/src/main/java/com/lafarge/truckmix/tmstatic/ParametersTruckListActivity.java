@@ -35,14 +35,19 @@ public class ParametersTruckListActivity extends AppCompatActivity {
 
         //Data manager creation
         mDataManager= new DataManagerMock();
+
+
+
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
         //Fetch truck list in the database
         mDataManager.fetchTruckList(db.fetchTruckList());
-
         refreshList();
         mTruckList.setAdapter(listAdapter);
         mTruckList.setItemChecked(0, true); // select the first item -> no case with null selection
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

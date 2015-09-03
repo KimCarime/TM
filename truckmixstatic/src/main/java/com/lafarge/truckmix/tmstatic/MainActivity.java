@@ -73,8 +73,19 @@ public class MainActivity extends AppCompatActivity {
         db.newTruck(mDataManager.getMockTruck2());
 
         ////
-    //WIDGET
-       //spinner
+
+
+        mPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+
+        mButtonStartCalculation.setOnClickListener(StartCalculation); //listener creation for button start calculation
+    }
+    @Override
+    public void onResume(){
+        super.onResume();
+        //WIDGET
+        //spinner
         refreshSpinner();
         Liste.setAdapter(spinnerAdapter);
         // number picker
@@ -87,11 +98,6 @@ public class MainActivity extends AppCompatActivity {
         mTargetSlump.setValue(0);
 
 
-        mPref = PreferenceManager.getDefaultSharedPreferences(this);
-
-
-
-        mButtonStartCalculation.setOnClickListener(StartCalculation); //listener creation for button start calculation
     }
 
     // Action
@@ -185,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                 if(pass==true){
                     //pass data throught intent
                     Intent intentTruckSettings = new Intent(MainActivity.this,ParametersTruckListActivity.class);
-                    intentTruckSettings.putExtra("data",mDataManager);
+ //                   intentTruckSettings.putExtra("data",mDataManager);      //USELESS ??
                     Intent intentCalculatorSettings = new Intent(MainActivity.this,ParametersCalculatorActivity.class);
                     // launch activity here
                     if (choice == R.id.menu_1) { // Truck settings

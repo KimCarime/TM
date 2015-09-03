@@ -69,5 +69,10 @@ public class DataTruck implements Serializable {
         this.parameters=truck.parameters;
 
     }
+    public DataTruck(String registration,TruckParameters param){
+        this.registrationID=registration;
+        this.parameters=param;
+
+    }
 
 }
