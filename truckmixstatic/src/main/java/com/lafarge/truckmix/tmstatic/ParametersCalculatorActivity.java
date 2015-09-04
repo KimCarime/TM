@@ -22,11 +22,13 @@ import butterknife.InjectView;
 public class ParametersCalculatorActivity extends AppCompatActivity {
 
     @InjectView(R.id.MacAddress) EditText mMACAddress;
+    @InjectView(R.id.Password) EditText mPassword;
 
     DataManager mDataManager;
 
     //Shared preferences
     public final static String MAC_ADDRESS ="mac address";
+    public final static String PASSWORD="password";
     private SharedPreferences.Editor mEditor;
     private SharedPreferences mPref;
 
@@ -41,10 +43,11 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
         mEditor = mPref.edit();
 
         String _macAddress= mPref.getString(MAC_ADDRESS,"00:12:6F:35:7E:70");
-
+        String _password=mPref.getString(PASSWORD,"mdp");
         mMACAddress.setText(_macAddress);
         mMACAddress.addTextChangedListener(formatMAC);
 
+        mPassword.setText(_password);
     }
 
     @Override
@@ -63,6 +66,8 @@ public class ParametersCalculatorActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.calculatorParam1) { //save
+            mEditor.putString(PASSWORD,mPassword.getText().toString());
+            mEditor.commit();Toast.makeText(getApplicationContext(), getResources().getString(R.string.CalculatorParametersPasswordaved), Toast.LENGTH_SHORT).show();
             if (mMACAddress.getText().toString().length()==17) {
                 //mDataManager.setMACAddrBT(mMACAddress.getText().toString());
 

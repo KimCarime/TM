@@ -4,11 +4,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.preference.DialogPreference;
+
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,7 +17,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
@@ -43,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayAdapter<String> spinnerAdapter=null;
     //Attributes
-    private DataManagerMock mDataManager;
+    private DataManager mDataManager;
     //private DataManager mDataManager;
 
     //Dialogs
@@ -51,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Shared preferences
     public final static String MAC_ADDRESS ="mac address";
+    public final static String PASSWORD="password";
     SharedPreferences mPref;
 
     //Database
@@ -67,10 +67,10 @@ public class MainActivity extends AppCompatActivity {
         db = new DAOTrucks(this);
 
         //TEST MOCK
-        //test purpose
-        db.purge(); // A SUPPRIMER QUAND DEV FINI
+        //dev purpose
+       /* db.purge(); // A SUPPRIMER QUAND DEV FINI
         db.newTruck(mDataManager.getMockTruck1());
-        db.newTruck(mDataManager.getMockTruck2());
+        db.newTruck(mDataManager.getMockTruck2());*/
 
         ////
 
@@ -226,10 +226,10 @@ public class MainActivity extends AppCompatActivity {
         spinnerAdapter.setDropDownViewResource(R.layout.spinner_item_drop);
     }
     private boolean passwordChecker(String password){
-
+        String pass2=mPref.getString(PASSWORD,"mdp"); // shared password
         boolean result=false;
         String pass1=password;
-        String pass2="dev"; // registered password
+        //String pass2="dev"; // registered password
 
         if(pass1.equals(pass2))
             result=true;

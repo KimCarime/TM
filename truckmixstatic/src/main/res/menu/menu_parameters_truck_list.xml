@@ -8,4 +8,6 @@
         android:orderInCategory="100" app:showAsAction="always" />
     <item android:id="@+id/TruckListParam3" android:title="@string/TruckListParam3"
         android:orderInCategory="100" app:showAsAction="always" />
+    <item android:id="@+id/TruckListParam4" android:title="@string/TruckListParam4"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

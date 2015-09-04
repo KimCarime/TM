@@ -10,13 +10,13 @@
     <string name="SelectTruck_targetSlump_Edit">slump in mm</string>
     <string name="SelectTruck_targetSlump">Enter target slump in mm</string>
     <string name="SelectTruck_buttonLabel">Start slump calculation</string>
-    <string name="menu_settings">Settings</string>
+    <string name="menu_settings">  Settings  </string>
     <string name="SelectTruck_loadVolume">Enter The load volume in m3</string>
     <string name="SelectTruck_loadVolume_edit">Load volume in m3</string>
 
             //menu
-    <string name="menu_1">Truck settings</string>
-    <string name="menu_2">Calculator settings</string>
+    <string name="menu_1">  Truck settings  </string>
+    <string name="menu_2">  Calculator settings  </string>
     //slump calculation
     <string name="title_activity_slump_calculation">SlumpCalculationActivity</string>
     <string name="SlumpCalculation_truckID">Truck ID :</string>
@@ -28,20 +28,20 @@
     <string name="title_activity_parameters_calculator">ParametersCalculatorActivity</string>
     <string name="ParameterCalculator_MACaddr">Calculator adapter MAC address :</string>
             //menu
-    <string name="calculatorParam1">Save</string>
+    <string name="calculatorParam1">  Save  </string>
     //Truck list parameters
     <string name="title_activity_parameters_truck">ParametersTruckActivity</string>
     <string name="title_activity_parameters_truck_list">ParametersTruckListActivity</string>
     <string name="ParameterTruckList">Select the truck to modify</string>
             //menu
-    <string name="TruckListParam1">New</string>
-    <string name="TruckListParam2">Edit</string>
-    <string name="TruckListParam3">Delete</string>
+    <string name="TruckListParam1">  New  </string>
+    <string name="TruckListParam2">  Edit  </string>
+    <string name="TruckListParam3">  Delete  </string>
     Truck details parameters
     <string name="title_activity_parameters_truck_details">ParametersTruckDetailsActivity</string>
             //menu
-    <string name="TruckDetailsParam1">Save</string>
-    <string name="TruckDetailsParam2">Reset</string>
+    <string name="TruckDetailsParam1">  Save  </string>
+    <string name="TruckDetailsParam2">  Reset  </string>
     <string name="noTruckAvailable">No truck available</string>
     <string name="noTruckAvailableWarning">No truck available, please create new truck before launching slump calculation.</string>
     <string name="noSlumpEntered">--</string>
@@ -65,6 +65,18 @@
     <string name="AdminDialogTitle">Admin password requested</string>
     <string name="adminDialogMessage">Enter admin password :</string>
     <string name="adminDialogErrorMessage">Wrong password</string>
+    <string name="ParametersTruckDetail_TruckSaved">The following truck has been saved : </string>
+    <string name="ParametersTruckDetail_SaveError">An error occured while saving the truck </string>
+    <string name="ParametersTruckDetail_TruckAlready_exist">This truck already exist : </string>
+    <string name="ParametersTruckDetail_FieldError">At least one of the field has incorrect value </string>
+    <string name="ParametersTruckDetail_DataBaseIssue">Something went wrong when recording in database</string>
+    <string name="ParametersTruckList_deleteTruckKO">An error occured during deletion. Truck is not deleted : </string>
+    <string name="ParametersTruckDetail_RegistrationCannotBeNull">Truck registration cannot be null </string>
+    <string name="TruckListParam4">PURGE</string>
+    <string name="purgeTitle">Purge database confirmation</string>
+    <string name="purgeMessage">Purge database will wipe every trucks recorded. Are you sure to purge the database ?</string>
+    <string name="ParameterCalculator_password">Current administrator password</string>
+    <string name="CalculatorParametersPasswordaved">new password saved</string>
 
 
 </resources>

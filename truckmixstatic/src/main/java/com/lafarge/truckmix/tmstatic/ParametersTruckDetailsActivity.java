@@ -9,12 +9,13 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.lafarge.truckmix.common.enums.CommandPumpMode;
 import com.lafarge.truckmix.common.models.TruckParameters;
 import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
-import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
-import com.lafarge.truckmix.tmstatic.utils.DataTruck;
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
+
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -46,13 +47,19 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
     @InjectView(R.id.maxErrorCouting) EditText mMaxCoutingError;
 
     //attributes
-    private DataManagerMock mDataManager;
+    private DataManager mDataManager;
     //Database
     private DAOTrucks db;
     //ENUM
     private final boolean EDIT=false;
     private final boolean NEW=true;
     private boolean typeTruck=false;
+
+    private final int EVERYTHING_OK=0;
+    private final int TRUCK_ALREADY_EXIST=1;
+    private final int FIELD_FORMAT_ISSUE=2;
+    private final int DATABASE_ISSUE=3;
+    private final int REGISTRATION_CANNOT_BE_NULL=4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +71,11 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         //get data
         Intent incomingIntent=getIntent();
 
-        mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("new");
+        mDataManager =(DataManager) incomingIntent.getSerializableExtra("new");
         typeTruck=NEW;
        if( (mDataManager)==null)
         {
-            mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("edit");
+            mDataManager =(DataManager) incomingIntent.getSerializableExtra("edit");
             mRegistrationNumber.setEnabled(false);
             typeTruck=EDIT;
         }
@@ -88,10 +95,32 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+        int flagSaved=-1;
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.TruckDetailsParam1) { //save
-            saveParameters();
+            /////////////
+            flagSaved = saveParameters();
+            switch (flagSaved) {
+                case EVERYTHING_OK: Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_TruckSaved) + mDataManager.getSelectedTruck().getRegistrationID() + " ...", Toast.LENGTH_SHORT).show();
+                    finish();
+                    break;
+                case TRUCK_ALREADY_EXIST:Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_TruckAlready_exist)+mDataManager.getSelectedTruck().getRegistrationID(), Toast.LENGTH_SHORT).show();
+                    break;
+                case FIELD_FORMAT_ISSUE:Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_FieldError) + " ...", Toast.LENGTH_SHORT).show();
+                    break;
+                case DATABASE_ISSUE:Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_DataBaseIssue) + " ...", Toast.LENGTH_SHORT).show();
+                    break;
+                case REGISTRATION_CANNOT_BE_NULL:Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_RegistrationCannotBeNull) + " ...", Toast.LENGTH_SHORT).show();
+                    break;
+                default: Toast.makeText(ParametersTruckDetailsActivity.this, getResources().getString(R.string.ParametersTruckDetail_SaveError) + "...", Toast.LENGTH_SHORT).show();
+                    break;
+
+
+
+
+            }
+            ///////////////////////
             return true;
         }
         if (id == R.id.TruckDetailsParam2) { //reset
@@ -129,9 +158,16 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         mMaxCoutingError.setText(String.format("%d", param.maxCountingError));
 
     }
-    private void saveParameters(){
-        if(typeTruck==NEW) // get the truck registration only for new trucks
+    private int saveParameters(){
+        boolean flagSaved=false;
+        if(typeTruck==NEW){ // get the truck registration only for new trucks
             mDataManager.getSelectedTruck().setRegistrationID(mRegistrationNumber.getText().toString());
+                if (mDataManager.getTruckList().contains(mDataManager.getSelectedTruck().getRegistrationID()))
+                    return TRUCK_ALREADY_EXIST; // if truck already exist return code
+                if (mDataManager.getSelectedTruck().getRegistrationID().isEmpty())
+                    return REGISTRATION_CANNOT_BE_NULL;
+        }
+        try {
         TruckParameters param=new TruckParameters(
         Double.parseDouble(mT1.getText().toString().replace(",", ".")),
         Double.parseDouble(mA11.getText().toString().replace(",", ".")),
@@ -157,14 +193,23 @@ public class ParametersTruckDetailsActivity extends AppCompatActivity {
         );
 
         mDataManager.getSelectedTruck().setTruckParameters(param);
-        //mDataManager.saveTruck(); USELESS ??
-        if(typeTruck==NEW) {
-            db.newTruck(mDataManager.getSelectedTruck());
         }
-        else{
-            db.editTruck(mDataManager.getSelectedTruck());
+        catch (Exception e) {
+            return FIELD_FORMAT_ISSUE;
         }
-
-
+        //try database insertion
+        try{
+            if (typeTruck == NEW) {
+                flagSaved = db.newTruck(mDataManager.getSelectedTruck());
+            } else {
+                flagSaved = db.editTruck(mDataManager.getSelectedTruck());
+            }
+        }
+        catch(Exception e){
+            return DATABASE_ISSUE;
+        }
+        if(!flagSaved)
+            return DATABASE_ISSUE;
+        return EVERYTHING_OK;
     }
 }

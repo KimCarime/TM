@@ -29,7 +29,7 @@ tools:context="com.lafarge.truckmix.tmstatic.ParametersTruckDetailsActivity">
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:inputType="text"/>
+            android:inputType="textCapCharacters"/>
     </TableRow>
     <TableRow
         android:layout_width="match_parent"

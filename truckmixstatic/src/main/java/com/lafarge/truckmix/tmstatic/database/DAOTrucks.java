@@ -83,7 +83,7 @@ public class DAOTrucks extends DAOBase {
         this.mDb.execSQL(CREATE_TABLE_TRUCKS);
         this.close();
     }
-    public void newTruck(DataTruck truck){ // add truck in database
+    public boolean newTruck(DataTruck truck){ // add truck in database
         ContentValues value = new ContentValues();
         value.put(COLUMN_NAME_REGISTRATION,truck.getRegistrationID());
         value.put(COLUMN_NAME_T1,truck.getTruckParameters().T1);
@@ -111,11 +111,16 @@ public class DAOTrucks extends DAOBase {
         this.open();
         long rowId =mDb.insert(TABLE_NAME_TRUCKS, null, value);
         this.close();
-    }
-    public void deleteTruck(String registration){
 
+        return rowId>0; //return true if ok false if ko
     }
-    public void editTruck(DataTruck truck){
+    public boolean deleteTruck(String registration){
+        this.open();
+        long rowId =mDb.delete(TABLE_NAME_TRUCKS,COLUMN_NAME_REGISTRATION +" = ?",new String[]{registration});
+        this.close();
+        return rowId>0; // true if ok false if KO
+    }
+    public boolean editTruck(DataTruck truck){
         ContentValues value = new ContentValues();
         value.put(COLUMN_NAME_REGISTRATION,truck.getRegistrationID());
         value.put(COLUMN_NAME_T1,truck.getTruckParameters().T1);
@@ -143,7 +148,7 @@ public class DAOTrucks extends DAOBase {
         this.open();
         long rowId =mDb.update(TABLE_NAME_TRUCKS, value,COLUMN_NAME_REGISTRATION +" = ?",new String[]{truck.getRegistrationID()});
         this.close();
-
+        return rowId>0; // true if ok false if KO
     }
     public DataTruck fetchTruck(String registration){
         DataTruck _selectedTruck=null;

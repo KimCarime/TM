@@ -1,7 +1,10 @@
 package com.lafarge.truckmix.tmstatic;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,10 +13,10 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.lafarge.truckmix.tmstatic.database.DAOTrucks;
-import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
+
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -21,10 +24,13 @@ public class ParametersTruckListActivity extends AppCompatActivity {
 
     private ListView mTruckList=null; //list declaration
     //private String[] mockedTrucks ={"AZERTY","PKNBR5"};
-    private DataManagerMock mDataManager;
+    private DataManager mDataManager;
     private ArrayAdapter<String> listAdapter=null;
     //Database
     private DAOTrucks db;
+
+    //dialog
+    private Dialog mConfirmationDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +40,7 @@ public class ParametersTruckListActivity extends AppCompatActivity {
         db=new DAOTrucks(this);
 
         //Data manager creation
-        mDataManager= new DataManagerMock();
+        mDataManager= new DataManager();
 
 
 
@@ -72,15 +78,30 @@ public class ParametersTruckListActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.TruckListParam2) { // Edit truck
-            mDataManager.fetchSelectedTruck(db.fetchTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition())));
-            Intent editingTruck=new Intent(ParametersTruckListActivity.this,ParametersTruckDetailsActivity.class);
-            editingTruck.putExtra("edit",mDataManager);
-            startActivity(editingTruck);
+            if(listAdapter.getItem(mTruckList.getCheckedItemPosition()).equals(getResources().getString(R.string.noTruckAvailable))) { // if no truck
+                Toast.makeText(ParametersTruckListActivity.this, getResources().getString(R.string.noTruckAvailable), Toast.LENGTH_SHORT).show();
+            }else{
+                mDataManager.fetchSelectedTruck(db.fetchTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition())));
+                Intent editingTruck = new Intent(ParametersTruckListActivity.this, ParametersTruckDetailsActivity.class);
+                editingTruck.putExtra("edit", mDataManager);
+                startActivity(editingTruck);
+            }
             return true;
         }
         if (id == R.id.TruckListParam3) { // Delete truck
             mDataManager.deleteTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition()));
-            Toast.makeText(ParametersTruckListActivity.this, getResources().getString(R.string.ParametersTruckList_deleteTruck)+listAdapter.getItem(mTruckList.getCheckedItemPosition())+"...", Toast.LENGTH_SHORT).show();
+            if (db.deleteTruck(listAdapter.getItem(mTruckList.getCheckedItemPosition()))){ // if delete ok
+                Toast.makeText(ParametersTruckListActivity.this, getResources().getString(R.string.ParametersTruckList_deleteTruck)+listAdapter.getItem(mTruckList.getCheckedItemPosition())+"...", Toast.LENGTH_SHORT).show();
+                refreshList();
+                mTruckList.setAdapter(listAdapter);
+                mTruckList.setItemChecked(0, true); // select the first item -> no case with null selection
+            }
+            else Toast.makeText(ParametersTruckListActivity.this, getResources().getString(R.string.ParametersTruckList_deleteTruckKO)+listAdapter.getItem(mTruckList.getCheckedItemPosition())+"...", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        if (id == R.id.TruckListParam4){ // purge Database
+            mConfirmationDialog=createConfirmationDialog();
+            mConfirmationDialog.show();
             return true;
         }
 
@@ -91,12 +112,40 @@ public class ParametersTruckListActivity extends AppCompatActivity {
     private void refreshList(){
         List<String> buffer = new ArrayList<String>();
         mDataManager.fetchTruckList(db.fetchTruckList());
-        if(mDataManager.getTruckList()==null)
+        if(mDataManager.getTruckList().isEmpty())
             buffer.add(getResources().getString(R.string.noTruckAvailable));
         else {
             buffer=new ArrayList<String>(mDataManager.getTruckList());
         }
        listAdapter=new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,buffer); //adapter refresh
 
+    }
+
+    // dialog factory
+    private Dialog createConfirmationDialog(){
+        final AlertDialog.Builder builder =new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.purgeTitle));
+        builder.setMessage(getResources().getString(R.string.purgeMessage));
+        builder.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice) {
+                //purge database
+                db.purge();
+                refreshList();
+                mTruckList.setAdapter(listAdapter);
+                mTruckList.setItemChecked(0, true); // select the first item -> no case with null selection
+                dialog.dismiss();
+
+
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.no), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int choice) {
+                //don't purge database
+                dialog.dismiss();
+            }
+        });
+        return builder.create();
     }
 }

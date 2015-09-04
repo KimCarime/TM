@@ -31,7 +31,8 @@ import com.lafarge.truckmix.communicator.events.Event;
 import com.lafarge.truckmix.communicator.listeners.CommunicatorListener;
 import com.lafarge.truckmix.communicator.listeners.EventListener;
 import com.lafarge.truckmix.communicator.listeners.LoggerListener;
-import com.lafarge.truckmix.tmstatic.utils.DataManagerMock;
+import com.lafarge.truckmix.tmstatic.utils.DataManager;
+
 
 
 
@@ -50,7 +51,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
     @InjectView(R.id.slumpCalculationLoadVolume) TextView mTextViewLoadVolume;
     @InjectView(R.id.slumpCalculationSensorState) TextView mTextViewSensorState;
     //attributes
-    private DataManagerMock mDataManager;
+    private DataManager mDataManager;
     private final String TAG="SlumpCalculation";
     private Sensors mSensorsState;
     private boolean flag_dialog=true;
@@ -78,7 +79,7 @@ public class SlumpCalculationActivity extends AppCompatActivity {
 
         //get data
         Intent incomingIntent=getIntent();
-        mDataManager =(DataManagerMock) incomingIntent.getSerializableExtra("data");
+        mDataManager =(DataManager) incomingIntent.getSerializableExtra("data");
 
 
         //widget initialisation
